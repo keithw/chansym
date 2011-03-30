@@ -10,10 +10,9 @@ private:
   Channel *channel;
   double next_ping_time;
   double increment;
-  string message;
 
 public:  
-  Pinger( Time *time, Channel *s_channel, double s_inc, string s_msg );
+  Pinger( Time *time, Channel *s_channel, double s_inc );
   void wakeup( void );
 
   Pinger( const Pinger & );

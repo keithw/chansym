@@ -1,15 +1,20 @@
 #include "time.hpp"
 #include "delay_channel.hpp"
 #include "pinger.hpp"
+#include "printer_channel.hpp"
+#include "throughput_channel.hpp"
 
 using namespace std;
 
 int main( void )
 {
   Time tick;
-  DelayChannel chan( &tick, 900 );
-  Pinger ping( &tick, &chan, 1, "ping\n" );
-  Pinger pong( &tick, &chan, 0.9, "PONG\n" );
+
+  ThroughputChannel chan( &tick, 12000 );
+  PrinterChannel printer( &tick );
+  chan.connect( &printer );
+
+  Pinger ping( &tick, &chan, 0.00001 );
 
   while ( tick.tick() ) {}
 

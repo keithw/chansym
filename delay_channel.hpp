@@ -21,7 +21,6 @@ public:
   DelayChannel( Time *tick, double s_delay );
 
   void send( Packet pack );
-  void connect( Channel *s_dest __attribute((unused)) ) {}
   void wakeup( void );
 };
 

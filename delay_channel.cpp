@@ -20,7 +20,8 @@ void DelayChannel::wakeup( void )
     ScheduledPacket pack = contents.front();
     if ( time->now() >= pack.delivery_time ) {
       assert( time->now() - pack.delivery_time < 1e-10 );
-      cout << time->now() << "\t" << pack.packet.src << " " << pack.packet.length << endl;
+      if ( dest ) dest->send( pack.packet );
+      //      cout << time->now() << "\t" << pack.packet.src << " " << pack.packet.length << endl;
       contents.pop_front();
     } else {
       break;
