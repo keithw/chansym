@@ -10,28 +10,20 @@ using namespace std;
 
 class Packet {
 public:
-  double delivery_time;
-  string payload;
+  int src;
+  int length;
 
-  Packet( double s_time, string s_payload )
-    : delivery_time( s_time ), payload( s_payload )
+  Packet( int s_src, int s_length )
+    : src( s_src ), length( s_length )
   {}
 };
 
 class Channel : public Actor {
-
-private:
-  double delay;
-  list<Packet> contents;
-
 public:
-  void send( string payload );
-  void wakeup( void );
+  Channel( Time *tick ) : Actor( tick ) {}
 
-  Channel( Time *s_time, double s_delay )
-    : Actor( s_time ),
-      delay( s_delay ),
-      contents() {}
+  virtual void send( Packet pack ) = 0;
+  virtual void connect( Channel *s_dest ) = 0;
 };
 
 #endif

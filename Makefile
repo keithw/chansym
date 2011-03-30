@@ -1,5 +1,5 @@
-source = channel.cpp time.cpp tester.cpp
-objects = channel.o time.o
+source = channel.cpp time.cpp tester.cpp pinger.cpp delay_channel.cpp
+objects = time.o pinger.o delay_channel.o
 executables = tester
 
 CXX = g++
