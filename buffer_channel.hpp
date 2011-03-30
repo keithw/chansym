@@ -9,8 +9,6 @@ private:
   int occupancy;
   list<Packet> contents;
 
-  void try_drain( void );
-
 public:
   BufferChannel( Time *tick, int s_size );
 

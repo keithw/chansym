@@ -14,15 +14,10 @@ void BufferChannel::send( Packet pack )
     occupancy += pack.length;
   }
 
-  try_drain();
+  wakeup();
 }
 
 void BufferChannel::wakeup( void )
-{
-  try_drain();
-}
-
-void BufferChannel::try_drain( void )
 {
   while ( (!contents.empty()) && dest && dest->sendable() ) {
     Packet pack = contents.front();
