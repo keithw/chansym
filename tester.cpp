@@ -4,6 +4,7 @@
 #include "printer_channel.hpp"
 #include "throughput_channel.hpp"
 #include "buffer_channel.hpp"
+#include "stats_channel.hpp"
 
 using namespace std;
 
@@ -13,14 +14,17 @@ int main( void )
 
   BufferChannel buf( &tick, 120000 );
   ThroughputChannel tp( &tick, 12000 );
-  PrinterChannel printer( &tick );
+  StatsChannel stats( &tick );
 
   buf.connect( &tp );
-  tp.connect( &printer );
+  tp.connect( &stats );
 
-  Pinger ping( &tick, &buf, 0.01 );
+  Pinger ping( &tick, &buf, 0.1 );
 
-  while ( tick.tick() ) {}
+  while ( tick.tick() && (tick.now() < 100) ) {}
+
+  printf( "t = %.2f. Average bps: %.2f. Average delay: %.2f seconds\n",
+	  tick.now(), stats.average_bps(), stats.average_delay() );
 
   return 0;
 }

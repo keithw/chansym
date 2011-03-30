@@ -10,11 +10,13 @@ using namespace std;
 
 class Packet {
 public:
-  int src;
   int length; /* bits */
 
-  Packet( int s_src, int s_length )
-    : src( s_src ), length( s_length )
+  int src, id;
+  double send_time;
+
+  Packet( int s_length, int s_src, int s_id, double s_send_time )
+    : length( s_length ), src( s_src ), id( s_id ), send_time( s_send_time )
   {}
 };
 
