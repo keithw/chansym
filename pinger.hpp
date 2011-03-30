@@ -10,6 +10,7 @@ private:
   Channel *channel;
   double next_ping_time;
   double increment;
+  int counter;
 
 public:  
   Pinger( Time *time, Channel *s_channel, double s_inc );

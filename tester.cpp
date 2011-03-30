@@ -3,6 +3,7 @@
 #include "pinger.hpp"
 #include "printer_channel.hpp"
 #include "throughput_channel.hpp"
+#include "buffer_channel.hpp"
 
 using namespace std;
 
@@ -10,11 +11,14 @@ int main( void )
 {
   Time tick;
 
-  ThroughputChannel chan( &tick, 12000 );
+  BufferChannel buf( &tick, 120000 );
+  ThroughputChannel tp( &tick, 12000 );
   PrinterChannel printer( &tick );
-  chan.connect( &printer );
 
-  Pinger ping( &tick, &chan, 0.00001 );
+  buf.connect( &tp );
+  tp.connect( &printer );
+
+  Pinger ping( &tick, &buf, 0.01 );
 
   while ( tick.tick() ) {}
 

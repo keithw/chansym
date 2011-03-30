@@ -8,13 +8,14 @@ private:
   double throughput; /* bits per second */
   double next_free_time;
 
-  bool busy( void ) { return next_free_time > time->now(); };
-  bool free( void ) { return !busy(); }
+  bool is_busy( void ) { return next_free_time > time->now(); };
+  bool is_free( void ) { return !is_busy(); }
   
 public:
   ThroughputChannel( Time *tick, double s_throughput );
 
   void send( Packet pack );
+  bool sendable( void ) { return is_free(); }
   void wakeup( void );
 };
 

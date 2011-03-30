@@ -27,8 +27,13 @@ public:
   Channel( Time *tick ) : Actor( tick ), dest( NULL ), src( NULL ) {}
 
   virtual void send( Packet pack ) = 0;
-  virtual void connect( Channel *s_dest ) { dest = s_dest; }
+  virtual bool sendable( void ) { return true; }
   virtual void register_wakeup( Channel *s_src ) { src = s_src; }
+  virtual void connect( Channel *s_dest )
+  {
+    dest = s_dest;
+    dest->register_wakeup( this );
+  }
 
   Channel( const Channel & );
   Channel & operator=( const Channel & );

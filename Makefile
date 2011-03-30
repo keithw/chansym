@@ -1,5 +1,5 @@
-source = channel.cpp time.cpp tester.cpp pinger.cpp delay_channel.cpp printer_channel.cpp throughput_channel.cpp
-objects = time.o pinger.o delay_channel.o printer_channel.o throughput_channel.o
+source = channel.cpp time.cpp tester.cpp pinger.cpp delay_channel.cpp printer_channel.cpp throughput_channel.cpp buffer_channel.cpp
+objects = time.o pinger.o delay_channel.o printer_channel.o throughput_channel.o buffer_channel.o
 executables = tester
 
 CXX = g++
