@@ -11,6 +11,13 @@ void StatsChannel::send( Packet pack )
 {
   total_bits += pack.length;
   total_delay += time->now() - pack.send_time;
+
+  if ( dest ) dest->send( pack );
+}
+
+void StatsChannel::wakeup( void )
+{
+  if ( src ) src->wakeup();
 }
 
 double StatsChannel::average_bps( void )

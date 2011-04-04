@@ -5,6 +5,7 @@
 #include "throughput_channel.hpp"
 #include "buffer_channel.hpp"
 #include "stats_channel.hpp"
+#include "series_channel.hpp"
 
 using namespace std;
 
@@ -12,14 +13,15 @@ int main( void )
 {
   Time tick;
 
-  BufferChannel buf( &tick, 120000 );
-  ThroughputChannel tp( &tick, 12000 );
+  SeriesChannel chan( &tick,
+		      new BufferChannel( &tick, 120000 ),
+		      new ThroughputChannel( &tick, 12000 ) );
+
   StatsChannel stats( &tick );
 
-  buf.connect( &tp );
-  tp.connect( &stats );
+  chan.connect( &stats );
 
-  Pinger ping( &tick, &buf, 0.1 );
+  Pinger ping( &tick, &chan, 0.9997 );
 
   while ( tick.tick() && (tick.now() < 10000) ) {}
 

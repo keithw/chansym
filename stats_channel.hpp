@@ -12,7 +12,7 @@ public:
   StatsChannel( Time *tick );
 
   void send( Packet pack );
-  void wakeup( void ) {}
+  void wakeup( void );
 
   double average_bps( void );
   double average_delay( void );
