@@ -17,15 +17,17 @@ int main( void )
 		      new Pinger( &tick, 0.9997 ),
 		      new SeriesChannel( &tick,
 					 new BufferChannel( &tick, 120000 ),
-					 new ThroughputChannel( &tick, 12000 ) ) );
+					 new SeriesChannel( &tick,
+							    new ThroughputChannel( &tick, 12000 ),
+							    new StatsChannel( &tick ) ) ) );
 
-  StatsChannel stats( &tick );
-  chan.connect( &stats );
+  StatsChannel *stats = dynamic_cast<StatsChannel *>( chan.get_second_series()->get_second_series()->get_second() );
+  assert( stats );
 
   while ( tick.tick() && (tick.now() < 10000) ) {}
 
   printf( "t = %.2f. Average bps: %.2f. Average delay: %.2f seconds\n",
-	  tick.now(), stats.average_bps(), stats.average_delay() );
+	  tick.now(), stats->average_bps(), stats->average_delay() );
 
   return 0;
 }

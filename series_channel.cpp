@@ -1,4 +1,5 @@
 #include <iostream>
+#include <assert.h>
 
 #include "series_channel.hpp"
 
@@ -12,4 +13,20 @@ SeriesChannel::~SeriesChannel()
 {
   delete a;
   delete b;
+}
+
+SeriesChannel *SeriesChannel::get_first_series( void )
+{
+  SeriesChannel *ret = dynamic_cast<SeriesChannel *>( a );
+  assert( ret );
+
+  return ret;
+}
+
+SeriesChannel *SeriesChannel::get_second_series( void )
+{
+  SeriesChannel *ret = dynamic_cast<SeriesChannel *>( b );
+  assert( ret );
+
+  return ret;
 }
