@@ -4,7 +4,7 @@ Pinger::Pinger( Time *time, double s_inc )
   : Channel( time ),
     next_ping_time( time->now() ), increment( s_inc ), counter( 0 )
 {
-  wakeup();
+  time->sleep_until( Event( next_ping_time, this ) );
 }
 
 void Pinger::wakeup( void )

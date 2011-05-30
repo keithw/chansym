@@ -20,7 +20,6 @@ int main( void )
 					 new ThroughputChannel( &tick, 12000 ) ) );
 
   StatsChannel stats( &tick );
-
   chan.connect( &stats );
 
   while ( tick.tick() && (tick.now() < 10000) ) {}
