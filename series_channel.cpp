@@ -30,3 +30,14 @@ SeriesChannel *SeriesChannel::get_second_series( void )
 
   return ret;
 }
+
+SeriesChannel::SeriesChannel( const SeriesChannel &x )
+  : Channel( x ), a( x.a->clone() ), b( x.b->clone() )
+{}
+
+SeriesChannel & SeriesChannel::operator=( const SeriesChannel &x )
+{
+  *a = *x.a;
+  *b = *x.b;
+  return *this;
+}

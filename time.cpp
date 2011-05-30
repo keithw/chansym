@@ -20,6 +20,8 @@ bool Time::tick( void )
 
   assert( next_event.act );
   
+  assert( !next_event.act->get_is_clone() );
+
   next_event.act->wakeup();
 
   return true;

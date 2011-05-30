@@ -17,6 +17,8 @@ public:
   void send( Packet pack );
   bool sendable( void ) { return is_free(); }
   void wakeup( void );
+
+  CLONEMETHOD(ThroughputChannel)
 };
 
 #endif

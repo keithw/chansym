@@ -16,6 +16,8 @@ public:
 
   double average_bps( void );
   double average_delay( void );
+
+  CLONEMETHOD(StatsChannel)
 };
 
 #endif

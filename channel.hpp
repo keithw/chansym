@@ -8,6 +8,8 @@
 
 using namespace std;
 
+#define CLONEMETHOD(TypeName) TypeName *clone( void ) { TypeName *x = new TypeName( *this ); x->set_clone(); return x; }
+
 class Packet {
 public:
   int length; /* bits */
@@ -26,7 +28,8 @@ protected:
   Channel *src;
 
 public:
-  Channel( Time *tick ) : Actor( tick ), dest( NULL ), src( NULL ) {}
+  Channel( Time *tick ) : Actor( tick ), dest( NULL ), src( NULL )
+  {}
 
   virtual void send( Packet pack ) = 0;
   virtual bool sendable( void ) { return true; }
@@ -38,6 +41,8 @@ public:
   }
 
   virtual ~Channel() {}
+
+  virtual Channel *clone( void ) = 0;
 };
 
 #endif

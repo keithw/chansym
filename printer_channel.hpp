@@ -9,6 +9,8 @@ public:
 
   void send( Packet pack );
   void wakeup( void ) {}
+
+  CLONEMETHOD(PrinterChannel)
 };
 
 #endif

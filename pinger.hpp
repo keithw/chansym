@@ -17,6 +17,8 @@ public:
   Pinger( Time *time, double s_inc );
   void wakeup( void );
   void send( Packet ) { assert( false ); }
+
+  CLONEMETHOD(Pinger)
 };
 
 #endif
