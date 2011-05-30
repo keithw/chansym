@@ -14,14 +14,14 @@ int main( void )
   Time tick;
 
   SeriesChannel chan( &tick,
-		      new BufferChannel( &tick, 120000 ),
-		      new ThroughputChannel( &tick, 12000 ) );
+		      new Pinger( &tick, 0.9997 ),
+		      new SeriesChannel( &tick,
+					 new BufferChannel( &tick, 120000 ),
+					 new ThroughputChannel( &tick, 12000 ) ) );
 
   StatsChannel stats( &tick );
 
   chan.connect( &stats );
-
-  Pinger ping( &tick, &chan, 0.9997 );
 
   while ( tick.tick() && (tick.now() < 10000) ) {}
 
