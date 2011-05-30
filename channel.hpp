@@ -37,9 +37,6 @@ public:
     dest->register_wakeup( this );
   }
 
-  Channel( const Channel & );
-  Channel & operator=( const Channel & );
-
   virtual ~Channel() {}
 };
 

@@ -12,9 +12,6 @@ public:
 
   virtual void wakeup( void ) = 0;
   virtual ~Actor() {}
-
-  Actor( const Actor & );
-  Actor & operator=( const Actor & );
 };
 
 #endif

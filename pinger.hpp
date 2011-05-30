@@ -15,9 +15,6 @@ private:
 public:  
   Pinger( Time *time, Channel *s_channel, double s_inc );
   void wakeup( void );
-
-  Pinger( const Pinger & );
-  Pinger & operator=( const Pinger & );
 };
 
 #endif
