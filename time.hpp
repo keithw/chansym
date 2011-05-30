@@ -4,9 +4,9 @@
 #include <deque>
 #include <queue>
 
-using namespace std;
+#include "actor.hpp"
 
-class Actor;
+using namespace std;
 
 class Event {
 public:
@@ -36,20 +36,6 @@ public:
   double now( void ) { return time; }
 
   Time( void );
-};
-
-class Actor {
-protected:
-  Time *time;
-
-public:
-  Actor( Time *s_time ) : time( s_time ) {}
-
-  virtual void wakeup( void ) = 0;
-  virtual ~Actor() {}
-
-  Actor( const Actor & );
-  Actor & operator=( const Actor & );
 };
 
 #endif
