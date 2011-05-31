@@ -37,7 +37,8 @@ SeriesChannel::SeriesChannel( const SeriesChannel &x )
 
 SeriesChannel & SeriesChannel::operator=( const SeriesChannel &x )
 {
-  *a = *x.a;
-  *b = *x.b;
+  a->assign( x.a );
+  b->assign( x.b );
+
   return *this;
 }

@@ -5,7 +5,7 @@
 
 class BufferChannel : public Channel {
 private:
-  const int size;
+  int size;
   int occupancy;
   list<Packet> contents;
 

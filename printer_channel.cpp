@@ -9,7 +9,7 @@ PrinterChannel::PrinterChannel( Time *tick )
 
 void PrinterChannel::send( Packet pack )
 {
-  fprintf( stderr, "At %.8f received packet id %d (sent %.8f)\n",
-	   time->now(), pack.id, pack.send_time );
+  printf( "At %.5f received packet id %d (sent %.5f)\n",
+	  time->now(), pack.id, pack.send_time );
   if ( dest ) { dest->send( pack ); }
 }

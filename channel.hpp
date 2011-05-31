@@ -3,12 +3,13 @@
 
 #include <list>
 #include <string>
+#include <assert.h>
 
 #include "time.hpp"
 
 using namespace std;
 
-#define CLONEMETHOD(TypeName) TypeName *clone( void ) { TypeName *x = new TypeName( *this ); x->set_clone(); return x; }
+#define CLONEMETHOD(TypeName) TypeName *clone( void ) { TypeName *x = new TypeName( *this ); return x; } void assign( const Channel *x ) { const TypeName *x_oftype = dynamic_cast<const TypeName *>( x ); assert( x_oftype ); *this = *x_oftype; }
 
 class Packet {
 public:
@@ -28,8 +29,7 @@ protected:
   Channel *src;
 
 public:
-  Channel( Time *tick ) : Actor( tick ), dest( NULL ), src( NULL )
-  {}
+  Channel( Time *tick ) : Actor( tick ), dest( NULL ), src( NULL ) {}
 
   virtual void send( Packet pack ) = 0;
   virtual bool sendable( void ) { return true; }
@@ -43,6 +43,11 @@ public:
   virtual ~Channel() {}
 
   virtual Channel *clone( void ) = 0;
+  virtual void assign( const Channel *x ) = 0;
+
+  Channel( const Channel & ) : Actor( NULL ), dest( NULL ), src( NULL ) {}
+
+  Channel & operator=( const Channel & ) { return *this; }
 };
 
 #endif

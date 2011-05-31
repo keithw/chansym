@@ -15,7 +15,7 @@ void ThroughputChannel::send( Packet pack )
     dest->send( pack );
   }
 
-  next_free_time = time->now() + (double) throughput / pack.length;
+  next_free_time = time->now() + (double) pack.length / throughput;
   time->sleep_until( Event( next_free_time, this ) );
 }
 
