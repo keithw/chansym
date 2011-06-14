@@ -1,5 +1,5 @@
-source = pinger.cpp printer.cpp simple_container.cpp templates.cpp series.cpp tester.cpp
-objects = pinger.o printer.o simple_container.o templates.o series.o
+source = tester.cpp pinger.cpp printer.cpp simple_container.cpp templates.cpp series.cpp buffer.cpp
+objects = pinger.o printer.o simple_container.o templates.o series.o buffer.o
 executables = tester
 
 CXX = g++
