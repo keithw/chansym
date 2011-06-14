@@ -18,6 +18,8 @@ public:
 
   void send( Packet pack );
   void uncork( void );
+
+  bool operator==( const Buffer &x ) const { return (size == x.size) && (occupancy == x.occupancy) && (contents == x.contents); }
 };
 
 #endif

@@ -9,6 +9,8 @@ public:
 
   void send( Packet pack );
   bool sendable( void ) { return true; }
+
+  bool operator==( const Printer & ) const { return true; }
 };
 
 #endif

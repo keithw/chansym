@@ -17,6 +17,8 @@ public:
   void wakeup( void );
   void send( Packet ) { assert( false ); }
   bool sendable( void ) { return false; }
+
+  bool operator==( const Pinger &x ) const { return (next_ping_time == x.next_ping_time) && (increment == x.increment) && (counter == x.counter); }
 };
 
 #endif

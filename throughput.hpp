@@ -20,6 +20,12 @@ public:
   void send( Packet pack );
   bool sendable( void ) { return is_free(); }
   void wakeup( void );
+
+  bool operator==( const Throughput &x ) const
+  {
+    return (throughput == x.throughput) && (next_free_time == x.next_free_time)
+      && (stash == x.stash) && (busy == x.busy);
+  }
 };
 
 #endif

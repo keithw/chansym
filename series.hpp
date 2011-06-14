@@ -31,6 +31,8 @@ public:
   bool can_send( int source_addr );
   void receive( int source_addr, Packet p );
   double time( void ) { assert( container ); return container->time(); }
+
+  bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }
 };
 
 template <class First, class Second>
