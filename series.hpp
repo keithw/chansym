@@ -33,4 +33,10 @@ public:
   double time( void ) { assert( container ); return container->time(); }
 };
 
+template <class First, class Second>
+Series<First, Second> series( First a, Second b )
+{
+  return Series<First, Second>( a, b );
+}
+
 #endif
