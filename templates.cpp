@@ -14,6 +14,6 @@ using namespace std;
 template class priority_queue<Event, deque<Event>, Event>;
 
 template class Series<Pinger, Buffer>;
-template class Series<Delay, Printer>;
-template class Series< Series<Pinger, Buffer>, Series<Delay, Printer> >;
-template class SimpleContainer< Series< Series<Pinger, Buffer>, Series<Delay, Printer> > >;
+template class Series<Throughput, Delay>;
+template class Series< Series<Pinger, Buffer>, Series<Throughput, Delay> >;
+template class SimpleContainer< Series< Series<Pinger, Buffer>, Series<Throughput, Delay> > >;

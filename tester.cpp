@@ -8,12 +8,10 @@
 
 int main( void )
 {
-  Series<Pinger, Buffer> orig( Pinger( 0.1 ), Buffer( 24000 ) );
-  Series<Delay, Printer> fini( Delay( 4 ), Printer() );
-  
-  Series< Series<Pinger, Buffer>, Series<Delay, Printer> > both( orig, fini );
-
-  SimpleContainer< Series< Series<Pinger, Buffer>, Series<Delay, Printer> > > overall( both );
+  SimpleContainer< Series< Series<Pinger, Buffer>, Series<Throughput, Delay> > >
+    overall( Series< Series<Pinger, Buffer>, Series<Throughput, Delay> >
+	     ( Series<Pinger, Buffer>( Pinger( 0.1 ), Buffer( 24000 ) ),
+	       Series<Throughput, Delay>( Throughput( 12000 ), Delay( 4 ) ) ) );
 
   while ( overall.tick() && (overall.time() < 1000) ) {}
 

@@ -2,12 +2,13 @@
 #include "container.hpp"
 
 Throughput::Throughput( double s_throughput )
-  : Channel(), throughput( s_throughput ), next_free_time( -1 ), stash( -1, -1, -1, -1 )
+  : Channel(), throughput( s_throughput ), next_free_time( -1 ), stash( -1, -1, -1, -1 ), busy( false )
 {}
 
 void Throughput::send( Packet pack )
 {
   assert( is_free() ); /* can't send if busy */
+  busy = true;
 
   stash = pack;
 
@@ -20,15 +21,6 @@ void Throughput::wakeup( void )
   assert( next_free_time == container->time() );
   next_free_time = -1;
   container->receive( addr, stash );
+  busy = false;
   container->signal_sendable( addr );
-}
-
-bool Throughput::is_busy( void )
-{
-  return next_free_time > container->time();
-}
-
-bool Throughput::is_free( void )
-{
-  return !is_busy();
 }
