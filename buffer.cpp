@@ -4,11 +4,11 @@
 #include "buffer.hpp"
 #include "container.hpp"
 
-BufferChannel::BufferChannel( int s_size )
+Buffer::Buffer( int s_size )
   : Channel(), size( s_size ), occupancy( 0 ), contents()
 {}
 
-void BufferChannel::uncork( void )
+void Buffer::uncork( void )
 {
   while ( (!contents.empty()) && container->can_send( addr ) ) {
     Packet pack = contents.front();
@@ -19,7 +19,7 @@ void BufferChannel::uncork( void )
   }
 }
 
-void BufferChannel::send( Packet pack )
+void Buffer::send( Packet pack )
 {
   if ( occupancy + pack.length <= size ) { /* tail drop behavior */
     contents.push_back( pack );

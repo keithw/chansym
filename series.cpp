@@ -34,7 +34,7 @@ void Series<First, Second>::wakeup( void )
 
   wakeups.pop();
 
-  switch ( addr ) {
+  switch ( next_event.addr ) {
   case 0:
     a.wakeup();
     break;
