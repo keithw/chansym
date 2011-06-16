@@ -20,7 +20,7 @@ void Throughput::wakeup( void )
 {
   assert( next_free_time == container->time() );
   next_free_time = -1;
-  container->receive( addr, stash );
   busy = false;
   container->signal_sendable( addr );
+  container->receive( addr, stash );
 }

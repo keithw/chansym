@@ -25,6 +25,7 @@ public:
   void receive( int, Packet ) {}
   double time( void ) { return the_time; }
   void fork( int , double , Channel * ) { assert( false ); }
+  void probability( int ) { assert( false ); }
 
   bool operator==( const SimpleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channel == x.channel); }
 };

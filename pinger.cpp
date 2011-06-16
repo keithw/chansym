@@ -14,8 +14,8 @@ void Pinger::init( void )
 void Pinger::wakeup( void )
 {
   assert( container->time() == next_ping_time );
-  container->receive( addr, Packet( 12000, 0, counter, container->time() ) );
   counter++;
   next_ping_time += increment;
   container->sleep_until( next_ping_time, addr );
+  container->receive( addr, Packet( 12000, 0, counter - 1, container->time() ) );
 }

@@ -1,6 +1,7 @@
 #ifndef CONTAINER_HPP
 #define CONTAINER_HPP
 
+#include <stdio.h>
 #include <deque>
 #include "packet.hpp"
 
@@ -31,7 +32,7 @@ protected:
 public:
   Container() : wakeups() {}
   Container( const Container &x ) : wakeups( x.wakeups ) {}
-  virtual ~Container() {}
+  virtual ~Container() { fprintf( stderr, "deleting %p\n", (void*)this ); }
 
   virtual void sleep_until( double time, int source_addr ) = 0;
   virtual void signal_sendable( int source_addr ) = 0; /* Channel tells container it is sendable */
@@ -40,6 +41,7 @@ public:
   virtual double time( void ) = 0; /* Channel asks for current time */
 
   virtual void fork( int source_addr, double my_probability, Channel *other ) = 0;
+  virtual double probability( int source_addr ) = 0;
 };
 
 #endif

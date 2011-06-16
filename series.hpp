@@ -14,6 +14,7 @@ private:
 public:
   Series( First s_a, Second s_b );
   Series( const Series<First, Second> &x );
+  Series<First, Second> & operator=( const Series<First, Second> &x );
 
   First *get_first( void ) { return &a; }
   Second *get_second( void ) { return &b; }
@@ -33,6 +34,7 @@ public:
   double time( void ) { return container->time(); }
 
   void fork( int source_addr, double my_probability, Channel *other );
+  double probability( int ) { return container->probability( addr ); }
 
   bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }
 };

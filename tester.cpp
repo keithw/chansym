@@ -7,36 +7,18 @@
 #include "buffer.hpp"
 #include "throughput.hpp"
 #include "delay.hpp"
+#include "stochastic_loss.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
 
 int main( void )
 {
-  EnsembleContainer< Series< Series<Pinger, Buffer>, Series< Series<Throughput, Delay>, Printer > > >
-    overall( series( series( Pinger( 0.1 ), Buffer( 24000 ) ),
-		     series( series( Throughput( 12000 ), Delay( 4 ) ),
-			     Printer() ) ) );
+  EnsembleContainer< Series< Series<Pinger, StochasticLoss>, Printer > >
+    overall( series( series( Pinger( 1 ), StochasticLoss( 0.5 ) ),
+		     Printer() ) );
 
   while ( overall.tick() && (overall.time() < 500) ) {}
-
-  EnsembleContainer< Series< Series<Pinger, Buffer>, Series< Series<Throughput, Delay>, Printer > > >
-    o2( series( series( Pinger( 0.5 ), Buffer( 1900 ) ),
-		series( series( Throughput( 12900 ), Delay( 2 ) ),
-			Printer() ) ) );
-
-  o2 = overall;
-
-  overall.tick();
-  o2.tick();
-  overall.tick();
-  overall.tick();
-  o2.tick();
-  o2.tick();
-
-  assert( overall == o2 );
-
-  while ( o2.tick() && (o2.time() < 1000) ) {}
 
   return 0;
 }

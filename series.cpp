@@ -17,6 +17,18 @@ Series<First, Second>::Series( const Series<First, Second> &x )
 }
 
 template <class First, class Second>
+Series<First, Second> & Series<First, Second>::operator=( const Series<First, Second> &x )
+{
+  a = x.a;
+  b = x.b;
+
+  a.connect( 0, this );
+  b.connect( 1, this );
+
+  return *this;
+}
+
+template <class First, class Second>
 void Series<First, Second>::init( void )
 {
   a.init();

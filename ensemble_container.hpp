@@ -40,6 +40,7 @@ public:
   void receive( int, Packet ) {}
   double time( void ) { return the_time; }
   void fork( int source_addr, double my_probability, Channel *other );
+  double probability( int source_addr );
 
   bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels); }
 };
