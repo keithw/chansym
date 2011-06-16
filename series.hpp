@@ -30,7 +30,9 @@ public:
   void signal_sendable( int source_addr );
   bool can_send( int source_addr );
   void receive( int source_addr, Packet p );
-  double time( void ) { assert( container ); return container->time(); }
+  double time( void ) { return container->time(); }
+
+  void fork( int source_addr, double my_probability, Channel *other );
 
   bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }
 };

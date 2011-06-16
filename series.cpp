@@ -67,8 +67,6 @@ bool Series<First, Second>::sendable( void )
 template <class First, class Second>
 void Series<First, Second>::signal_sendable( int source_addr )
 {
-  assert( container );
-
   switch ( source_addr ) {
   case 0:
     container->signal_sendable( addr );
@@ -84,8 +82,6 @@ void Series<First, Second>::signal_sendable( int source_addr )
 template <class First, class Second>
 bool Series<First, Second>::can_send( int source_addr )
 {
-  assert( container );
-
   switch ( source_addr ) {
   case 0:
     return b.sendable();
@@ -99,14 +95,39 @@ bool Series<First, Second>::can_send( int source_addr )
 template <class First, class Second>
 void Series<First, Second>::receive( int source_addr, Packet p )
 {
-  assert( container );
-
   switch( source_addr ) {
   case 0:
     b.send( p );
     break;
   case 1:
     container->receive( addr, p );
+    break;
+  default:
+    assert( false );
+  }
+}
+
+template <class First, class Second>
+void Series<First, Second>::fork( int source_addr, double my_probability, Channel *other )
+{
+  Series<First, Second> *new_other;
+  First *casted_first;
+  Second *casted_second;
+
+  switch( source_addr ) {
+  case 0:
+    casted_first = dynamic_cast<First *>( other );
+    assert( casted_first );
+    new_other = new Series<First, Second>( *casted_first, b );
+    delete other;
+    container->fork( addr, my_probability, new_other );
+    break;
+  case 1:
+    casted_second = dynamic_cast<Second *>( other );
+    assert( casted_second );
+    new_other = new Series<First, Second>( a, *casted_second );
+    delete other;
+    container->fork( addr, my_probability, new_other );
     break;
   default:
     assert( false );

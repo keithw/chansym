@@ -3,6 +3,8 @@
 
 #include "container.hpp"
 
+#include <assert.h>
+
 template <class ChannelType>
 class SimpleContainer : public Container
 {
@@ -22,6 +24,7 @@ public:
   bool can_send( int ) { return( true ); }
   void receive( int, Packet ) {}
   double time( void ) { return the_time; }
+  void fork( int , double , Channel * ) { assert( false ); }
 
   bool operator==( const SimpleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channel == x.channel); }
 };

@@ -2,11 +2,11 @@
 #define CONTAINER_HPP
 
 #include <deque>
-#include <queue>
-
 #include "packet.hpp"
 
 using namespace std;
+
+#include "my_queue.h"
 
 class Event {
 public:
@@ -22,11 +22,11 @@ public:
   Event( void ) : time( -1 ), addr( -1 ) {}
 };
 
-typedef priority_queue<Event, deque<Event>, Event> event_queue_t;
+class Channel;
 
 class Container {
 protected:
-  event_queue_t wakeups;
+  peekable_priority_queue<Event, deque<Event>, Event> wakeups;
 
 public:
   Container() : wakeups() {}
@@ -38,6 +38,8 @@ public:
   virtual bool can_send( int source_addr ) = 0; /* Channel asks container whether it can send */
   virtual void receive( int source_addr, Packet p ) = 0; /* Channel sends packet to container */
   virtual double time( void ) = 0; /* Channel asks for current time */
+
+  virtual void fork( int source_addr, double my_probability, Channel *other ) = 0;
 };
 
 #endif

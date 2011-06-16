@@ -7,14 +7,12 @@ Pinger::Pinger( double s_increment )
 
 void Pinger::init( void )
 {
-  assert( container );
   next_ping_time = container->time();
   container->sleep_until( next_ping_time, addr );
 }
 
 void Pinger::wakeup( void )
 {
-  assert( container );
   assert( container->time() == next_ping_time );
   container->receive( addr, Packet( 12000, 0, counter, container->time() ) );
   counter++;
