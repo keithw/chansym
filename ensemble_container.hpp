@@ -56,7 +56,7 @@ public:
   void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); }
   void signal_sendable( int ) {}
   bool can_send( int ) { return( true ); }
-  void receive( int source_addr, Packet p );
+  void receive( int, Packet ) {}
   double time( void ) { return the_time; }
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int source_addr );
