@@ -14,9 +14,8 @@
 
 int main( void )
 {
-  EnsembleContainer< Series< Series<Pinger, StochasticLoss>, Printer > >
-    overall( series( series( Pinger( 1 ), StochasticLoss( 0.5 ) ),
-		     Printer() ) );
+  EnsembleContainer< Series<Pinger, StochasticLoss> >
+    overall( series( Pinger( 1 ), StochasticLoss( 0.5 ) ) );
 
   while ( overall.tick() && (overall.time() < 500) ) {}
 

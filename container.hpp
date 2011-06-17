@@ -8,6 +8,7 @@
 using namespace std;
 
 #include "my_queue.h"
+#include "channel.hpp"
 
 class Event {
 public:
@@ -23,8 +24,6 @@ public:
   Event( void ) : time( -1 ), addr( -1 ) {}
 };
 
-class Channel;
-
 class Container {
 protected:
   peekable_priority_queue<Event, deque<Event>, Event> wakeups;
@@ -32,7 +31,7 @@ protected:
 public:
   Container() : wakeups() {}
   Container( const Container &x ) : wakeups( x.wakeups ) {}
-  virtual ~Container() { fprintf( stderr, "deleting %p\n", (void*)this ); }
+  virtual ~Container() {}
 
   virtual void sleep_until( double time, int source_addr ) = 0;
   virtual void signal_sendable( int source_addr ) = 0; /* Channel tells container it is sendable */
@@ -40,7 +39,7 @@ public:
   virtual void receive( int source_addr, Packet p ) = 0; /* Channel sends packet to container */
   virtual double time( void ) = 0; /* Channel asks for current time */
 
-  virtual void fork( int source_addr, double my_probability, Channel *other ) = 0;
+  virtual void fork( int source_addr, double my_probability, Channel *other, Channel::ForkState *fs ) = 0;
   virtual double probability( int source_addr ) = 0;
 };
 

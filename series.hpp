@@ -12,6 +12,15 @@ private:
   Second b;
 
 public:
+  class ForkState : public Channel::ForkState {
+  public:
+    typename First::ForkState a;
+    typename Second::ForkState b;
+
+    ForkState( typename First::ForkState s_a, typename Second::ForkState s_b ) : a( s_a ), b( s_b ) {}
+    ForkState( void ) : a(), b() {}
+  };
+
   Series( First s_a, Second s_b );
   Series( const Series<First, Second> &x );
   Series<First, Second> & operator=( const Series<First, Second> &x );
@@ -26,6 +35,8 @@ public:
   void uncork( void );
   bool sendable( void );
 
+  void after_fork_behavior( bool is_other, ForkState x );
+
   /* Container methods */
   void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); container->sleep_until( time, addr ); }
   void signal_sendable( int source_addr );
@@ -33,7 +44,7 @@ public:
   void receive( int source_addr, Packet p );
   double time( void ) { return container->time(); }
 
-  void fork( int source_addr, double my_probability, Channel *other );
+  void fork( int source_addr, double my_probability, Channel *other, Channel::ForkState *fs );
   double probability( int ) { return container->probability( addr ); }
 
   bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }

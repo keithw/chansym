@@ -5,7 +5,7 @@
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
-  : the_time( 0 ), channels()
+  : the_time( 0 ), channels(), fork_queue()
 {
   channels.reserve( 1024 );
 
@@ -26,6 +26,32 @@ EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<Chann
 template <class ChannelType>
 bool EnsembleContainer<ChannelType>::tick( void )
 {
+  if ( !fork_queue.empty() ) {
+    PendingFork<ChannelType> pending = fork_queue.front();   
+    fork_queue.pop();
+
+    double p = channels[ pending.orig_addr ].probability;
+    channels[ pending.orig_addr ].probability = p * pending.my_probability;
+
+    WeightedChannel<ChannelType> new_member( p * (1 - pending.my_probability), pending.other );
+    channels.push_back( new_member );
+
+    int new_addr = channels.size() - 1;
+
+    /* duplicate old channel's wakeups */
+    for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	  i != wakeups.end();
+	  i++ ) {
+      fprintf( stderr, "Futurewakeup..." );
+      if ( i->addr == pending.orig_addr ) {
+	wakeups.push( Event( i->time, new_addr ) );
+	fprintf( stderr, "copied\n" );
+      } else {
+	fprintf( stderr, "not copied.\n" );
+      }
+    }
+  }
+
   if ( wakeups.empty() ) {
     return false;
   }
@@ -46,35 +72,21 @@ bool EnsembleContainer<ChannelType>::tick( void )
 }
 
 template <class ChannelType>
-void EnsembleContainer<ChannelType>::fork( int source_addr, double my_probability, Channel *other )
+void EnsembleContainer<ChannelType>::fork( int source_addr, double my_probability, Channel *other, Channel::ForkState *fs )
 {
   assert( source_addr >= 0 );
   assert( source_addr < (int)channels.size() );
 
   ChannelType *new_other = dynamic_cast<ChannelType *>( other );
-  assert( new_other );
+  typename ChannelType::ForkState *new_fs = dynamic_cast<typename ChannelType::ForkState *>( fs );
 
-  double p = channels[ source_addr ].probability;
-  channels[ source_addr ].probability = p * my_probability;
+  assert( new_other && new_fs );
 
-  WeightedChannel<ChannelType> new_member( p * (1 - my_probability), *new_other );
+  assert( fork_queue.empty() );
+
+  fork_queue.push( PendingFork<ChannelType>( source_addr, my_probability, *new_other, *new_fs ) );
   delete other;
-
-  channels.push_back( new_member );
-  int new_addr = channels.size() - 1;
-
-  /* duplicate old channel's wakeups */
-  for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	i != wakeups.end();
-	i++ ) {
-    fprintf( stderr, "Futurewakeup..." );
-    if ( i->addr == source_addr ) {
-      wakeups.push( Event( i->time, new_addr ) );
-      fprintf( stderr, "copied\n" );
-    } else {
-      fprintf( stderr, "not copied.\n" );
-    }
-  }
+  delete fs;
 }
 
 template <class ChannelType>
