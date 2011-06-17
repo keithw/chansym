@@ -34,31 +34,42 @@ bool EnsembleContainer<ChannelType>::tick( void )
     channels[ pending.orig_addr ].probability = p * pending.my_probability;
 
     WeightedChannel<ChannelType> new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
-    channels.push_back( new_member );
 
-    int new_addr = channels.size() - 1;
+    new_member.channel.after_fork( true, pending.fs );
+    channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
 
-    channels[ new_addr ].channel.newaddr( new_addr, this );
-
-    vector<Event> new_wakeups;
-
-    /* duplicate old channel's wakeups */
-    for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	  i != wakeups.end();
+    bool compacted = false;
+    for ( typename vector<WeightedChannel<ChannelType>>::iterator i = channels.begin();
+	  i != channels.end();
 	  i++ ) {
-      if ( i->addr == pending.orig_addr ) {
-	new_wakeups.push_back( Event( i->time, new_addr ) );
+      if ( i->channel == new_member.channel ) {
+	i->probability += new_member.probability;
+	compacted = true;
+	break;
       }
     }
 
-    for ( vector<Event>::const_iterator i = new_wakeups.begin();
-	  i != new_wakeups.end();
-	  i++ ) {
-      wakeups.push( *i );
-    }
+    if ( !compacted ) {
+      channels.push_back( new_member );
+      int new_addr = channels.size() - 1;
+      channels[ new_addr ].channel.newaddr( new_addr, this );
+      vector<Event> new_wakeups;
 
-    channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
-    channels[ new_addr ].channel.after_fork( true, pending.fs );
+      /* duplicate old channel's wakeups */
+      for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	    i != wakeups.end();
+	    i++ ) {
+	if ( i->addr == pending.orig_addr ) {
+	  new_wakeups.push_back( Event( i->time, new_addr ) );
+	}
+      }
+      
+      for ( vector<Event>::const_iterator i = new_wakeups.begin();
+	    i != new_wakeups.end();
+	    i++ ) {
+	wakeups.push( *i );
+      }
+    }
   }
 
   if ( wakeups.empty() ) {
@@ -97,4 +108,12 @@ template <class ChannelType>
 double EnsembleContainer<ChannelType>::probability( int source_addr )
 {
   return channels[ source_addr ].probability;
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::receive( int source_addr, Packet p )
+{
+  printf( "[Prob %.3f #%d] At %.5f received packet id %d (sent %.5f)\n",
+	  probability( source_addr ), source_addr,
+	  time(), p.id, p.send_time );
 }
