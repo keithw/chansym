@@ -9,17 +9,18 @@ StochasticLoss::StochasticLoss( double s_prob )
 
 void StochasticLoss::send( Packet pack )
 {
-  StochasticLoss *other = new StochasticLoss( loss_probability );
-
-  fprintf( stderr, "about to fork, container = %p\n", (void*)container );
   ForkState *x = new ForkState( pack );
-  container->fork( addr, 1 - loss_probability, other, x );
+  assert( !get_forking() );
+  container->fork( addr, 1 - loss_probability, x );
 }
 
-void StochasticLoss::after_fork_behavior( bool is_other, ForkState x )
+void StochasticLoss::after_fork( bool is_other, ForkState x )
 {
+  forking = false;
+
+  assert( container );
+
   if ( !is_other ) {
-    fprintf( stderr, "about to receive, container = %p\n", (void*)container );
     container->receive( addr, x.pack );
   }
 }

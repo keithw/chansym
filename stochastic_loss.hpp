@@ -21,7 +21,7 @@ public:
   void send( Packet pack );
   bool sendable( void ) { return true; }
 
-  void after_fork_behavior( bool is_other, ForkState x );
+  void after_fork( bool is_other, ForkState x );
 
   bool operator==( const StochasticLoss &x ) const { return (loss_probability == x.loss_probability); }
 };

@@ -39,7 +39,7 @@ public:
   virtual void receive( int source_addr, Packet p ) = 0; /* Channel sends packet to container */
   virtual double time( void ) = 0; /* Channel asks for current time */
 
-  virtual void fork( int source_addr, double my_probability, Channel *other, Channel::ForkState *fs ) = 0;
+  virtual void fork( int source_addr, double my_probability, Channel::ForkState *fs ) = 0;
   virtual double probability( int source_addr ) = 0;
 };
 

@@ -35,7 +35,7 @@ public:
   void uncork( void );
   bool sendable( void );
 
-  void after_fork_behavior( bool is_other, ForkState x );
+  void after_fork( bool is_other, ForkState x );
 
   /* Container methods */
   void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); container->sleep_until( time, addr ); }
@@ -44,7 +44,7 @@ public:
   void receive( int source_addr, Packet p );
   double time( void ) { return container->time(); }
 
-  void fork( int source_addr, double my_probability, Channel *other, Channel::ForkState *fs );
+  void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int ) { return container->probability( addr ); }
 
   bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }

@@ -19,7 +19,8 @@ Series<First, Second>::Series( const Series<First, Second> &x )
 template <class First, class Second>
 Series<First, Second> & Series<First, Second>::operator=( const Series<First, Second> &x )
 {
-  wakeups = x.wakeups;
+  Channel::operator=( x );
+  Container::operator=( x );
 
   a = x.a;
   b = x.b;
@@ -44,6 +45,7 @@ void Series<First, Second>::wakeup( void )
   
   Event next_event = wakeups.top();
 
+  assert( container );
   assert( next_event.time == container->time() );
 
   wakeups.pop();
@@ -79,8 +81,10 @@ bool Series<First, Second>::sendable( void )
 }
 
 template <class First, class Second>
-void Series<First, Second>::after_fork_behavior( bool is_other, ForkState x )
+void Series<First, Second>::after_fork( bool is_other, ForkState x )
 {
+  forking = false;
+
   a.after_fork( is_other, x.a );
   b.after_fork( is_other, x.b );
 }
@@ -116,6 +120,8 @@ bool Series<First, Second>::can_send( int source_addr )
 template <class First, class Second>
 void Series<First, Second>::receive( int source_addr, Packet p )
 {
+  assert( container );
+
   switch( source_addr ) {
   case 0:
     b.send( p );
@@ -129,40 +135,28 @@ void Series<First, Second>::receive( int source_addr, Packet p )
 }
 
 template <class First, class Second>
-void Series<First, Second>::fork( int source_addr, double my_probability, Channel *other, Channel::ForkState *fs )
+void Series<First, Second>::fork( int source_addr, double my_probability, Channel::ForkState *fs )
 {
-  Series<First, Second> *new_other;
   ForkState *new_fs;
-  First *casted_first;
-  Second *casted_second;
 
   typename First::ForkState *first_fs;
   typename Second::ForkState *second_fs;
 
   switch( source_addr ) {
   case 0:
-    casted_first = dynamic_cast<First *>( other );
     first_fs = dynamic_cast<typename First::ForkState *>( fs );
-    assert( casted_first && first_fs );
-    assert( !casted_first->get_forking() );
-    casted_first->set_forking();
-    new_other = new Series<First, Second>( *casted_first, b );
+    assert( first_fs );
     new_fs = new ForkState( *first_fs, typename Second::ForkState() );
     break;
   case 1:
-    casted_second = dynamic_cast<Second *>( other );
     second_fs = dynamic_cast<typename Second::ForkState *>( fs );
-    assert( casted_second && second_fs );
-    assert( !casted_second->get_forking() );
-    casted_second->set_forking();
-    new_other = new Series<First, Second>( a, *casted_second );
+    assert( second_fs );
     new_fs = new ForkState( typename First::ForkState(), *second_fs );
     break;
   default:
     assert( false );
   }
 
-  delete other;
   delete fs;
-  container->fork( addr, my_probability, new_other, new_fs );
+  container->fork( addr, my_probability, new_fs );
 }
