@@ -16,11 +16,11 @@ void StochasticLoss::send( Packet pack )
 
 void StochasticLoss::after_fork( bool is_other, ForkState x )
 {
-  forking = false;
-
   assert( container );
 
   if ( !is_other ) {
     container->receive( addr, x.pack );
   }
+
+  forking = false;
 }

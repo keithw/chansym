@@ -23,7 +23,7 @@ public:
   void connect( int s_addr, Container *s_container ) { assert( (addr == -1) || (addr == s_addr) ); addr = s_addr; container = s_container; }
   void newaddr( int s_addr, Container *s_container ) { addr = s_addr; container = s_container; }
 
-  void set_forking( void ) { forking = true; }
+  void set_forking( void ) { assert( !forking ); forking = true; }
 
   virtual void init( void ) {} /* Called by container once after connect() */
   virtual void wakeup( void ) {} /* Called by container after prior sleep_until() upcall */
