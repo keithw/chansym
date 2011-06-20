@@ -168,7 +168,7 @@ double EnsembleContainer<ChannelType>::probability( int source_addr )
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::receive( int source_addr, Packet pack )
 {
-  printf( "[Prob %.3f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d]\n",
+  printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d]\n",
 	  probability( source_addr ),
 	  time(), pack.id, pack.send_time,
 	  source_addr, channels.size() );
