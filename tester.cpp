@@ -14,10 +14,12 @@
 
 int main( void )
 {
-  EnsembleContainer< Series<Pinger, StochasticLoss> >
-    overall( series( Pinger( 1 ), StochasticLoss( 0.3 ) ) );
+  EnsembleContainer< Series< Series<Pinger, StochasticLoss>,
+    Series< Buffer, Throughput > > >
+    overall( series( series( Pinger( .1 ), StochasticLoss( 0.5 ) ),
+		     series( Buffer( 24000 ), Throughput( 10000 ) ) ) );
 
-  while ( overall.tick() && (overall.time() < 8) ) {}
+  while ( overall.tick() && (overall.time() < 300) ) {}
 
   return 0;
 }

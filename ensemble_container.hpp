@@ -47,6 +47,7 @@ private:
   queue<PendingFork> fork_queue;
 
   void execute_fork( void );
+  void combine( void );
   void compact( void );
 
 public:

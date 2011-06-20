@@ -46,7 +46,7 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
 	new_wakeups.push_back( Event( i->time, new_addr ) );
       }
     }
-      
+
     for ( vector<Event>::const_iterator i = new_wakeups.begin();
 	  i != new_wakeups.end();
 	  i++ ) {
@@ -62,7 +62,7 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
 }
 
 template <class ChannelType>
-void EnsembleContainer<ChannelType>::compact( void )
+void EnsembleContainer<ChannelType>::combine( void )
 {
   for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
     for ( unsigned int a2 = a1 + 1; a2 < channels.size(); a2++ ) {
@@ -91,9 +91,35 @@ void EnsembleContainer<ChannelType>::compact( void )
 }
 
 template <class ChannelType>
+void EnsembleContainer<ChannelType>::compact( void )
+{
+  vector<WeightedChannel> new_channels;
+  peekable_priority_queue<Event, deque<Event>, Event> new_wakeups;
+
+  for ( unsigned int addr = 0; addr < channels.size(); addr++ ) {
+    if ( !channels[ addr ].erased ) {
+      new_channels.push_back( channels[ addr ] );
+      int new_addr = new_channels.size() - 1;
+      new_channels.back().channel.newaddr( new_addr, this );
+      for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	    i != wakeups.end();
+	    i++ ) {
+	if ( i->addr == (int)addr ) {
+	  new_wakeups.push( Event( i->time, new_addr ) );
+	}
+      }
+    }
+  }
+
+  channels = new_channels;
+  wakeups = new_wakeups;
+}
+
+template <class ChannelType>
 bool EnsembleContainer<ChannelType>::tick( void )
 {
   execute_fork();
+  combine();
   compact();
 
   if ( wakeups.empty() ) {
@@ -142,7 +168,8 @@ double EnsembleContainer<ChannelType>::probability( int source_addr )
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::receive( int source_addr, Packet pack )
 {
-  printf( "[Prob %.3f] At %.5f received packet id %d (sent %.5f)\n",
+  printf( "[Prob %.3f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d]\n",
 	  probability( source_addr ),
-	  time(), pack.id, pack.send_time );
+	  time(), pack.id, pack.send_time,
+	  source_addr, channels.size() );
 }
