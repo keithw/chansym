@@ -7,9 +7,7 @@ template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
   : the_time( 0 ), channels(), fork_queue()
 {
-  //  channels.reserve( 1024 );
-
-  channels.push_back( WeightedChannel<ChannelType>( 1.0, s_channel ) );
+  channels.push_back( WeightedChannel( 1.0, s_channel ) );
   channels[ 0 ].channel.connect( 0, this );
   channels[ 0 ].channel.init();
 }
@@ -24,53 +22,56 @@ EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<Chann
 }
 
 template <class ChannelType>
-bool EnsembleContainer<ChannelType>::tick( void )
+void EnsembleContainer<ChannelType>::execute_fork( void )
 {
   if ( !fork_queue.empty() ) {
-    PendingFork<ChannelType> pending = fork_queue.front();   
-    fork_queue.pop();
+    PendingFork pending = fork_queue.front();   
 
     double p = channels[ pending.orig_addr ].probability;
     channels[ pending.orig_addr ].probability = p * pending.my_probability;
 
-    WeightedChannel<ChannelType> new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
+    WeightedChannel new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
 
-    new_member.channel.after_fork( true, pending.fs );
-    channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
+    channels.push_back( new_member );
+    int new_addr = channels.size() - 1;
+    channels[ new_addr ].channel.newaddr( new_addr, this );
 
-    bool compacted = false;
-    for ( typename vector<WeightedChannel<ChannelType>>::iterator i = channels.begin();
-	  i != channels.end();
+    vector<Event> new_wakeups;
+
+    /* duplicate old channel's wakeups */
+    for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	  i != wakeups.end();
 	  i++ ) {
-      if ( i->channel == new_member.channel ) {
-	i->probability += new_member.probability;
-	compacted = true;
-	break;
+      if ( i->addr == pending.orig_addr ) {
+	new_wakeups.push_back( Event( i->time, new_addr ) );
       }
     }
-
-    if ( !compacted ) {
-      channels.push_back( new_member );
-      int new_addr = channels.size() - 1;
-      channels[ new_addr ].channel.newaddr( new_addr, this );
-      vector<Event> new_wakeups;
-
-      /* duplicate old channel's wakeups */
-      for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	    i != wakeups.end();
-	    i++ ) {
-	if ( i->addr == pending.orig_addr ) {
-	  new_wakeups.push_back( Event( i->time, new_addr ) );
-	}
-      }
       
-      for ( vector<Event>::const_iterator i = new_wakeups.begin();
-	    i != new_wakeups.end();
-	    i++ ) {
-	wakeups.push( *i );
-      }
+    for ( vector<Event>::const_iterator i = new_wakeups.begin();
+	  i != new_wakeups.end();
+	  i++ ) {
+      wakeups.push( *i );
     }
-  }
+
+    channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
+    channels[ new_addr ].channel.after_fork( true, pending.fs );
+
+    fork_queue.pop();
+    assert( fork_queue.empty() );
+  }  
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::compact( void )
+{
+
+}
+
+template <class ChannelType>
+bool EnsembleContainer<ChannelType>::tick( void )
+{
+  execute_fork();
+  compact();
 
   if ( wakeups.empty() ) {
     return false;
@@ -98,9 +99,11 @@ void EnsembleContainer<ChannelType>::fork( int source_addr, double my_probabilit
   typename ChannelType::ForkState *new_fs = dynamic_cast<typename ChannelType::ForkState *>( fs );
   assert( new_fs );
 
-  assert( fork_queue.empty() );
+  channels[ source_addr ].channel.set_forking();
 
-  fork_queue.push( PendingFork<ChannelType>( source_addr, my_probability, *new_fs ) );
+  assert( fork_queue.empty() );
+  
+  fork_queue.push( PendingFork( source_addr, my_probability, *new_fs ) );
   delete fs;
 }
 
@@ -108,4 +111,12 @@ template <class ChannelType>
 double EnsembleContainer<ChannelType>::probability( int source_addr )
 {
   return channels[ source_addr ].probability;
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::receive( int source_addr, Packet pack )
+{
+  printf( "[Prob %.3f] At %.5f received packet id %d (sent %.5f)\n",
+	  probability( source_addr ),
+	  time(), pack.id, pack.send_time );
 }

@@ -23,7 +23,6 @@ public:
   void connect( int s_addr, Container *s_container ) { assert( (addr == -1) || (addr == s_addr) ); addr = s_addr; container = s_container; }
   void newaddr( int s_addr, Container *s_container ) { addr = s_addr; container = s_container; }
 
-  bool get_forking( void ) { return forking; }
   void set_forking( void ) { forking = true; }
 
   virtual void init( void ) {} /* Called by container once after connect() */
@@ -32,7 +31,7 @@ public:
   virtual void uncork( void ) {} /* Packet can be sent without loss */
   virtual bool sendable( void ) = 0; /* Can packet be input? */
 
-  void after_fork( bool, ForkState ) { forking = false; }
+  virtual void after_fork( bool, ForkState ) { forking = false; }
 
   Channel( const Channel &x ) : forking( x.forking ), addr( x.addr ), container( x.container ) {}
   Channel & operator=( const Channel &x ) { forking = x.forking; addr = x.addr; container = x.container; return *this; }

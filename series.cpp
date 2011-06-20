@@ -144,11 +144,13 @@ void Series<First, Second>::fork( int source_addr, double my_probability, Channe
 
   switch( source_addr ) {
   case 0:
+    a.set_forking();
     first_fs = dynamic_cast<typename First::ForkState *>( fs );
     assert( first_fs );
     new_fs = new ForkState( *first_fs, typename Second::ForkState() );
     break;
   case 1:
+    b.set_forking();
     second_fs = dynamic_cast<typename Second::ForkState *>( fs );
     assert( second_fs );
     new_fs = new ForkState( typename First::ForkState(), *second_fs );

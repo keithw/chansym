@@ -10,7 +10,7 @@ StochasticLoss::StochasticLoss( double s_prob )
 void StochasticLoss::send( Packet pack )
 {
   ForkState *x = new ForkState( pack );
-  assert( !get_forking() );
+  assert( !forking );
   container->fork( addr, 1 - loss_probability, x );
 }
 
