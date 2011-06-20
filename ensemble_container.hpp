@@ -14,14 +14,15 @@ private:
   public:
     double probability;
     ChannelType channel;
+    bool erased;
 
     WeightedChannel( double s_p, ChannelType s_c )
-      : probability( s_p ), channel( s_c )
+      : probability( s_p ), channel( s_c ), erased( false )
     {}
 
     bool operator==( const WeightedChannel &x ) const
     {
-      return (probability == x.probability) && (channel == x.channel);
+      return (probability == x.probability) && (channel == x.channel) && (erased == x.erased);
     }
   };
 

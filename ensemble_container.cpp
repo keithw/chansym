@@ -64,7 +64,30 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::compact( void )
 {
+  for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
+    for ( unsigned int a2 = a1 + 1; a2 < channels.size(); a2++ ) {
+      if ( channels[ a1 ].channel == channels[ a2 ].channel ) {
+	/* compare wakeups */
+	vector<double> wakeups1, wakeups2;
+	for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	      i != wakeups.end();
+	      i++ ) {
+	  if ( i->addr == (int)a1 ) {
+	    wakeups1.push_back( i->time );
+	  } else if ( i->addr == (int)a2 ) {
+	    wakeups2.push_back( i->time );
+	  }
+	}
 
+	if ( wakeups1 == wakeups2 ) {
+	  /* compact */
+	  channels[ a1 ].probability += channels[ a2 ].probability;
+	  channels[ a2 ].probability = 0;
+	  channels[ a2 ].erased = true;
+	}
+      }
+    }
+  }
 }
 
 template <class ChannelType>
@@ -85,7 +108,10 @@ bool EnsembleContainer<ChannelType>::tick( void )
 
   assert( next_event.addr >= 0 );
   assert( next_event.addr < (int)channels.size() );
-  channels[ next_event.addr ].channel.wakeup();
+  
+  if ( !channels[ next_event.addr ].erased ) {
+    channels[ next_event.addr ].channel.wakeup();
+  }
 
   return true;
 }
