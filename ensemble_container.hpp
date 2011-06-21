@@ -45,6 +45,7 @@ private:
   double the_time;
   vector<WeightedChannel> channels;
   queue<PendingFork> fork_queue;
+  int erased_count;
 
   void execute_fork( void );
   void combine( void );
