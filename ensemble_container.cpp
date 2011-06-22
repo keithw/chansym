@@ -4,6 +4,29 @@
 #include "ensemble_container.hpp"
 
 template <class ChannelType>
+EnsembleContainer<ChannelType>::EnsembleContainer()
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 )
+{}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
+{
+  assert( time() == 0 );
+
+  for ( typename vector<WeightedChannel>::iterator i = channels.begin();
+	i != channels.end();
+	i++ ) {
+    i->probability *= channels.size() / (double)( channels.size() + 1 );
+  }
+  
+  channels.push_back( WeightedChannel( 1.0 / (double)( channels.size() + 1 ), s_channel ) );
+  int new_addr = channels.size() - 1;
+  channels[ new_addr ].channel.connect( new_addr, this );
+  channels[ new_addr ].channel.init();
+}
+
+
+template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
   : the_time( 0 ), channels(), fork_queue(), erased_count( 0 )
 {
@@ -176,5 +199,5 @@ void EnsembleContainer<ChannelType>::receive( int source_addr, Packet pack )
   printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d (+%d erased)]\n",
 	  probability( source_addr ),
 	  time(), pack.id, pack.send_time,
-	  source_addr, channels.size() - erased_count, erased_count );
+	  source_addr, (int)channels.size() - erased_count, erased_count );
 }

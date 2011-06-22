@@ -52,6 +52,7 @@ private:
   void compact( void );
 
 public:
+  EnsembleContainer();
   EnsembleContainer( ChannelType s_channel );
   EnsembleContainer( const EnsembleContainer<ChannelType> &x );
 
@@ -64,6 +65,8 @@ public:
   double time( void ) { return the_time; }
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int source_addr );
+
+  void add( ChannelType s_channel );
 
   bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels); }
 };
