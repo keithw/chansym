@@ -37,7 +37,7 @@ public:
   SimpleContainer( const SimpleContainer<ChannelType> &x );
 
   bool tick( void );
-  ChannelType *get_chan( void ) { return &channel; }
+  ChannelType & get_chan( void ) { return channel; }
 
   void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); }
   void signal_sendable( int ) {}

@@ -5,7 +5,7 @@
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer()
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false )
 {}
 
 template <class ChannelType>
@@ -28,7 +28,7 @@ void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false )
 {
   channels.push_back( WeightedChannel( 1.0, s_channel ) );
   channels[ 0 ].channel.connect( 0, this );
@@ -37,7 +37,7 @@ EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<ChannelType> &x )
-  : Container( x ), the_time( x.the_time ), channels( x.channels ), erased_count( x.erased_count )
+  : Container( x ), the_time( x.the_time ), channels( x.channels ), erased_count( x.erased_count ), printing( x.printing )
 {
   for ( int i = 0; i < channels.size(); i++ ) {
     channels[ i ].channel.connect( i, this );
@@ -112,6 +112,10 @@ void EnsembleContainer<ChannelType>::combine( void )
       }
     }
   }
+
+  if ( erased_count ) {
+    compact();
+  }
 }
 
 template <class ChannelType>
@@ -143,13 +147,6 @@ void EnsembleContainer<ChannelType>::compact( void )
 template <class ChannelType>
 bool EnsembleContainer<ChannelType>::tick( void )
 {
-  execute_fork();
-  combine();
-
-  if ( erased_count ) {
-    compact();
-  }
-
   if ( wakeups.empty() ) {
     return false;
   }
@@ -166,6 +163,8 @@ bool EnsembleContainer<ChannelType>::tick( void )
   if ( !channels[ next_event.addr ].erased ) {
     channels[ next_event.addr ].channel.wakeup();
   }
+
+  execute_fork();
 
   return true;
 }
@@ -194,10 +193,21 @@ double EnsembleContainer<ChannelType>::probability( int source_addr )
 }
 
 template <class ChannelType>
-void EnsembleContainer<ChannelType>::receive( int source_addr, Packet pack )
+void EnsembleContainer<ChannelType>::receive( int source_addr __attribute((unused)), Packet pack __attribute((unused)) )
 {
-  printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d (+%d erased)]\n",
-	  probability( source_addr ),
-	  time(), pack.id, pack.send_time,
-	  source_addr, (int)channels.size() - erased_count, erased_count );
+  if ( printing ) {
+    printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d (+%d erased)]\n",
+	    probability( source_addr ),
+	    time(), pack.id, pack.send_time,
+	    source_addr, (int)channels.size() - erased_count, erased_count );
+  }
+}
+
+template <class ChannelType>
+typename EnsembleContainer<ChannelType>::WeightedChannel & EnsembleContainer<ChannelType>::get_channel( int address )
+{
+  assert( address >= 0 );
+  assert( address < (int)channels.size() );
+
+  return channels[ address ];
 }

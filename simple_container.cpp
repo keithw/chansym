@@ -76,9 +76,11 @@ void SimpleContainer<ChannelType>::fork( int source_addr, double my_probability,
 }
 
 template <class ChannelType>
-void SimpleContainer<ChannelType>::receive( int source_addr, Packet pack )
+void SimpleContainer<ChannelType>::receive( int source_addr __attribute((unused)), Packet pack __attribute((unused)) )
 {
+  /*
   printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f)\n",
 	  probability( source_addr ),
 	  time(), pack.id, pack.send_time );
+  */
 }

@@ -18,4 +18,15 @@ public:
   }
 };
 
+struct ScheduledPacket {
+  double delivery_time;
+  Packet packet;
+
+  ScheduledPacket( double s_time, Packet s_pack )
+    : delivery_time( s_time ), packet( s_pack )
+  {}
+
+  bool operator==( const ScheduledPacket &x ) const { return (delivery_time == x.delivery_time) && (packet == x.packet); }
+};
+
 #endif

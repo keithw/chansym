@@ -25,8 +25,8 @@ public:
   Series( const Series<First, Second> &x );
   Series<First, Second> & operator=( const Series<First, Second> &x );
 
-  First *get_first( void ) { return &a; }
-  Second *get_second( void ) { return &b; }
+  First &get_first( void ) { return a; }
+  Second &get_second( void ) { return b; }
 
   /* Channel methods */
   void init( void );

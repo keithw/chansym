@@ -47,8 +47,9 @@ private:
   queue<PendingFork> fork_queue;
   int erased_count;
 
+  bool printing;
+
   void execute_fork( void );
-  void combine( void );
   void compact( void );
 
 public:
@@ -57,6 +58,7 @@ public:
   EnsembleContainer( const EnsembleContainer<ChannelType> &x );
 
   bool tick( void );
+  void combine( void );
 
   void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); }
   void signal_sendable( int ) {}
@@ -67,8 +69,12 @@ public:
   double probability( int source_addr );
 
   void add( ChannelType s_channel );
+  void set_printing( bool s_printing ) { printing = s_printing; }
 
   bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels); }
+
+  unsigned int size( void ) { return channels.size(); }
+  WeightedChannel & get_channel( int address );
 };
 
 #endif
