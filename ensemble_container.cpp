@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ensemble_container.hpp"
 
@@ -99,10 +100,63 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
 }
 
 template <class ChannelType>
+void EnsembleContainer<ChannelType>::erase( int address )
+{
+  assert( address >= 0 );
+  assert( address < (int)channels.size() );
+
+  channels[ address ].probability = 0;
+  channels[ address ].erased = true;
+  erased_count++;
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::normalize( void )
+{
+  /* get total */
+  double total = 0;
+
+  for ( typename vector<WeightedChannel>::const_iterator i = channels.begin();
+	i != channels.end();
+	i++ ) {
+    total += i->probability;
+  }
+
+  /* normalize */
+  for ( typename vector<WeightedChannel>::iterator i = channels.begin();
+	i != channels.end();
+	i++ ) {
+    i->probability *= 1.0 / total;
+  }
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::assert_normalized( void )
+{
+  double new_total = 0;
+
+  for ( typename vector<WeightedChannel>::const_iterator i = channels.begin();
+	i != channels.end();
+	i++ ) {
+    new_total += i->probability;
+  }
+
+  assert( fabs( new_total - 1.0 ) < 1e-10 );
+}
+
+template <class ChannelType>
 void EnsembleContainer<ChannelType>::combine( void )
 {
   for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
+    if ( channels[ a1 ].erased ) {
+      continue;
+    }
+
     for ( unsigned int a2 = a1 + 1; a2 < channels.size(); a2++ ) {
+      if ( channels[ a2 ].erased ) {
+	continue;
+      }
+
       if ( channels[ a1 ].channel == channels[ a2 ].channel ) {
 	/* compare wakeups */
 	vector<double> wakeups1, wakeups2;
@@ -119,9 +173,7 @@ void EnsembleContainer<ChannelType>::combine( void )
 	if ( wakeups1 == wakeups2 ) {
 	  /* compact */
 	  channels[ a1 ].probability += channels[ a2 ].probability;
-	  channels[ a2 ].probability = 0;
-	  channels[ a2 ].erased = true;
-	  erased_count++;
+	  erase( a2 );
 	}
       }
     }
@@ -150,6 +202,8 @@ void EnsembleContainer<ChannelType>::compact( void )
 	  new_wakeups.push( Event( i->time, new_addr ) );
 	}
       }
+    } else {
+      assert( channels[ addr ].probability == 0 );
     }
   }
 
@@ -159,10 +213,23 @@ void EnsembleContainer<ChannelType>::compact( void )
 }
 
 template <class ChannelType>
+double EnsembleContainer<ChannelType>::next_time( void )
+{
+  assert( live() );
+  return wakeups.top().time;
+}
+
+template <class ChannelType>
 bool EnsembleContainer<ChannelType>::tick( void )
 {
   if ( wakeups.empty() ) {
     return false;
+  }
+
+  if ( forking ) {
+    assert_normalized();
+  } else {
+    assert( channels.size() == 1 );
   }
 
   Event next_event = wakeups.top();

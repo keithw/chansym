@@ -18,23 +18,56 @@
 
 int main( void )
 {
-  srand( time( NULL ) );
+  srand( 0 );
 
   EnsembleContainer< Series< Series<Pinger, Buffer>,
 			     Series< Series< Throughput, StochasticLoss >,
 				     Collector > > >
-  overall( series( series( Pinger( 0.006 ), Buffer( 1000000 ) ),
-		   series( series( Throughput( 18000 ), StochasticLoss( 0.05 ) ),
-			   Collector() ) ) );
+    prior, truth;
 
-  overall.set_printing( true );
-  overall.set_forking( false );
+  truth.set_forking( false );
 
-  while ( overall.tick() && (overall.time() < 3000) ) {
-    for ( unsigned int i = 0; i < overall.size(); i++ ) {
-      overall.get_channel( i ).channel.get_second().get_second().reset();
+  truth.add( series( series( Pinger( 1 ), Buffer( 24000 ) ),
+		     series( series( Throughput( 6000 ), StochasticLoss( 0.5 ) ),
+			     Collector() ) ) );
+
+  prior.add( series( series( Pinger( 1 ), Buffer( 24000 ) ),
+		     series( series( Throughput( 6000 ), StochasticLoss( 0.5 ) ),
+			     Collector() ) ) );
+
+  prior.add( series( series( Pinger( 1 ), Buffer( 24000 ) ),
+		     series( series( Throughput( 6000 ), StochasticLoss( 0.45 ) ),
+			     Collector() ) ) );
+
+
+  while ( 1 ) {
+    /* Advance by smallest timeslice */
+    double next_time = truth.next_time();
+    while ( truth.next_time() == next_time ) {
+      truth.tick();
     }
-    overall.combine();
+    while ( prior.next_time() == next_time ) {
+      prior.tick();
+    }
+    assert( truth.time() == prior.time() );
+    printf( "Time: %f\n", truth.time() );
+
+    /* Kill mismatches */
+    for ( unsigned int i = 0; i < prior.size(); i++ ) {
+      if ( prior.get_channel( i ).channel.get_second().get_second().get_packets()
+	   != truth.get_channel( 0 ).channel.get_second().get_second().get_packets() ) {
+	prior.erase( i );
+      }
+
+      prior.get_channel( i ).channel.get_second().get_second().reset();      
+    }
+
+    prior.normalize();
+
+    /* reset truth collector */
+    truth.get_channel( 0 ).channel.get_second().get_second().reset();
+
+    prior.combine();
   }
 
   return 0;

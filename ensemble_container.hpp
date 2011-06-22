@@ -52,6 +52,7 @@ private:
 
   void execute_fork( void );
   void compact( void );
+  void assert_normalized( void );
 
 public:
   EnsembleContainer();
@@ -59,6 +60,7 @@ public:
   EnsembleContainer( const EnsembleContainer<ChannelType> &x );
 
   bool tick( void );
+
   void combine( void );
 
   void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); }
@@ -77,6 +79,11 @@ public:
 
   unsigned int size( void ) { return channels.size(); }
   WeightedChannel & get_channel( int address );
+
+  bool live( void ) { return !wakeups.empty(); }
+  double next_time( void );
+  void erase( int address );
+  void normalize( void );
 };
 
 #endif
