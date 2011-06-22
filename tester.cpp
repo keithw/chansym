@@ -27,6 +27,9 @@ int main( void )
 		   series( series( Throughput( 18000 ), StochasticLoss( 0.05 ) ),
 			   Collector() ) ) );
 
+  overall.set_printing( true );
+  overall.set_forking( false );
+
   while ( overall.tick() && (overall.time() < 3000) ) {
     for ( unsigned int i = 0; i < overall.size(); i++ ) {
       overall.get_channel( i ).channel.get_second().get_second().reset();

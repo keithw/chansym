@@ -48,6 +48,7 @@ private:
   int erased_count;
 
   bool printing;
+  bool forking;
 
   void execute_fork( void );
   void compact( void );
@@ -70,6 +71,7 @@ public:
 
   void add( ChannelType s_channel );
   void set_printing( bool s_printing ) { printing = s_printing; }
+  void set_forking( bool s_forking ) { forking = s_forking; }
 
   bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels); }
 

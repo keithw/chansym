@@ -5,7 +5,7 @@
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer()
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true )
 {}
 
 template <class ChannelType>
@@ -28,7 +28,7 @@ void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true )
 {
   channels.push_back( WeightedChannel( 1.0, s_channel ) );
   channels[ 0 ].channel.connect( 0, this );
@@ -37,7 +37,7 @@ EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<ChannelType> &x )
-  : Container( x ), the_time( x.the_time ), channels( x.channels ), erased_count( x.erased_count ), printing( x.printing )
+  : Container( x ), the_time( x.the_time ), channels( x.channels ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking )
 {
   for ( int i = 0; i < channels.size(); i++ ) {
     channels[ i ].channel.connect( i, this );
@@ -50,34 +50,48 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
   if ( !fork_queue.empty() ) {
     PendingFork pending = fork_queue.front();   
 
-    double p = channels[ pending.orig_addr ].probability;
-    channels[ pending.orig_addr ].probability = p * pending.my_probability;
+    if ( forking ) {
+      double p = channels[ pending.orig_addr ].probability;
+      channels[ pending.orig_addr ].probability = p * pending.my_probability;
 
-    WeightedChannel new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
+      WeightedChannel new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
 
-    channels.push_back( new_member );
-    int new_addr = channels.size() - 1;
-    channels[ new_addr ].channel.newaddr( new_addr, this );
+      channels.push_back( new_member );
+      int new_addr = channels.size() - 1;
+      channels[ new_addr ].channel.newaddr( new_addr, this );
 
-    vector<Event> new_wakeups;
+      vector<Event> new_wakeups;
 
-    /* duplicate old channel's wakeups */
-    for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	  i != wakeups.end();
-	  i++ ) {
-      if ( i->addr == pending.orig_addr ) {
-	new_wakeups.push_back( Event( i->time, new_addr ) );
+      /* duplicate old channel's wakeups */
+      for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	    i != wakeups.end();
+	    i++ ) {
+	if ( i->addr == pending.orig_addr ) {
+	  new_wakeups.push_back( Event( i->time, new_addr ) );
+	}
+      }
+
+      for ( vector<Event>::const_iterator i = new_wakeups.begin();
+	    i != new_wakeups.end();
+	    i++ ) {
+	wakeups.push( *i );
+      }
+
+      channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
+      channels[ new_addr ].channel.after_fork( true, pending.fs );
+    } else {
+      assert( channels.size() == 1 );
+      assert( pending.orig_addr == 0 );
+      
+      int threshold = pending.my_probability * RAND_MAX;
+      if ( rand() < threshold ) {
+	channels[ 0 ].probability *= pending.my_probability;
+	channels[ 0 ].channel.after_fork( false, pending.fs );
+      } else {
+	channels[ 0 ].probability *= (1 - pending.my_probability);
+	channels[ 0 ].channel.after_fork( true, pending.fs );
       }
     }
-
-    for ( vector<Event>::const_iterator i = new_wakeups.begin();
-	  i != new_wakeups.end();
-	  i++ ) {
-      wakeups.push( *i );
-    }
-
-    channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
-    channels[ new_addr ].channel.after_fork( true, pending.fs );
 
     fork_queue.pop();
     assert( fork_queue.empty() );
