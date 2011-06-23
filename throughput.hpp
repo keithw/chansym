@@ -21,6 +21,8 @@ public:
   bool sendable( void ) { return is_free(); }
   void wakeup( void );
 
+  string identify( void );
+
   bool operator==( const Throughput &x ) const
   {
     return (throughput == x.throughput) && (next_free_time == x.next_free_time)

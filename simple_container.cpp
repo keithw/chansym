@@ -84,3 +84,9 @@ void SimpleContainer<ChannelType>::receive( int source_addr __attribute((unused)
 	  time(), pack.id, pack.send_time );
   */
 }
+
+template <class ChannelType>
+string SimpleContainer<ChannelType>::identify( void )
+{
+  return "<" + channel.identify() + ">";
+}

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <assert.h>
+#include <sstream>
 
 #include "buffer.hpp"
 #include "container.hpp"
@@ -29,3 +30,14 @@ void Buffer::send( Packet pack )
   uncork();
 }
 
+string Buffer::identify( void )
+{
+  ostringstream response;
+  response << "Buffer( ";
+  response << size;
+  response << ", ";
+  response << occupancy;
+  response << " )";
+
+  return response.str();
+}

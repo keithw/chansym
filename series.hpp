@@ -48,6 +48,8 @@ public:
   double probability( int ) { return container->probability( addr ); }
 
   bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }
+
+  string identify( void );
 };
 
 template <class First, class Second>

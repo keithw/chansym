@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <deque>
+#include <string>
+
 #include "packet.hpp"
 
 using namespace std;
@@ -41,6 +43,8 @@ public:
 
   virtual void fork( int source_addr, double my_probability, Channel::ForkState *fs ) = 0;
   virtual double probability( int source_addr ) = 0;
+
+  virtual string identify( void ) = 0;
 };
 
 #endif

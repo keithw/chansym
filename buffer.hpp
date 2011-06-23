@@ -20,6 +20,8 @@ public:
   void uncork( void );
 
   bool operator==( const Buffer &x ) const { return (size == x.size) && (occupancy == x.occupancy) && (contents == x.contents); }
+
+  string identify( void );
 };
 
 #endif

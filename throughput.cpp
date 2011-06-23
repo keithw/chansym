@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "throughput.hpp"
 #include "container.hpp"
 
@@ -24,4 +26,14 @@ void Throughput::wakeup( void )
   stash = Packet( -1, -1, -1, -1 ); /* needed for compaction */
   busy = false;
   container->signal_sendable( addr );
+}
+
+string Throughput::identify( void )
+{
+  ostringstream response;
+  response << "Throughput( ";
+  response << throughput;
+  response << " )";
+
+  return response.str();
 }

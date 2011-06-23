@@ -84,6 +84,8 @@ public:
   double next_time( void );
   void erase( int address );
   void normalize( void );
+
+  string identify( void );
 };
 
 #endif

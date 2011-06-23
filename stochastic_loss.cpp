@@ -1,7 +1,7 @@
+#include <sstream>
+
 #include "stochastic_loss.hpp"
 #include "container.hpp"
-
-#include <stdio.h>
 
 StochasticLoss::StochasticLoss( double s_prob )
   : Channel(), loss_probability( s_prob )
@@ -23,4 +23,15 @@ void StochasticLoss::after_fork( bool is_other, ForkState x )
   }
 
   forking = false;
+}
+
+string StochasticLoss::identify( void )
+{
+  ostringstream response;
+
+  response << "StochasticLoss( ";
+  response << loss_probability;
+  response << " )";
+
+  return response.str();
 }

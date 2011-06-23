@@ -48,6 +48,8 @@ public:
   double probability( int ) { return the_probability; }
 
   bool operator==( const SimpleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channel == x.channel); }
+
+  string identify( void );
 };
 
 #endif

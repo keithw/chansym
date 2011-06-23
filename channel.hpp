@@ -3,8 +3,11 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string>
 
 #include "packet.hpp"
+
+using namespace std;
 
 class Container;
 
@@ -35,6 +38,8 @@ public:
 
   Channel( const Channel &x ) : forking( x.forking ), addr( x.addr ), container( x.container ) {}
   Channel & operator=( const Channel &x ) { forking = x.forking; addr = x.addr; container = x.container; return *this; }
+
+  virtual std::string identify( void ) { return ""; }
 };
 
 #endif

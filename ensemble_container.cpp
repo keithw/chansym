@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
+#include <sstream>
 
 #include "ensemble_container.hpp"
 
@@ -291,4 +292,28 @@ typename EnsembleContainer<ChannelType>::WeightedChannel & EnsembleContainer<Cha
   assert( address < (int)channels.size() );
 
   return channels[ address ];
+}
+
+template <class ChannelType>
+string EnsembleContainer<ChannelType>::identify( void )
+{
+  ostringstream response;
+
+  response << "<Ensemble>\n";
+
+  for ( unsigned int i = 0; i < size(); i++ ) {
+    if ( channels[ i ].probability < 1e-5 ) {
+      continue;
+    }
+
+    response << i;
+    response << " (p=";
+    response << channels[ i ].probability;
+    response << "): " + channels[ i ].channel.identify();
+    response << endl;
+  }
+
+  response << "</Ensemble>\n";
+
+  return response.str();
 }

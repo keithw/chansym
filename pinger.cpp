@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "pinger.hpp"
 #include "container.hpp"
 
@@ -20,4 +22,14 @@ void Pinger::wakeup( void )
 
   next_ping_time += increment;
   container->sleep_until( next_ping_time, addr );
+}
+
+string Pinger::identify( void )
+{
+  ostringstream response;
+  response << "Pinger( ";
+  response << increment;
+  response << " )";
+
+  return response.str();
 }

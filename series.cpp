@@ -162,3 +162,9 @@ void Series<First, Second>::fork( int source_addr, double my_probability, Channe
   delete fs;
   container->fork( addr, my_probability, new_fs );
 }
+
+template <class First, class Second>
+string Series<First, Second>::identify( void )
+{
+  return "< " + a.identify() + " > => < " + b.identify() + " >";
+}
