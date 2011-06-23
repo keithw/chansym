@@ -302,7 +302,7 @@ string EnsembleContainer<ChannelType>::identify( void )
   response << "<Ensemble>\n";
 
   for ( unsigned int i = 0; i < size(); i++ ) {
-    if ( channels[ i ].probability < 1e-5 ) {
+    if ( channels[ i ].probability < 1.0 / (100 * channels.size()) ) {
       continue;
     }
 

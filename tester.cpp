@@ -32,22 +32,31 @@ int main( void )
 		     series( series( Throughput( 6000 ), StochasticLoss( 0.5 ) ),
 			     Collector() ) ) );
 
-  for ( double rate = 0; rate <= 1.0; rate += 0.01 ) {
-    prior.add( series( series( Pinger( 1 ), Buffer( 24000 ) ),
-		       series( series( Throughput( 6000 ), StochasticLoss( rate ) ),
-			       Collector() ) ) );
+  for ( double rate = 0; rate <= 1.0; rate += 0.1 ) {
+    for ( int bufsize = 12000; bufsize < 36000; bufsize += 1000 ) {
+      for ( int throughput = 1000; throughput <= 20000; throughput += 1000 ) {
+	prior.add( series( series( Pinger( 1 ), Buffer( bufsize ) ),
+			   series( series( Throughput( throughput ), StochasticLoss( rate ) ),
+				   Collector() ) ) );
+      }
+    }
   }
 
-  while ( truth.time() < 1000 ) {
+  while ( truth.time() < 100000 ) {
     /* Advance by smallest timeslice */
     double next_time = truth.next_time() < prior.next_time() ? truth.next_time() : prior.next_time();
+    //    printf( "Ticking truth through time %f...", next_time );
     while ( truth.next_time() == next_time ) {
       truth.tick();
     }
+    //    printf( "done, truth's next time is now %f.\n", truth.next_time() );
+    //    printf( "Ticking prior through time %f...", next_time );
     while ( prior.next_time() == next_time ) {
       prior.tick();
     }
-    printf( "Time: %f\n", truth.time() );
+    //    printf( "done, prior's next time is now %f.\n", prior.next_time() );
+
+    printf( "Time: %f\n", next_time );
 
     /* Kill mismatches */
     for ( unsigned int i = 0; i < prior.size(); i++ ) {

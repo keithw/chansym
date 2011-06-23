@@ -17,6 +17,8 @@ public:
   void reset( void ) { packets.clear(); }
 
   bool operator==( const Collector &x ) const { return packets == x.packets; }
+
+  string identify( void ) { return "Collector"; }
 };
 
 #endif
