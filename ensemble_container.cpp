@@ -123,6 +123,8 @@ void EnsembleContainer<ChannelType>::normalize( void )
     total += i->probability;
   }
 
+  assert( total > 0 );
+
   /* normalize */
   for ( typename vector<WeightedChannel>::iterator i = channels.begin();
 	i != channels.end();

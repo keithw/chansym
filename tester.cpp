@@ -19,7 +19,7 @@
 
 int main( void )
 {
-  srand( time( NULL ) );
+  srand( 0 );
 
   EnsembleContainer< Series< Series<Pinger, Buffer>,
 			     Series< Series< Throughput, StochasticLoss >,
@@ -28,12 +28,12 @@ int main( void )
 
   truth.set_forking( false );
 
-  truth.add( series( series( Pinger( 1 ), Buffer( 24000 ) ),
+  truth.add( series( series( Pinger( 1 ), Buffer( 240000 ) ),
 		     series( series( Throughput( 6000 ), StochasticLoss( 0.5 ) ),
 			     Collector() ) ) );
 
   for ( double rate = 0; rate <= 1.0; rate += 0.1 ) {
-    for ( int bufsize = 12000; bufsize < 36000; bufsize += 1000 ) {
+    for ( int bufsize = 120000; bufsize < 480000; bufsize += 10000 ) {
       for ( int throughput = 1000; throughput <= 20000; throughput += 1000 ) {
 	prior.add( series( series( Pinger( 1 ), Buffer( bufsize ) ),
 			   series( series( Throughput( throughput ), StochasticLoss( rate ) ),
