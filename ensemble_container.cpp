@@ -280,9 +280,9 @@ template <class ChannelType>
 void EnsembleContainer<ChannelType>::receive( int source_addr __attribute((unused)), Packet pack __attribute((unused)) )
 {
   if ( printing ) {
-    printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f) [from channel %d/%d (+%d erased)]\n",
+    printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f by src %d) [from channel %d/%d (+%d erased)]\n",
 	    probability( source_addr ),
-	    time(), pack.id, pack.send_time,
+	    time(), pack.id, pack.send_time, pack.src,
 	    source_addr, (int)channels.size() - erased_count, erased_count );
   }
 }
@@ -322,4 +322,14 @@ string EnsembleContainer<ChannelType>::identify( void )
   response << ">\n";
 
   return response.str();
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::prune( double threshold )
+{
+  for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
+    if ( channels[ a1 ].probability < 1.0 / (threshold * channels.size()) ) {
+      erase( a1 );
+    }
+  }
 }

@@ -84,6 +84,7 @@ public:
   double next_time( void );
   void erase( int address );
   void normalize( void );
+  void prune( double threshold );
 
   string identify( void );
 };
