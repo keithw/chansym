@@ -5,9 +5,17 @@
 #include "buffer.hpp"
 #include "container.hpp"
 
-Buffer::Buffer( int s_size )
-  : Channel(), size( s_size ), occupancy( 0 ), contents()
+Buffer::Buffer( int s_size, int initial_num, int initial_size )
+  : Channel(), size( s_size ), occupancy( 0 ), contents(),
+    tmp_initial_num( initial_num ), tmp_initial_size( initial_size )
 {}
+
+void Buffer::init( void )
+{
+  for ( int i = 0; i < tmp_initial_num; i++ ) {
+    send( Packet( tmp_initial_size, -1, -1, container->time() ) );
+  }
+}
 
 void Buffer::uncork( void )
 {

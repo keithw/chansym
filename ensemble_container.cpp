@@ -301,7 +301,9 @@ string EnsembleContainer<ChannelType>::identify( void )
 {
   ostringstream response;
 
-  response << "<Ensemble>\n";
+  response << "<Ensemble (size=";
+  response << (int)channels.size() - erased_count;
+  response << ")\n";
 
   for ( unsigned int i = 0; i < size(); i++ ) {
     if ( channels[ i ].probability < 1.0 / (100 * channels.size()) ) {
@@ -315,7 +317,9 @@ string EnsembleContainer<ChannelType>::identify( void )
     response << endl;
   }
 
-  response << "</Ensemble>\n";
+  response << "</Ensemble (size=";
+  response << (int)channels.size() - erased_count;
+  response << ">\n";
 
   return response.str();
 }
