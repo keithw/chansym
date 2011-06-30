@@ -232,7 +232,9 @@ bool EnsembleContainer<ChannelType>::tick( void )
   }
 
   if ( forking ) {
+#ifndef NDEBUG
     assert_normalized();
+#endif
   } else {
     assert( channels.size() == 1 );
   }

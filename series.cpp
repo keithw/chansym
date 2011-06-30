@@ -116,6 +116,7 @@ bool Series<First, Second>::can_send( int source_addr )
     return container->can_send( addr );
   default:
     assert( false );
+    return false;
   }
 }
 
@@ -159,6 +160,7 @@ void Series<First, Second>::fork( int source_addr, double my_probability, Channe
     break;
   default:
     assert( false );
+    return;
   }
 
   delete fs;

@@ -18,7 +18,7 @@ public:
   void init( void );
 
   void wakeup( void ) { assert( false ); } /* we don't call sleep_until() */
-  bool sendable( void ) { assert( false ); } /* we don't know size of proposed packet */
+  bool sendable( void ) { assert( false ); return false; } /* we don't know size of proposed packet */
 
   void send( Packet pack );
   void uncork( void );
