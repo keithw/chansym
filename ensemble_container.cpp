@@ -191,20 +191,24 @@ void EnsembleContainer<ChannelType>::compact( void )
   vector<WeightedChannel> new_channels;
   peekable_priority_queue<Event, deque<Event>, Event> new_wakeups;
 
+  vector<size_t> mapping( channels.size() );
+
   for ( unsigned int addr = 0; addr < channels.size(); addr++ ) {
     if ( !channels[ addr ].erased ) {
       new_channels.push_back( channels[ addr ] );
       int new_addr = new_channels.size() - 1;
       new_channels.back().channel.newaddr( new_addr, this );
-      for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	    i != wakeups.end();
-	    i++ ) {
-	if ( i->addr == (int)addr ) {
-	  new_wakeups.push( Event( i->time, new_addr ) );
-	}
-      }
+      mapping[ addr ] = new_addr;
     } else {
       assert( channels[ addr ].probability == 0 );
+    }
+  }
+
+  for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
+	i != wakeups.end();
+	i++ ) {
+    if ( !channels[ i->addr ].erased ) {
+      new_wakeups.push( Event( i->time, mapping[ i->addr ] ) );
     }
   }
 
