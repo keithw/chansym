@@ -49,6 +49,7 @@ int main( void )
     }
   }
 
+  truth.normalize();
   prior.normalize();
 
   fprintf( stderr, "Starting calculation with %d channels...\n", prior.size() );

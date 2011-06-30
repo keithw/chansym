@@ -54,6 +54,10 @@ public:
   virtual double probability( int source_addr ) = 0;
 
   virtual string identify( void ) = 0;
+
+  typedef typename peekable_priority_queue<Event, deque<Event>, Event>::const_iterator wakeup_iterator;
+  wakeup_iterator wakeup_begin( void ) { return wakeups.begin(); }
+  wakeup_iterator wakeup_end( void ) { return wakeups.end(); }
 };
 
 #endif

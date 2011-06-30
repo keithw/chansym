@@ -61,21 +61,11 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
       int new_addr = channels.size() - 1;
       channels[ new_addr ].channel.newaddr( new_addr, this );
 
-      vector<Event> new_wakeups;
-
       /* duplicate old channel's wakeups */
-      for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	    i != wakeups.end();
+      for ( typename ChannelType::wakeup_iterator i = channels[ pending.orig_addr ].channel.wakeup_begin();
+	    i != channels[ pending.orig_addr ].channel.wakeup_end();
 	    i++ ) {
-	if ( i->addr == pending.orig_addr ) {
-	  new_wakeups.push_back( Event( i->time, new_addr ) );
-	}
-      }
-
-      for ( vector<Event>::const_iterator i = new_wakeups.begin();
-	    i != new_wakeups.end();
-	    i++ ) {
-	wakeups.push( *i );
+	wakeups.push( Event( i->time, new_addr ) );
       }
 
       channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
