@@ -20,12 +20,6 @@ void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
 {
   assert( time() == 0 );
 
-  for ( typename vector<WeightedChannel>::iterator i = channels.begin();
-	i != channels.end();
-	i++ ) {
-    i->probability *= channels.size() / (double)( channels.size() + 1 );
-  }
-  
   channels.push_back( WeightedChannel( 1.0 / (double)( channels.size() + 1 ), s_channel ) );
   int new_addr = channels.size() - 1;
   channels[ new_addr ].channel.connect( new_addr, this );

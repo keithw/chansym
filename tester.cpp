@@ -49,9 +49,12 @@ int main( void )
     }
   }
 
+  prior.normalize();
+
   fprintf( stderr, "Starting calculation with %d channels...\n", prior.size() );
 
   int ticknum = 0;
+  unsigned int smallestsize = prior.size();
 
   while ( truth.time() < 10000 ) {
     /* Advance by smallest timeslice */
@@ -82,11 +85,15 @@ int main( void )
 
     prior.normalize();
 
-    if ( (ticknum % 100) == 0 )
+    if ( (prior.size() >= 2 * smallestsize) || (prior.get_erased_count() * 2 >= (int)prior.size()) ) {
       prior.combine();
+      smallestsize = prior.size();
+    }
 
+    /*
     if ( prior.size() <= 24 )
       cout << prior.identify();
+    */
 
     ticknum++;
   }

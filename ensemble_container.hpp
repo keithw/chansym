@@ -88,6 +88,8 @@ public:
 
   string identify( void );
 
+  int get_erased_count( void ) { return erased_count; }
+
   class equal_channels {
   public:
     bool operator() ( const ChannelType *a, const ChannelType *b ) const
