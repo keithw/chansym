@@ -61,7 +61,7 @@ int main( void )
       prior.tick();
     }
 
-    printf( "Time: %f\n", next_time );
+    printf( "Time: %f (channels: %d)\n", next_time, prior.size() );
 
     /* Kill mismatches */
     for ( unsigned int i = 0; i < prior.size(); i++ ) {
@@ -81,7 +81,7 @@ int main( void )
 
     prior.combine();
 
-    cout << prior.identify();
+    //    cout << prior.identify();
   }
 
   return 0;

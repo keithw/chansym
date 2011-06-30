@@ -112,8 +112,8 @@ void EnsembleContainer<ChannelType>::erase( int address )
   assert( address < (int)channels.size() );
 
   channels[ address ].probability = 0;
+  if ( !channels[ address ].erased ) erased_count++;
   channels[ address ].erased = true;
-  erased_count++;
 }
 
 template <class ChannelType>
@@ -157,7 +157,8 @@ void EnsembleContainer<ChannelType>::combine( void )
 {
   typedef ChannelType * key_t;
   typedef dense_hash_map< key_t, size_t, channel_hash, equal_channels > dhm_t;
-  dhm_t set( 0 );
+  assert( (int)channels.size() > erased_count );
+  dhm_t set( (int)channels.size() - erased_count );
   set.set_empty_key( key_t() );
 
   for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
