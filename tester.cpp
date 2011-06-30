@@ -23,16 +23,16 @@ int main( void )
 
   EnsembleContainer< Series< Series<Pinger, Pinger>,
 			     Series< Buffer,
-				     Series< Series< Throughput, StochasticLoss >,
-					     Series< Screener, Collector > > > > >
+				     Series< Series< Throughput, Screener >,
+					     Series< StochasticLoss, Collector > > > > >
     prior, truth;
 
   truth.set_forking( false );
 
   truth.add( series( series( Pinger( 1 ), Pinger( 0.6, -1 ) ),
 		     series( Buffer( 96000 ),
-			     series( series( Throughput( 6000 ), StochasticLoss( 0.2 ) ),
-				     series( Screener( 0 ), Collector() ) ) ) ) );
+			     series( series( Throughput( 6000 ), Screener( 0 ) ),
+				     series( StochasticLoss( 0.2 ), Collector() ) ) ) ) );
 
   for ( double interval = 0.1; interval <= 1.5; interval += 0.1 ) {
     for ( double rate = 0; rate <= 1; rate += 0.2 ) {
@@ -41,8 +41,8 @@ int main( void )
 	  for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
 	    prior.add( series( series( Pinger( 1 ), Pinger( interval, -1 ) ),
 			       series( Buffer( bufsize, initpackets, 12000 ),
-				       series( series( Throughput( throughput ), StochasticLoss( rate ) ),
-					       series( Screener( 0 ), Collector() ) ) ) ) );
+				       series( series( Throughput( throughput ), Screener( 0 ) ),
+					       series( StochasticLoss( rate ), Collector() ) ) ) ) );
 	  }
 	}
       }
