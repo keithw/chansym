@@ -2,8 +2,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <sstream>
+#include <google/dense_hash_map>
+#include <boost/functional/hash.hpp>
+#include <boost/optional/optional.hpp>
 
 #include "ensemble_container.hpp"
+
+using google::dense_hash_map;
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer()
@@ -150,35 +155,27 @@ void EnsembleContainer<ChannelType>::assert_normalized( void )
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::combine( void )
 {
+  typedef ChannelType * key_t;
+  typedef dense_hash_map< key_t, size_t, channel_hash, equal_channels > dhm_t;
+  dhm_t set( 0 );
+  set.set_empty_key( key_t() );
+
   for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
     if ( channels[ a1 ].erased ) {
       continue;
     }
 
-    for ( unsigned int a2 = a1 + 1; a2 < channels.size(); a2++ ) {
-      if ( channels[ a2 ].erased ) {
-	continue;
-      }
+    key_t key( &(channels[ a1 ].channel) );
+    typename dhm_t::const_iterator it = set.find( key );
 
-      if ( channels[ a1 ].channel == channels[ a2 ].channel ) {
-	/* compare wakeups */
-	vector<double> wakeups1, wakeups2;
-	for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	      i != wakeups.end();
-	      i++ ) {
-	  if ( i->addr == (int)a1 ) {
-	    wakeups1.push_back( i->time );
-	  } else if ( i->addr == (int)a2 ) {
-	    wakeups2.push_back( i->time );
-	  }
-	}
+    if ( it == set.end() ) {
+      set[ key ] = a1;
+    } else {
+      size_t first_channel = set[ key ];
 
-	if ( wakeups1 == wakeups2 ) {
-	  /* compact */
-	  channels[ a1 ].probability += channels[ a2 ].probability;
-	  erase( a2 );
-	}
-      }
+      assert( first_channel != a1 );
+      channels[ first_channel ].probability += channels[ a1 ].probability;
+      erase( a1 );
     }
   }
 

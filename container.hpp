@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <deque>
 #include <string>
+#include <boost/functional/hash.hpp>
 
 #include "packet.hpp"
 
@@ -24,6 +25,14 @@ public:
 
   Event( double s_time, int s_addr ) : time( s_time ), addr( s_addr ) {}
   Event( void ) : time( -1 ), addr( -1 ) {}
+
+  bool operator==( const Event &x ) const { return (time == x.time) && (addr == x.addr); }
+  friend size_t hash_value( const Event & e ) {
+    size_t seed = 0;
+    boost::hash_combine( seed, e.time );
+    boost::hash_combine( seed, e.addr );
+    return seed;
+  }
 };
 
 class Container {

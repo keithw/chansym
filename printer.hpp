@@ -11,6 +11,7 @@ public:
   bool sendable( void ) { return true; }
 
   bool operator==( const Printer & ) const { return true; }
+  friend size_t hash_value( Printer const & ) { return 0; }
 };
 
 #endif

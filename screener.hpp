@@ -22,6 +22,12 @@ public:
   bool operator==( const Screener &x ) const { return passthrough_src == x.passthrough_src; }
 
   string identify( void ) { return "Screener"; }
+
+  friend size_t hash_value( Screener const & ch )
+  {
+    boost::hash<int> hasher;
+    return hasher( ch.passthrough_src );
+  }
 };
 
 #endif

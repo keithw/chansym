@@ -1,3 +1,5 @@
+#include <boost/functional/hash.hpp>
+
 #include "delay.hpp"
 #include "container.hpp"
 
@@ -18,4 +20,12 @@ void Delay::wakeup( void )
   contents.pop_front();
   assert( container->time() == pack.delivery_time );
   container->receive( addr, pack.packet );
+}
+
+size_t hash_value( Delay const & ch )
+{
+  size_t seed = 0;
+  boost::hash_combine( seed, ch.delay );
+  boost::hash_combine( seed, ch.contents );
+  return seed;
 }

@@ -63,6 +63,7 @@ using namespace std;
 #include <vector>
 #include <bits/stl_heap.h>
 #include <bits/stl_function.h>
+#include <boost/functional/hash.hpp>
 
   /**
    *  @brief  A standard container automatically sorting its contents.
@@ -299,6 +300,15 @@ using namespace std;
     typedef typename container_type::const_iterator const_iterator;
     const_iterator begin( void ) { return c.begin(); }
     const_iterator end( void ) { return c.end(); }
+    bool operator==( const peekable_priority_queue<_Tp, _Sequence, _Compare> &x ) const
+    {
+      return (c == x.c);
+    }
+    friend size_t hash_value( peekable_priority_queue<_Tp, _Sequence, _Compare> const & pq )
+    {
+      boost::hash<_Sequence> hasher;
+      return hasher( pq.c );
+    }
   };
 
   // No equality/comparison operators are provided for peekable_priority_queue.

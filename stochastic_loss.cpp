@@ -1,4 +1,5 @@
 #include <sstream>
+#include <boost/functional/hash.hpp>
 
 #include "stochastic_loss.hpp"
 #include "container.hpp"
@@ -34,4 +35,10 @@ string StochasticLoss::identify( void )
   response << " )";
 
   return response.str();
+}
+
+size_t hash_value( StochasticLoss const & ch )
+{
+  boost::hash<double> hasher;
+  return hasher( ch.loss_probability );
 }

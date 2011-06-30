@@ -26,6 +26,8 @@ public:
   bool operator==( const Buffer &x ) const { return (size == x.size) && (occupancy == x.occupancy) && (contents == x.contents); }
 
   string identify( void );
+
+  friend size_t hash_value( Buffer const & ch );
 };
 
 #endif

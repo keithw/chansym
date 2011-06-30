@@ -1,6 +1,8 @@
 #ifndef PACKET_HPP
 #define PACKET_HPP
 
+#include <boost/functional/hash.hpp>
+
 class Packet {
 public:
   int length; /* bits */
@@ -16,6 +18,18 @@ public:
   {
     return (length == x.length) && (src == x.src) && (id == x.id) && (send_time == x.send_time);
   }
+
+  friend size_t hash_value( Packet const & p )
+  {
+    size_t seed = 0;
+
+    boost::hash_combine( seed, p.length );
+    boost::hash_combine( seed, p.src );
+    boost::hash_combine( seed, p.id );
+    boost::hash_combine( seed, p.send_time );
+
+    return seed;
+  }
 };
 
 struct ScheduledPacket {
@@ -27,6 +41,16 @@ struct ScheduledPacket {
   {}
 
   bool operator==( const ScheduledPacket &x ) const { return (delivery_time == x.delivery_time) && (packet == x.packet); }
+
+  friend size_t hash_value( ScheduledPacket const & p )
+  {
+    size_t seed = 0;
+
+    boost::hash_combine( seed, p.delivery_time );
+    boost::hash_combine( seed, p.packet );
+
+    return seed;
+  }
 };
 
 #endif

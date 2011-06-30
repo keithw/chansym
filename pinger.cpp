@@ -1,3 +1,5 @@
+#include <boost/functional/hash.hpp>
+
 #include <sstream>
 
 #include "pinger.hpp"
@@ -31,4 +33,15 @@ string Pinger::identify( void )
   response << " )";
 
   return response.str();
+}
+
+size_t hash_value( Pinger const & ch )
+{
+  size_t seed = 0;
+  boost::hash_combine( seed, ch.next_ping_time );
+  boost::hash_combine( seed, ch.increment );
+  boost::hash_combine( seed, ch.counter );
+  boost::hash_combine( seed, ch.id );
+
+  return seed;
 }

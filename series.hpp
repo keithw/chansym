@@ -47,10 +47,18 @@ public:
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int ) { return container->probability( addr ); }
 
-  bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b); }
+  bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b) && (wakeups == x.wakeups); }
 
   string identify( void );
+
+  size_t hash( void ) const;
 };
+
+template <class First, class Second>
+size_t hash_value( Series<First, Second> const &x )
+{
+  return x.hash();
+}
 
 template <class First, class Second>
 Series<First, Second> series( First a, Second b )

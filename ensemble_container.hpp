@@ -87,6 +87,30 @@ public:
   void prune( double threshold );
 
   string identify( void );
+
+  class equal_channels {
+  public:
+    bool operator() ( const ChannelType *a, const ChannelType *b ) const
+    {
+      if ( (a == NULL) && (b == NULL) ) {
+	return true;
+      }
+
+      if ( (a == NULL) || (b == NULL) ) {
+	return false;
+      }
+
+      return ((*a) == (*b));
+    }
+  };
+
+  class channel_hash {
+  public:
+    size_t operator() ( const ChannelType *a ) const
+    {
+      return hash_value( *a );
+    }
+  };
 };
 
 #endif

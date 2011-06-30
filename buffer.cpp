@@ -1,6 +1,7 @@
 #include <iostream>
 #include <assert.h>
 #include <sstream>
+#include <boost/functional/hash.hpp>
 
 #include "buffer.hpp"
 #include "container.hpp"
@@ -48,4 +49,15 @@ string Buffer::identify( void )
   response << " )";
 
   return response.str();
+}
+
+size_t hash_value( Buffer const & ch )
+{
+  size_t seed = 0;
+
+  boost::hash_combine( seed, ch.size );
+  boost::hash_combine( seed, ch.occupancy );
+  boost::hash_combine( seed, ch.contents );
+
+  return seed;
 }

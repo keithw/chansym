@@ -28,6 +28,8 @@ public:
     return (throughput == x.throughput) && (next_free_time == x.next_free_time)
       && (stash == x.stash) && (busy == x.busy);
   }
+
+  friend size_t hash_value( Throughput const & ch );
 };
 
 #endif

@@ -26,6 +26,8 @@ public:
   string identify( void );
 
   bool operator==( const StochasticLoss &x ) const { return (loss_probability == x.loss_probability); }
+
+  friend size_t hash_value( StochasticLoss const & ch );
 };
 
 #endif

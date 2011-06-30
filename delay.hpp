@@ -18,6 +18,8 @@ public:
   void wakeup( void );
 
   bool operator==( const Delay &x ) const { return (delay == x.delay) && (contents == x.contents); }
+
+  friend size_t hash_value( Delay const & ch );
 };
 
 #endif

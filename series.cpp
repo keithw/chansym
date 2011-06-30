@@ -1,3 +1,5 @@
+#include <boost/functional/hash.hpp>
+
 #include "series.hpp"
 
 template <class First, class Second>
@@ -167,4 +169,16 @@ template <class First, class Second>
 string Series<First, Second>::identify( void )
 {
   return "< " + a.identify() + " > => < " + b.identify() + " >";
+}
+
+template <class First, class Second>
+size_t Series<First, Second>::hash( void ) const
+{
+  size_t seed = 0;
+
+  boost::hash_combine( seed, a );
+  boost::hash_combine( seed, b );
+  boost::hash_combine( seed, wakeups );
+
+  return seed;
 }

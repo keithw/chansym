@@ -1,4 +1,5 @@
 #include <sstream>
+#include <boost/functional/hash.hpp>
 
 #include "throughput.hpp"
 #include "container.hpp"
@@ -36,4 +37,16 @@ string Throughput::identify( void )
   response << " )";
 
   return response.str();
+}
+
+size_t hash_value( Throughput const & ch )
+{
+  size_t seed = 0;
+
+  boost::hash_combine( seed, ch.throughput );
+  boost::hash_combine( seed, ch.next_free_time );
+  boost::hash_combine( seed, ch.stash );
+  boost::hash_combine( seed, ch.busy );  
+
+  return seed;
 }
