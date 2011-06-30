@@ -54,16 +54,12 @@ int main( void )
   while ( truth.time() < 10000 ) {
     /* Advance by smallest timeslice */
     double next_time = truth.next_time() < prior.next_time() ? truth.next_time() : prior.next_time();
-    //    fprintf( stderr, "Ticking truth through time %f...", next_time );
     while ( truth.next_time() == next_time ) {
       truth.tick();
     }
-    //    fprintf( stderr, "done, truth's next time is now %f.\n", truth.next_time() );
-    //    fprintf( stderr, "Ticking prior through time %f...", next_time );
     while ( prior.next_time() == next_time ) {
       prior.tick();
     }
-    //    fprintf( stderr, "done, prior's next time is now %f.\n", prior.next_time() );
 
     printf( "Time: %f\n", next_time );
 
