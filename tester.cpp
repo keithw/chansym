@@ -51,6 +51,8 @@ int main( void )
 
   fprintf( stderr, "Starting calculation with %d channels...\n", prior.size() );
 
+  int ticknum = 0;
+
   while ( truth.time() < 10000 ) {
     /* Advance by smallest timeslice */
     double next_time = truth.next_time() < prior.next_time() ? truth.next_time() : prior.next_time();
@@ -73,15 +75,20 @@ int main( void )
       prior.get_channel( i ).channel.get_second().get_second().get_second().get_second().reset();
     }
 
-    prior.prune( 1000 );
-    prior.normalize();
-
     /* reset truth collector */
     truth.get_channel( 0 ).channel.get_second().get_second().get_second().get_second().reset();
 
-    prior.combine();
+    prior.prune( 1000 );
 
-    //    cout << prior.identify();
+    prior.normalize();
+
+    if ( (ticknum % 100) == 0 )
+      prior.combine();
+
+    if ( prior.size() <= 24 )
+      cout << prior.identify();
+
+    ticknum++;
   }
 
   return 0;
