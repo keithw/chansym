@@ -19,6 +19,8 @@ public:
 
   bool operator==( const Delay &x ) const { return (delay == x.delay) && (contents == x.contents); }
 
+  string identify( void );
+
   friend size_t hash_value( Delay const & ch );
 };
 

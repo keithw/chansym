@@ -1,4 +1,5 @@
 #include <boost/functional/hash.hpp>
+#include <sstream>
 
 #include "delay.hpp"
 #include "container.hpp"
@@ -20,6 +21,16 @@ void Delay::wakeup( void )
   contents.pop_front();
   assert( container->time() == pack.delivery_time );
   container->receive( addr, pack.packet );
+}
+
+string Delay::identify( void )
+{
+  ostringstream response;
+  response << "Delay( ";
+  response << delay;
+  response << " )";
+
+  return response.str();
 }
 
 size_t hash_value( Delay const & ch )
