@@ -13,6 +13,7 @@
 #include "stochastic_loss.hpp"
 #include "collector.hpp"
 #include "screener.hpp"
+#include "jitter.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
@@ -23,27 +24,32 @@ int main( void )
 
   EnsembleContainer< Series< Series< Series<Pinger, Pinger>,
 				     Series<Buffer, Throughput> >,
-			     Series< Series<Screener, Delay>,
-				     Series<StochasticLoss, Collector> > > >
+			     Series< Series< Series<Screener, Jitter>,
+					     Series<Delay, StochasticLoss> >,
+				     Collector > > >
     prior, truth;
 
   truth.set_forking( false );
 
   truth.add( series( series( series( Pinger( 1 ), Pinger( 0.6, -1 ) ),
 			     series( Buffer( 96000 ), Throughput( 6000 ) ) ),
-		     series( series( Screener( 0 ), Delay( 2 ) ),
-			     series( StochasticLoss( 0.2 ), Collector() ) ) ) );
+		     series( series( series( Screener( 0 ), Jitter( 2, 0.1 ) ),
+				     series( Delay( 2 ), StochasticLoss( 0.2 ) ) ),
+			     Collector() ) ) );
 
-  for ( double delay = 0; delay < 4; delay += 0.2 ) {
-    for ( double interval = 0.1; interval <= 1.5; interval += 0.1 ) {
-      for ( double rate = 0; rate <= 1; rate += 0.2 ) {
-	for ( int bufsize = 24000; bufsize <= 120000; bufsize += 24000 ) {
-	  for ( int throughput = 2000; throughput <= 10000; throughput += 2000 ) {
-	    for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
-	      prior.add( series( series( series( Pinger( 1 ), Pinger( interval, -1 ) ),
-					 series( Buffer( bufsize, initpackets, 12000 ), Throughput( throughput ) ) ),
-				 series( series( Screener( 0 ), Delay( delay ) ),
-					 series( StochasticLoss( rate ), Collector() ) ) ) );
+  for ( double other_interval = 0.2; other_interval <= 1.4; other_interval += 0.2 ) {
+    for ( int bufsize = 24000; bufsize <= 120000; bufsize += 24000 ) {
+      for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
+	for ( int throughput = 2000; throughput <= 10000; throughput += 2000 ) {
+	  for ( double delay = 1; delay <= 3; delay += 0.25 ) {
+	    for ( double delayp = 0; delayp <= 1; delayp += 0.1 ) {
+	      for ( double lossrate = 0; lossrate <= 0.6; lossrate += 0.2 ) {
+		prior.add( series( series( series( Pinger( 1 ), Pinger( other_interval, -1 ) ),
+					   series( Buffer( bufsize, initpackets, 12000 ), Throughput( throughput ) ) ),
+				   series( series( series( Screener( 0 ), Jitter( delay, delayp ) ),
+						   series( Delay( 2 ), StochasticLoss( lossrate ) ) ),
+					   Collector() ) ) );
+	      }
 	    }
 	  }
 	}
@@ -73,16 +79,16 @@ int main( void )
 
     /* Kill mismatches */
     for ( unsigned int i = 0; i < prior.size(); i++ ) {
-      if ( prior.get_channel( i ).channel.get_second().get_second().get_second().get_packets()
-	   != truth.get_channel( 0 ).channel.get_second().get_second().get_second().get_packets() ) {
+      if ( prior.get_channel( i ).channel.get_second().get_second().get_packets()
+	   != truth.get_channel( 0 ).channel.get_second().get_second().get_packets() ) {
 	prior.erase( i );
       }
 
-      prior.get_channel( i ).channel.get_second().get_second().get_second().reset();
+      prior.get_channel( i ).channel.get_second().get_second().reset();
     }
 
     /* reset truth collector */
-    truth.get_channel( 0 ).channel.get_second().get_second().get_second().reset();
+    truth.get_channel( 0 ).channel.get_second().get_second().reset();
 
     prior.prune( 1000 );
 

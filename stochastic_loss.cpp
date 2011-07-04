@@ -19,6 +19,8 @@ void StochasticLoss::after_fork( bool is_other, ForkState x )
 {
   assert( container );
 
+  if ( x.pack == DummyPacket ) return;
+
   if ( !is_other ) {
     container->receive( addr, x.pack );
   }
