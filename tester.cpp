@@ -26,12 +26,19 @@ int main( void )
 {
   srand( 0 );
 
-  typedef Series< Series<Pawn, Buffer>, Series<Throughput, Collector> > EncapsChannelType;
-  typedef Series< Series<ISender<EncapsChannelType>, Buffer>, Series<Throughput, Collector> > RealChannelType;
+  typedef Series< Series<Pawn, Pinger>,
+		  Series< Buffer,
+			  Series< Series< Throughput, Screener >,
+				  Series< StochasticLoss, Collector > > > > EncapsChannelType;
+
+  typedef Series< Series<ISender<EncapsChannelType>, Pinger>,
+		  Series< Buffer,
+			  Series< Series< Throughput, Screener >,
+				  Series< StochasticLoss, Collector > > > > RealChannelType;
 
   class ExtractThis : public Extractor<EncapsChannelType> {
     Collector & get_collector( EncapsChannelType &ch ) {
-      return ch.get_second().get_second();
+      return ch.get_second().get_second().get_second().get_second();
     }
 
     Pawn & get_pawn( EncapsChannelType & ch ) {
@@ -46,27 +53,40 @@ int main( void )
 
   truth.set_forking( false );
 
-  for ( int bufsize = 12000; bufsize <= 120000; bufsize += 12000 ) {
-    for ( int throughput = 1000; throughput <= 20000; throughput += 1000 ) {
-      for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
-	prior.add( series( series( Pawn(),
-				   Buffer( bufsize, initpackets, 12000 ) ),
-			   series( Throughput( throughput ),
-				   Collector() ) ) );
+  truth.set_printing( true );
+
+  /*
+  for ( double interval = 0.1; interval <= 1.5; interval += 0.1 ) {
+    for ( double rate = 0; rate <= 1; rate += 0.2 ) {
+      for ( int bufsize = 24000; bufsize <= 120000; bufsize += 24000 ) {
+	for ( int throughput = 2000; throughput <= 10000; throughput += 2000 ) {
+	  for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
+	    prior.add( series( series( Pawn(), Pinger( interval, -1 ) ),
+			       series( Buffer( bufsize, initpackets, 12000 ),
+				       series( series( Throughput( throughput ), Screener( 0 ) ),
+					       series( StochasticLoss( rate ), Collector() ) ) ) ) );
+	  }
+	}
       }
     }
   }
+  */
+
+  prior.add( series( series( Pawn(), Pinger( 0.6, -1 ) ),
+		     series( Buffer( 96000 ),
+			     series( series( Throughput( 6000 ), Screener( 0 ) ),
+				     series( StochasticLoss( 0.2 ), Collector() ) ) ) ) );
 
   prior.normalize();
 
-  truth.add( series( series( ISender<EncapsChannelType>( prior, &extractor ),
-			     Buffer( 96000 ) ),
-		     series( Throughput( 6000 ),
-			     Collector() ) ) );
+  truth.add( series( series( ISender<EncapsChannelType>( prior, &extractor ), Pinger( 0.6, -1 ) ),
+		     series( Buffer( 96000 ),
+			     series( series( Throughput( 6000 ), Screener( 0 ) ),
+				     series( StochasticLoss( 0.2 ), Collector() ) ) ) ) );
 
   truth.normalize();
 
-  truth.get_channel( 0 ).channel.get_first().get_first().set_collector( truth.get_channel( 0 ).channel.get_second().get_second() );
+  truth.get_channel( 0 ).channel.get_first().get_first().set_collector( truth.get_channel( 0 ).channel.get_second().get_second().get_second().get_second() );
 
   while ( truth.tick() && (truth.time() < 10000) ) {}
 

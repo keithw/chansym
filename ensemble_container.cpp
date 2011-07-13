@@ -268,7 +268,7 @@ template <class ChannelType>
 void EnsembleContainer<ChannelType>::receive( int source_addr __attribute((unused)), Packet pack __attribute((unused)) )
 {
   if ( printing ) {
-    printf( "[Prob %.7f] At %.5f received packet id %d (sent %.5f by src %d) [from channel %d/%d (+%d erased)]\n",
+    printf( "[Prob %.7f] At %.50f received packet id %d (sent %.50f by src %d) [from channel %d/%d (+%d erased)]\n",
 	    probability( source_addr ),
 	    time(), pack.id, pack.send_time, pack.src,
 	    source_addr, (int)channels.size() - erased_count, erased_count );

@@ -55,16 +55,25 @@ void ISender<ChannelType>::wakeup( void )
 
   /* find and kill mismatches */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
+    if ( prior.get_channel( i ).erased ) {
+      continue;
+    }
+
     if ( extractor->get_collector( prior.get_channel( i ).channel ).get_packets()
 	 != collector->get_packets() ) {
+      printf( "At time %f, true size = %d and prior[%d] size = %d\n",
+	      current_time, (int)collector->get_packets().size(),
+	      i, (int)extractor->get_collector( prior.get_channel( i ).channel ).get_packets().size() );	       
+
       prior.erase( i );
     }
 
     extractor->get_collector( prior.get_channel( i ).channel ).reset();
   }
 
-  /* reset real colelctor */
+  /* reset real collector */
   collector->reset();
+  assert( collector->get_packets().size() == 0 );
 
   prior.prune( 1000 );
 
@@ -75,8 +84,10 @@ void ISender<ChannelType>::wakeup( void )
     smallestsize = prior.size();
   }
 
-  cout << "Time is " << current_time << endl;
-  cout << prior.identify();
+  printf( "Time: %f (channels: %d)\n", current_time, prior.size() );
+  if ( prior.size() <= 240000 ) {
+    cout << prior.identify();
+  }
 
   if ( current_time == next_ping_time ) {
     sendout( Packet( 12000, id, counter++, current_time ) );
@@ -84,6 +95,8 @@ void ISender<ChannelType>::wakeup( void )
     next_ping_time += increment;
     container->sleep_until( next_ping_time, addr );
   }
+
+  container->sleep_until( prior.next_time(), addr );
 }
 
 template <class ChannelType>
@@ -101,6 +114,10 @@ void ISender<ChannelType>::sendout( Packet p )
 
   /* Send packet in simulation */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
-    extractor->get_pawn( prior.get_channel( i ).channel ).send( p );
+    if ( !prior.get_channel( i ).erased ) {
+      extractor->get_pawn( prior.get_channel( i ).channel ).send( p );
+    }
   }
+
+  prior.execute_fork();
 }

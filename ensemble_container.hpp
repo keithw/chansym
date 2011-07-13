@@ -50,7 +50,6 @@ private:
   bool printing;
   bool forking;
 
-  void execute_fork( void );
   void compact( void );
   void assert_normalized( void );
 
@@ -86,6 +85,7 @@ public:
   void erase( int address );
   void normalize( void );
   void prune( double threshold );
+  void execute_fork( void );
 
   string identify( void );
 
