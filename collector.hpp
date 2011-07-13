@@ -1,9 +1,14 @@
 #ifndef COLLECTOR_HPP
 #define COLLECTOR_HPP
 
+#include <vector>
 #include <boost/functional/hash.hpp>
 
+#include "packet.hpp"
 #include "channel.hpp"
+#include "container.hpp"
+
+using namespace std;
 
 class Collector : public Channel {
 private:

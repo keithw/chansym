@@ -60,6 +60,7 @@ public:
   EnsembleContainer( const EnsembleContainer<ChannelType> &x );
 
   bool tick( void );
+  void advance_to( double advance_time );
 
   void combine( void );
 
@@ -113,6 +114,14 @@ public:
       return hash_value( *a );
     }
   };
+
+  size_t hash( void ) const;
 };
+
+template <class ChannelType>
+size_t hash_value( EnsembleContainer<ChannelType> const &x )
+{
+  return x.hash();
+}
 
 #endif

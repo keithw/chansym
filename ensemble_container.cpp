@@ -38,9 +38,9 @@ EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<ChannelType> &x )
-  : Container( x ), the_time( x.the_time ), channels( x.channels ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking )
+  : Container( x ), the_time( x.the_time ), channels( x.channels ), fork_queue( x.fork_queue ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking )
 {
-  for ( int i = 0; i < channels.size(); i++ ) {
+  for ( unsigned int i = 0; i < channels.size(); i++ ) {
     channels[ i ].channel.connect( i, this );
   }
 }
@@ -216,7 +216,7 @@ bool EnsembleContainer<ChannelType>::tick( void )
   }
 
   if ( forking ) {
-#ifndef NDEBUG
+#ifdef STRONG_ASSERTS
     assert_normalized();
 #endif
   } else {
@@ -320,4 +320,25 @@ void EnsembleContainer<ChannelType>::prune( double threshold )
       erase( a1 );
     }
   }
+}
+
+template <class ChannelType>
+size_t EnsembleContainer<ChannelType>::hash( void ) const
+{
+  size_t seed = 0;
+  boost::hash_combine( seed, the_time );
+  boost::hash_combine( seed, channels );
+  boost::hash_combine( seed, fork_queue );
+  boost::hash_combine( seed, forking );
+  return seed;
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::advance_to( double advance_time )
+{
+  while ( next_time() <= advance_time ) {
+    tick();
+  }
+
+  the_time = advance_time;
 }

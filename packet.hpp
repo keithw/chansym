@@ -32,7 +32,7 @@ public:
   }
 };
 
-static Packet DummyPacket( -1, -1, -1, -1 );
+static const Packet DummyPacket( -1, -1, -1, -1 );
 
 struct ScheduledPacket {
   double delivery_time;

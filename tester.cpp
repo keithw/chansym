@@ -14,96 +14,61 @@
 #include "collector.hpp"
 #include "screener.hpp"
 #include "jitter.hpp"
+#include "isender.hpp"
+#include "extractor.hpp"
+#include "pawn.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
+#include "isender.cpp"
 
 int main( void )
 {
   srand( 0 );
 
-  EnsembleContainer< Series< Series< Series<Pinger, Pinger>,
-				     Series<Buffer, Throughput> >,
-			     Series< Series< Series<Screener, Jitter>,
-					     Series<Delay, StochasticLoss> >,
-				     Collector > > >
-    prior, truth;
+  typedef Series< Series<Pawn, Buffer>, Series<Throughput, Collector> > EncapsChannelType;
+  typedef Series< Series<ISender<EncapsChannelType>, Buffer>, Series<Throughput, Collector> > RealChannelType;
+
+  class ExtractThis : public Extractor<EncapsChannelType> {
+    Collector & get_collector( EncapsChannelType &ch ) {
+      return ch.get_second().get_second();
+    }
+
+    Pawn & get_pawn( EncapsChannelType & ch ) {
+      return ch.get_first().get_first();
+    }
+  };
+
+  ExtractThis extractor;
+
+  EnsembleContainer<RealChannelType> truth;
+  EnsembleContainer<EncapsChannelType> prior;
 
   truth.set_forking( false );
 
-  truth.add( series( series( series( Pinger( 1 ), Pinger( 0.6, -1 ) ),
-			     series( Buffer( 96000 ), Throughput( 6000 ) ) ),
-		     series( series( series( Screener( 0 ), Jitter( 2, 0.1 ) ),
-				     series( Delay( 2 ), StochasticLoss( 0.2 ) ) ),
-			     Collector() ) ) );
-
-  for ( double other_interval = 0.2; other_interval <= 1.4; other_interval += 0.2 ) {
-    for ( int bufsize = 24000; bufsize <= 120000; bufsize += 24000 ) {
+  for ( int bufsize = 12000; bufsize <= 120000; bufsize += 12000 ) {
+    for ( int throughput = 1000; throughput <= 20000; throughput += 1000 ) {
       for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
-	for ( int throughput = 2000; throughput <= 10000; throughput += 2000 ) {
-	  for ( double delay = 1; delay <= 3; delay += 0.25 ) {
-	    for ( double delayp = 0; delayp <= 1; delayp += 0.1 ) {
-	      for ( double lossrate = 0; lossrate <= 0.6; lossrate += 0.2 ) {
-		prior.add( series( series( series( Pinger( 1 ), Pinger( other_interval, -1 ) ),
-					   series( Buffer( bufsize, initpackets, 12000 ), Throughput( throughput ) ) ),
-				   series( series( series( Screener( 0 ), Jitter( delay, delayp ) ),
-						   series( Delay( 2 ), StochasticLoss( lossrate ) ) ),
-					   Collector() ) ) );
-	      }
-	    }
-	  }
-	}
+	prior.add( series( series( Pawn(),
+				   Buffer( bufsize, initpackets, 12000 ) ),
+			   series( Throughput( throughput ),
+				   Collector() ) ) );
       }
     }
   }
 
-  truth.normalize();
   prior.normalize();
 
-  fprintf( stderr, "Starting calculation with %d channels...\n", prior.size() );
+  truth.add( series( series( ISender<EncapsChannelType>( prior, &extractor ),
+			     Buffer( 96000 ) ),
+		     series( Throughput( 6000 ),
+			     Collector() ) ) );
 
-  int ticknum = 0;
-  unsigned int smallestsize = prior.size();
+  truth.normalize();
 
-  while ( truth.time() < 10000 ) {
-    /* Advance by smallest timeslice */
-    double next_time = truth.next_time() < prior.next_time() ? truth.next_time() : prior.next_time();
-    while ( truth.next_time() == next_time ) {
-      truth.tick();
-    }
-    while ( prior.next_time() == next_time ) {
-      prior.tick();
-    }
+  truth.get_channel( 0 ).channel.get_first().get_first().set_collector( truth.get_channel( 0 ).channel.get_second().get_second() );
 
-    printf( "Time: %f (channels: %d)\n", next_time, prior.size() );
-
-    /* Kill mismatches */
-    for ( unsigned int i = 0; i < prior.size(); i++ ) {
-      if ( prior.get_channel( i ).channel.get_second().get_second().get_packets()
-	   != truth.get_channel( 0 ).channel.get_second().get_second().get_packets() ) {
-	prior.erase( i );
-      }
-
-      prior.get_channel( i ).channel.get_second().get_second().reset();
-    }
-
-    /* reset truth collector */
-    truth.get_channel( 0 ).channel.get_second().get_second().reset();
-
-    prior.prune( 1000 );
-
-    prior.normalize();
-
-    if ( (prior.size() >= 2 * smallestsize) || (prior.get_erased_count() * 2 >= (int)prior.size()) ) {
-      prior.combine();
-      smallestsize = prior.size();
-    }
-
-    if ( prior.size() <= 32 )
-      cout << prior.identify();
-
-    ticknum++;
-  }
+  while ( truth.tick() && (truth.time() < 10000) ) {}
 
   return 0;
 }

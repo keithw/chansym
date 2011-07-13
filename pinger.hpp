@@ -19,6 +19,7 @@ public:
   void init( void );
   void wakeup( void );
   void send( Packet pack ) { container->receive( addr, pack ); }
+  void uncork( void ) { container->signal_sendable( addr ); }
   bool sendable( void ) { return container->can_send( addr ); }
 
   bool operator==( const Pinger &x ) const { return (next_ping_time == x.next_ping_time) && (increment == x.increment) && (counter == x.counter) && (id == x.id); }
