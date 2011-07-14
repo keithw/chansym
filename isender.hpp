@@ -2,9 +2,10 @@
 #define ISENDER_HPP
 
 #include "channel.hpp"
-#include "collector.hpp"
 #include "ensemble_container.hpp"
-#include "extractor.hpp"
+
+template <class ChannelType>
+class Extractor;
 
 template <class ChannelType>
 class ISender : public Channel
@@ -12,7 +13,8 @@ class ISender : public Channel
 private:
   EnsembleContainer<ChannelType> prior;
   Extractor<ChannelType> *extractor;
-  Collector *collector;
+
+  double latest_time;
 
   double next_ping_time, increment;
   int counter, id;
@@ -29,8 +31,6 @@ public:
   void send( Packet pack ) { container->receive( addr, pack ); }
   void uncork( void ) { container->signal_sendable( addr ); }
   bool sendable( void ) { return container->can_send( addr ); }
-
-  void set_collector( Collector &x ) { collector = &x; }
 
   bool operator==( const ISender<ChannelType> &x ) const { return (prior == x.prior); }
 

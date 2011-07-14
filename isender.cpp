@@ -10,14 +10,15 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
 			       Extractor<ChannelType> *s_extractor )
   : prior( s_prior ),
     extractor( s_extractor ),
-    collector( NULL ),
+    latest_time( -1 ),
     next_ping_time( -1 ), increment( 1 ), counter( 0 ), id( 0 ), smallestsize( prior.size() )
 {}
 
 template <class ChannelType>
 ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
   : Channel( x ),
-    prior( x.prior ), extractor( x.extractor ), collector( x.collector ),
+    prior( x.prior ), extractor( x.extractor ),
+    latest_time( x.latest_time ),
     next_ping_time( x.next_ping_time ), increment( x.increment ), counter( x.counter ), id( x.id ), smallestsize( x.smallestsize )
 {}
 
@@ -28,7 +29,8 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
 
   prior = x.prior;
   extractor = x.extractor;
-  collector = x.collector;
+  latest_time = x.latest_time;
+
   next_ping_time = x.next_ping_time;
   increment = x.increment;
   counter = x.counter;
@@ -50,8 +52,29 @@ void ISender<ChannelType>::wakeup( void )
 {
   double current_time = container->time();
 
+  assert( current_time >= latest_time );
+  if ( current_time == latest_time ) {
+    return;
+  } else {
+    latest_time = current_time;
+  }
+
   /* advance prior to actual time */
   prior.advance_to( current_time );
+
+  /* ping if necessary */
+  if ( current_time == next_ping_time ) {
+    sendout( Packet( 12000, id, counter++, current_time ) );
+    
+    next_ping_time += increment;
+    container->sleep_until( next_ping_time, addr );
+  }
+
+  container->sleep_until( prior.next_time(), addr );
+
+  /* find true collector contents */
+  Collector *collector = &extractor->get_collector( this );
+  vector<ScheduledPacket> true_received = collector->get_packets();
 
   /* find and kill mismatches */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
@@ -60,11 +83,7 @@ void ISender<ChannelType>::wakeup( void )
     }
 
     if ( extractor->get_collector( prior.get_channel( i ).channel ).get_packets()
-	 != collector->get_packets() ) {
-      printf( "At time %f, true size = %d and prior[%d] size = %d\n",
-	      current_time, (int)collector->get_packets().size(),
-	      i, (int)extractor->get_collector( prior.get_channel( i ).channel ).get_packets().size() );	       
-
+	 != true_received ) {
       prior.erase( i );
     }
 
@@ -73,7 +92,6 @@ void ISender<ChannelType>::wakeup( void )
 
   /* reset real collector */
   collector->reset();
-  assert( collector->get_packets().size() == 0 );
 
   prior.prune( 1000 );
 
@@ -85,18 +103,9 @@ void ISender<ChannelType>::wakeup( void )
   }
 
   printf( "Time: %f (channels: %d)\n", current_time, prior.size() );
-  if ( prior.size() <= 240000 ) {
+  if ( prior.size() <= 32 ) {
     cout << prior.identify();
   }
-
-  if ( current_time == next_ping_time ) {
-    sendout( Packet( 12000, id, counter++, current_time ) );
-    
-    next_ping_time += increment;
-    container->sleep_until( next_ping_time, addr );
-  }
-
-  container->sleep_until( prior.next_time(), addr );
 }
 
 template <class ChannelType>
@@ -115,7 +124,7 @@ void ISender<ChannelType>::sendout( Packet p )
   /* Send packet in simulation */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
     if ( !prior.get_channel( i ).erased ) {
-      extractor->get_pawn( prior.get_channel( i ).channel ).send( p );
+      extractor->get_pawn( prior.get_channel( i ).channel ).send( p ); /* Make him do this properly */
     }
   }
 

@@ -1,9 +1,9 @@
-source = tester.cpp pinger.cpp printer.cpp simple_container.cpp series.cpp buffer.cpp throughput.cpp delay.cpp ensemble_container.cpp stochastic_loss.cpp jitter.cpp isender.cpp
-objects = pinger.o printer.o simple_container.o series.o buffer.o throughput.o delay.o ensemble_container.o stochastic_loss.o jitter.o isender.o
+source = tester.cpp pinger.cpp printer.cpp simple_container.cpp series.cpp buffer.cpp throughput.cpp delay.cpp ensemble_container.cpp stochastic_loss.cpp jitter.cpp isender.cpp channel.cpp
+objects = pinger.o printer.o simple_container.o series.o buffer.o throughput.o delay.o ensemble_container.o stochastic_loss.o jitter.o isender.o channel.o
 executables = tester
 
 CXX = g++
-CXXFLAGS = -g --std=c++0x -pedantic -Werror -Wall -Wextra -Weffc++ -fno-default-inline -pipe -D_FILE_OFFSET_BITS=64 -D_XOPEN_SOURCE=500 -D_GNU_SOURCE
+CXXFLAGS = -g -O3 --std=c++0x -pedantic -Werror -Wall -Wextra -Weffc++ -fno-default-inline -pipe -D_FILE_OFFSET_BITS=64 -D_XOPEN_SOURCE=500 -D_GNU_SOURCE
 LIBS =
 
 all: $(executables)

@@ -42,6 +42,8 @@ public:
   virtual std::string identify( void ) { return ""; }
 
   friend size_t hash_value( Channel const & ) { return 0; }
+
+  Channel * get_container_channel( void );
 };
 
 #endif
