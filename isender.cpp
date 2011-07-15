@@ -129,6 +129,21 @@ void ISender<ChannelType>::sendout( Packet p )
   prior.execute_fork();
 }
 
+/*
+double utility( vector<ScheduledPacket> x )
+{
+  double util = 0;
+
+  for ( vector<ScheduledPacket>::const_iterator i = x.begin();
+	i != x.end();
+	i++ ) {
+    if ( x.packet.id == 0 ) {
+      util += 1;
+    } else if ( x.packet.id == -1 )
+  }
+}
+*/
+
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
 {
@@ -138,9 +153,12 @@ void ISender<ChannelType>::optimal_action( void )
   EnsembleContainer<ChannelType> silent = prior, sent = prior;
 
   extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
+  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 1, 0, container->time() ) );
+  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 2, 0, container->time() ) );
+  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 3, 0, container->time() ) );
 
-  printf( "Initial simulated time is %f/%f\n",
-	  silent.time(), sent.time() );
+  printf( "Initial simulated time is %f/%f, equality is %d\n",
+	  silent.time(), sent.time(), silent == sent );
     cout << silent.identify();
     cout << sent.identify();
     printf( "\n\n\n" );
@@ -150,8 +168,7 @@ void ISender<ChannelType>::optimal_action( void )
     silent.advance_to( next_time );
     sent.advance_to( next_time );
 
-    extractor->get_collector( silent.get_channel( 0 ).channel ).reset();
-    extractor->get_collector( sent.get_channel( 0 ).channel ).reset();
+    extractor->reset( silent.get_channel( 0 ).channel );
 
     printf( "At simulated time %f/%f, silent and sent equality is: %d\n",
 	    silent.time(), sent.time(), silent == sent );

@@ -21,53 +21,100 @@
 #include "series.cpp"
 #include "ensemble_container.cpp"
 #include "isender.cpp"
+#include "diverter.cpp"
 
 class TwoTerminalNetwork {
 public:
   template <class SenderObject, class ReceiverObject>
   class DemoNet {
-    typedef Series< Series<SenderObject, Pinger>,
+    typedef Series< Series<SenderObject,
+			   Pinger>,
 		    Series< Buffer,
-			    Series< Series< Throughput, Screener >,
-				    Series< Delay, ReceiverObject > > > > Channel;
+			    Series< Throughput,
+				    Diverter< ReceiverObject,
+					      Collector > > > > Channel;
   };
 
   typedef typename DemoNet<Pawn, Collector>::Channel SimulatedChannel;
   typedef ISender<SimulatedChannel> SmartSender;
   typedef typename DemoNet<SmartSender, SignallingCollector>::Channel RealChannel;
   
-  class TheExtractor : public Extractor<SimulatedChannel>
+  template <class ChannelType, class SenderObject, class ReceiverObject>
+  class Navigator
   {
   public:
-    Collector & get_collector( SimulatedChannel &ch )
+    static ReceiverObject & get_collector( ChannelType *ch )
     {
-      return ch.get_second().get_second().get_second().get_second();
+      return ch->get_second().get_second().get_second().get_first();
     }
 
-    Pawn & get_pawn( SimulatedChannel &ch )
+    static Collector & get_cross_traffic( ChannelType *ch )
     {
-      return ch.get_first().get_first();
+      return ch->get_second().get_second().get_second().get_second();
     }
 
-    Collector & get_collector( SmartSender *ch )
+    static SenderObject & get_sender( ChannelType *ch )
+    {
+      return ch->get_first().get_first();
+    }
+
+    static ChannelType * get_root( SenderObject *ch )
     {
       Channel *top = ch->get_container_channel()->get_container_channel();
-      RealChannel *top_rc = dynamic_cast<RealChannel *>( top );
+      ChannelType *top_rc = dynamic_cast<ChannelType *>( top );
       assert( top_rc );
-      return top_rc->get_second().get_second().get_second().get_second();
+      return top_rc;
     }
+
+    static ChannelType * get_root( ReceiverObject *ch )
+    {
+      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
+      ChannelType *top_rc = dynamic_cast<RealChannel *>( top );
+      assert( top_rc );
+      return top_rc;
+    }
+
+    static void reset( ChannelType *ch )
+    {
+      get_collector( ch ).reset();
+      get_cross_traffic( ch ).reset();
+    }
+  };
+
+public:
+  class TheExtractor : public Extractor<SimulatedChannel>
+  {
+  private:
+    Navigator<SimulatedChannel, Pawn, Collector> sim;
+    Navigator<RealChannel, SmartSender, SignallingCollector> real;
+
+  public:
+    TheExtractor() : sim(), real() {}
+
+    /* Let the true sender find its collector and cross traffic */
+    SignallingCollector & get_collector( SmartSender *ch ) { return real.get_collector( real.get_root( ch ) ); }
+    Collector & get_cross_traffic( SmartSender *ch ) { return real.get_cross_traffic( real.get_root( ch ) ); }
+
+    /* Let him reset all collectors */
+    void reset( SmartSender *ch ) { return real.reset( real.get_root( ch ) ); }
+
+    /* Let an omniscient find the simulated collector, pawn and cross traffic */
+    Collector & get_collector( SimulatedChannel &ch ) { return sim.get_collector( &ch ); }
+    Collector & get_cross_traffic( SimulatedChannel &ch ) { return sim.get_cross_traffic( &ch ); }
+    Pawn & get_pawn( SimulatedChannel &ch ) { return sim.get_sender( &ch ); }
+
+    /* Let him reset all collectors */
+    void reset( SimulatedChannel &ch ) { return sim.reset( &ch ); }
   };
 
   class TheWaker : public Waker
   {
+  private:
+    Navigator<RealChannel, SmartSender, SignallingCollector> real;
+
   public:
-    void wakeup_smart_sender( Channel *ch, double time )
-    {
-      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
-      RealChannel *top_rc = dynamic_cast<RealChannel *>( top );
-      assert( top_rc );
-      top_rc->get_first().sleep_until( time, 0, 99 );
-    }
+    TheWaker() : real() {}
+    void wakeup_smart_sender( SignallingCollector *ch, double time ) { real.get_root( ch )->get_first().sleep_until( time, 0, 99 ); }
   };
 
   TheExtractor extractor;
@@ -86,17 +133,21 @@ int main( void )
 
   truth.set_forking( false );
 
-  prior.add( series( series( Pawn(), Pinger( 1 / 3.14159, -1 ) ),
+  prior.add( series( series( Pawn(),
+			     Pinger( 0.99, -1 ) ),
 		     series( Buffer( 96000 ),
-			     series( series( Throughput( 12000 ), Screener( 0 ) ),
-				     series( Delay( 0 ), Collector() ) ) ) ) );
+			     series( Throughput( 12000 ),
+				     diverter( Collector(),
+					       Collector() ) ) ) ) );
 
   prior.normalize();
 
-  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ), Pinger( 1 / 3.14159, -1 ) ),
+  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
+			     Pinger( 0.99, -1 ) ),
 		     series( Buffer( 96000 ),
-			     series( series( Throughput( 12000 ), Screener( 0 ) ),
-				     series( Delay( 0 ), SignallingCollector( &network.waker ) ) ) ) ) );
+			     series( Throughput( 12000 ),
+				     diverter( SignallingCollector( &network.waker ),
+					       Collector() ) ) ) ) );
 
   truth.normalize();
 

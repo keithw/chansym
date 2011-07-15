@@ -8,10 +8,12 @@
 #include "channel.hpp"
 #include "container.hpp"
 
+class SignallingCollector;
+
 class Waker
 {
 public:
-  virtual void wakeup_smart_sender( Channel *ch, double time ) = 0;
+  virtual void wakeup_smart_sender( SignallingCollector *ch, double time ) = 0;
   virtual ~Waker() {}
 };
 
