@@ -20,6 +20,7 @@ private:
   int counter, id;
   unsigned int smallestsize;
 
+  void optimal_action( void );
   void sendout( Packet p );
 
 public:  

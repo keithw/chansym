@@ -5,6 +5,8 @@
 #include "extractor.hpp"
 #include "pawn.hpp"
 
+#define        MIN(a,b) (((a)<(b))?(a):(b))
+
 template <class ChannelType>
 ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
 			       Extractor<ChannelType> *s_extractor )
@@ -68,12 +70,7 @@ void ISender<ChannelType>::wakeup( void )
   prior.advance_to( current_time );
 
   /* ping if necessary */
-  if ( current_time == next_ping_time ) {
-    sendout( Packet( 12000, id, counter++, current_time ) );
-    
-    next_ping_time += increment;
-    container->sleep_until( next_ping_time, addr, 99 );
-  }
+  optimal_action();
 
   container->sleep_until( prior.next_time(), addr, 99 );
 
@@ -85,9 +82,6 @@ void ISender<ChannelType>::wakeup( void )
 
     if ( extractor->get_collector( prior.get_channel( i ).channel ).get_packets()
 	 != true_received ) {
-      fprintf( stderr, "At time %f: prior[%d] has %d packets vs. truth's %d packets\n",
-	       current_time, i, (int)extractor->get_collector( prior.get_channel( i ).channel ).get_packets().size(),
-	       (int)true_received.size() );
       prior.erase( i );
     }
 
@@ -133,4 +127,36 @@ void ISender<ChannelType>::sendout( Packet p )
   }
 
   prior.execute_fork();
+}
+
+template <class ChannelType>
+void ISender<ChannelType>::optimal_action( void )
+{
+  assert( prior.size() == 1 );
+  assert( container->time() == prior.time() );
+
+  EnsembleContainer<ChannelType> silent = prior, sent = prior;
+
+  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
+
+  printf( "Initial simulated time is %f/%f\n",
+	  silent.time(), sent.time() );
+    cout << silent.identify();
+    cout << sent.identify();
+    printf( "\n\n\n" );
+
+  while ( 1 ) {
+    double next_time = MIN( silent.next_time(), silent.next_time() );
+    silent.advance_to( next_time );
+    sent.advance_to( next_time );
+
+    extractor->get_collector( silent.get_channel( 0 ).channel ).reset();
+    extractor->get_collector( sent.get_channel( 0 ).channel ).reset();
+
+    printf( "At simulated time %f/%f, silent and sent equality is: %d\n",
+	    silent.time(), sent.time(), silent == sent );
+    cout << silent.identify();
+    cout << sent.identify();
+    printf( "\n\n\n" );
+  }
 }

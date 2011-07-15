@@ -75,7 +75,7 @@ public:
   void set_printing( bool s_printing ) { printing = s_printing; }
   void set_forking( bool s_forking ) { forking = s_forking; }
 
-  bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels); }
+  bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels) && (fork_queue.empty()) && (x.fork_queue.empty()); }
 
   unsigned int size( void ) { return channels.size(); }
   WeightedChannel & get_channel( int address );

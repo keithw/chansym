@@ -86,14 +86,14 @@ int main( void )
 
   truth.set_forking( false );
 
-  prior.add( series( series( Pawn(), Pinger( 3.14159, -1 ) ),
+  prior.add( series( series( Pawn(), Pinger( 1 / 3.14159, -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( series( Throughput( 12000 ), Screener( 0 ) ),
 				     series( Delay( 0 ), Collector() ) ) ) ) );
 
   prior.normalize();
 
-  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ), Pinger( 3.14159, -1 ) ),
+  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ), Pinger( 1 / 3.14159, -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( series( Throughput( 12000 ), Screener( 0 ) ),
 				     series( Delay( 0 ), SignallingCollector( &network.waker ) ) ) ) ) );

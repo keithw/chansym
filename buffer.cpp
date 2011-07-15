@@ -46,6 +46,19 @@ string Buffer::identify( void )
   response << size;
   response << ", ";
   response << occupancy;
+
+  for ( std::list<Packet>::const_iterator i = contents.begin();
+	i != contents.end();
+	i++ ) {
+    response << ", < ";
+    response << i->src;
+    response << ", ";
+    response << i->id;
+    response << ", ";
+    response << i->send_time;
+    response << " >";
+  }
+
   response << " )";
 
   return response.str();
