@@ -63,7 +63,7 @@ public:
 
   void combine( void );
 
-  void sleep_until( double time, int source_addr ) { wakeups.push( Event( time, source_addr ) ); }
+  void sleep_until( double time, int source_addr, int sort_order=0 ) { wakeups.push( Event( time, source_addr, sort_order ) ); }
   void signal_sendable( int ) {}
   bool can_send( int ) { return( true ); }
   void receive( int source_addr, Packet pack );

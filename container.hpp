@@ -17,20 +17,28 @@ class Event {
 public:
   double time;
   int addr;
+  int sort_order;
 
   bool operator() ( const Event &lhs, const Event &rhs ) const
   {
-    return lhs.time > rhs.time;
+    if ( lhs.time > rhs.time ) {
+      return 1;
+    } else if ( lhs.time < rhs.time ) {
+      return 0;
+    } else {
+      return lhs.sort_order > rhs.sort_order;
+    }
   }
 
-  Event( double s_time, int s_addr ) : time( s_time ), addr( s_addr ) {}
-  Event( void ) : time( -1 ), addr( -1 ) {}
+  Event( double s_time, int s_addr, int s_order ) : time( s_time ), addr( s_addr ), sort_order( s_order ) {}
+  Event( void ) : time( -1 ), addr( -1 ), sort_order( INT_MAX ) {}
 
-  bool operator==( const Event &x ) const { return (time == x.time) && (addr == x.addr); }
+  bool operator==( const Event &x ) const { return (time == x.time) && (addr == x.addr) && (sort_order == x.sort_order); }
   friend size_t hash_value( const Event & e ) {
     size_t seed = 0;
     boost::hash_combine( seed, e.time );
     boost::hash_combine( seed, e.addr );
+    boost::hash_combine( seed, e.sort_order );
     return seed;
   }
 };
@@ -44,7 +52,7 @@ public:
   Container( const Container &x ) : wakeups( x.wakeups ) {}
   virtual ~Container() {}
 
-  virtual void sleep_until( double time, int source_addr ) = 0;
+  virtual void sleep_until( double time, int source_addr, int sort_order=0 ) = 0;
   virtual void signal_sendable( int source_addr ) = 0; /* Channel tells container it is sendable */
   virtual bool can_send( int source_addr ) = 0; /* Channel asks container whether it can send */
   virtual void receive( int source_addr, Packet p ) = 0; /* Channel sends packet to container */

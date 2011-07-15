@@ -65,7 +65,7 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
       for ( typename ChannelType::wakeup_iterator i = channels[ pending.orig_addr ].channel.wakeup_begin();
 	    i != channels[ pending.orig_addr ].channel.wakeup_end();
 	    i++ ) {
-	wakeups.push( Event( i->time, new_addr ) );
+	wakeups.push( Event( i->time, new_addr, i->sort_order ) );
       }
 
       channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
@@ -192,7 +192,7 @@ void EnsembleContainer<ChannelType>::compact( void )
 	i != wakeups.end();
 	i++ ) {
     if ( !channels[ i->addr ].erased ) {
-      new_wakeups.push( Event( i->time, mapping[ i->addr ] ) );
+      new_wakeups.push( Event( i->time, mapping[ i->addr ], i->sort_order ) );
     }
   }
 
@@ -268,7 +268,7 @@ template <class ChannelType>
 void EnsembleContainer<ChannelType>::receive( int source_addr __attribute((unused)), Packet pack __attribute((unused)) )
 {
   if ( printing ) {
-    printf( "[Prob %.7f] At %.50f received packet id %d (sent %.50f by src %d) [from channel %d/%d (+%d erased)]\n",
+    printf( "[Prob %.7f] At %f received packet id %d (sent %f by src %d) [from channel %d/%d (+%d erased)]\n",
 	    probability( source_addr ),
 	    time(), pack.id, pack.send_time, pack.src,
 	    source_addr, (int)channels.size() - erased_count, erased_count );

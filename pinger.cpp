@@ -11,7 +11,7 @@ Pinger::Pinger( double s_increment, int s_id )
 
 void Pinger::init( void )
 {
-  next_ping_time = container->time();
+  next_ping_time = container->time() + increment;
   container->sleep_until( next_ping_time, addr );
 }
 

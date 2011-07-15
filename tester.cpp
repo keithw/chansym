@@ -29,7 +29,7 @@ public:
     typedef Series< Series<SenderObject, Pinger>,
 		    Series< Buffer,
 			    Series< Series< Throughput, Screener >,
-				    Series< StochasticLoss, ReceiverObject > > > > Channel;
+				    Series< Delay, ReceiverObject > > > > Channel;
   };
 
   typedef typename DemoNet<Pawn, Collector>::Channel SimulatedChannel;
@@ -66,7 +66,7 @@ public:
       Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
       RealChannel *top_rc = dynamic_cast<RealChannel *>( top );
       assert( top_rc );
-      top_rc->get_first().sleep_until( time, 0 );
+      top_rc->get_first().sleep_until( time, 0, 99 );
     }
   };
 
@@ -86,31 +86,21 @@ int main( void )
 
   truth.set_forking( false );
 
-  for ( double interval = 0.1; interval <= 1.5; interval += 0.1 ) {
-    for ( double rate = 0; rate <= 1; rate += 0.2 ) {
-      for ( int bufsize = 24000; bufsize <= 120000; bufsize += 24000 ) {
-	for ( int throughput = 2000; throughput <= 10000; throughput += 2000 ) {
-	  for ( int initpackets = 0; initpackets * 12000 <= bufsize; initpackets++ ) {
-	    prior.add( series( series( Pawn(), Pinger( interval * M_PI / 5.0, -1 ) ),
-			       series( Buffer( bufsize, initpackets, 12000 ),
-				       series( series( Throughput( throughput ), Screener( 0 ) ),
-					       series( StochasticLoss( rate ), Collector() ) ) ) ) );
-	  }
-	}
-      }
-    }
-  }
+  prior.add( series( series( Pawn(), Pinger( 3.14159, -1 ) ),
+		     series( Buffer( 96000 ),
+			     series( series( Throughput( 12000 ), Screener( 0 ) ),
+				     series( Delay( 0 ), Collector() ) ) ) ) );
 
   prior.normalize();
 
-  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ), Pinger( M_PI / 5, -1 ) ),
+  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ), Pinger( 3.14159, -1 ) ),
 		     series( Buffer( 96000 ),
-			     series( series( Throughput( 6000 ), Screener( 0 ) ),
-				     series( StochasticLoss( 0.2 ), SignallingCollector( &network.waker ) ) ) ) ) );
+			     series( series( Throughput( 12000 ), Screener( 0 ) ),
+				     series( Delay( 0 ), SignallingCollector( &network.waker ) ) ) ) ) );
 
   truth.normalize();
 
-  while ( truth.tick() && (truth.time() < 10000) ) {}
+  while ( truth.tick() && (truth.time() < 100) ) {}
 
   return 0;
 }

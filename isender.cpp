@@ -44,7 +44,7 @@ template <class ChannelType>
 void ISender<ChannelType>::init( void )
 {
   next_ping_time = container->time();
-  container->sleep_until( next_ping_time, addr );
+  container->sleep_until( next_ping_time, addr, 99 );
 }
 
 template <class ChannelType>
@@ -52,8 +52,13 @@ void ISender<ChannelType>::wakeup( void )
 {
   double current_time = container->time();
 
-  assert( current_time >= latest_time );
-  if ( current_time == latest_time ) {
+  /* find true collector contents */
+  Collector *collector = &extractor->get_collector( this );
+  vector<ScheduledPacket> true_received = collector->get_packets();
+
+  /* Do we need to run? */
+  if ( (latest_time == current_time)
+       && (true_received.empty()) ) {
     return;
   } else {
     latest_time = current_time;
@@ -67,14 +72,10 @@ void ISender<ChannelType>::wakeup( void )
     sendout( Packet( 12000, id, counter++, current_time ) );
     
     next_ping_time += increment;
-    container->sleep_until( next_ping_time, addr );
+    container->sleep_until( next_ping_time, addr, 99 );
   }
 
-  container->sleep_until( prior.next_time(), addr );
-
-  /* find true collector contents */
-  Collector *collector = &extractor->get_collector( this );
-  vector<ScheduledPacket> true_received = collector->get_packets();
+  container->sleep_until( prior.next_time(), addr, 99 );
 
   /* find and kill mismatches */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
@@ -84,6 +85,9 @@ void ISender<ChannelType>::wakeup( void )
 
     if ( extractor->get_collector( prior.get_channel( i ).channel ).get_packets()
 	 != true_received ) {
+      fprintf( stderr, "At time %f: prior[%d] has %d packets vs. truth's %d packets\n",
+	       current_time, i, (int)extractor->get_collector( prior.get_channel( i ).channel ).get_packets().size(),
+	       (int)true_received.size() );
       prior.erase( i );
     }
 

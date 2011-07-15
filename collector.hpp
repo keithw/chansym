@@ -24,7 +24,9 @@ protected:
 public:
   Collector() : packets() {}
 
-  void send( Packet pack ) { packets.push_back( ScheduledPacket( container->time(), pack ) ); container->receive( addr, pack ); }
+  void send( Packet pack ) {
+    packets.push_back( ScheduledPacket( container->time(), pack ) ); container->receive( addr, pack );
+  }
 
   bool sendable( void ) { return true; }
 
