@@ -129,20 +129,22 @@ void ISender<ChannelType>::sendout( Packet p )
   prior.execute_fork();
 }
 
-/*
-double utility( vector<ScheduledPacket> x )
+static double utility( vector<ScheduledPacket> x )
 {
   double util = 0;
 
   for ( vector<ScheduledPacket>::const_iterator i = x.begin();
 	i != x.end();
 	i++ ) {
-    if ( x.packet.id == 0 ) {
-      util += 1;
-    } else if ( x.packet.id == -1 )
+    double delay = i->delivery_time - i->packet.send_time;
+    assert( delay >= 0 );
+    assert( delay < 10 );
+
+    util = 10 - delay;
   }
+
+  return util;
 }
-*/
 
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
@@ -153,9 +155,6 @@ void ISender<ChannelType>::optimal_action( void )
   EnsembleContainer<ChannelType> silent = prior, sent = prior;
 
   extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
-  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 1, 0, container->time() ) );
-  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 2, 0, container->time() ) );
-  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 3, 0, container->time() ) );
 
   printf( "Initial simulated time is %f/%f, equality is %d\n",
 	  silent.time(), sent.time(), silent == sent );
@@ -163,15 +162,26 @@ void ISender<ChannelType>::optimal_action( void )
     cout << sent.identify();
     printf( "\n\n\n" );
 
+    double silentu = 0, sentu = 0;
+
   while ( 1 ) {
     double next_time = MIN( silent.next_time(), silent.next_time() );
     silent.advance_to( next_time );
     sent.advance_to( next_time );
 
-    extractor->reset( silent.get_channel( 0 ).channel );
+    silentu += utility( extractor->get_collector( silent.get_channel( 0 ).channel ).get_packets() )
+      + 5 * utility( extractor->get_cross_traffic( silent.get_channel( 0 ).channel ).get_packets() );
 
-    printf( "At simulated time %f/%f, silent and sent equality is: %d\n",
-	    silent.time(), sent.time(), silent == sent );
+    sentu += utility( extractor->get_collector( sent.get_channel( 0 ).channel ).get_packets() )
+      + 5 * utility( extractor->get_cross_traffic( sent.get_channel( 0 ).channel ).get_packets() );
+
+    extractor->reset( silent.get_channel( 0 ).channel );
+    extractor->reset( sent.get_channel( 0 ).channel );
+
+    printf( "At simulated time %f/%f, utility is %f/%f, silent and sent equality is: %d\n",
+	    silent.time(), sent.time(),
+	    silentu, sentu, silent == sent );
+    printf( "SENDING ADVANTAGE = %f\n", sentu - silentu );
     cout << silent.identify();
     cout << sent.identify();
     printf( "\n\n\n" );
