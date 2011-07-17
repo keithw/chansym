@@ -16,8 +16,11 @@ private:
     ChannelType channel;
     bool erased;
 
+    double delay;
+    double utility;
+
     WeightedChannel( double s_p, ChannelType s_c )
-      : probability( s_p ), channel( s_c ), erased( false )
+      : probability( s_p ), channel( s_c ), erased( false ), delay( -1 ), utility( -1 )
     {}
 
     bool operator==( const WeightedChannel &x ) const
@@ -53,12 +56,11 @@ private:
 
 protected:
   double the_time;
-
-private:
   vector<WeightedChannel> channels;
   queue<PendingFork> fork_queue;
   int erased_count;
 
+private:
   bool printing;
   bool forking;
 

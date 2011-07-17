@@ -151,8 +151,6 @@ int main( void )
 
   truth.normalize();
 
-  EnsembleContainer<EmbeddableEnsemble<typename TwoTerminalNetwork::SimulatedChannel>> actionfan( prior );
-
   while ( truth.tick() && (truth.time() < 100) ) {}
 
   return 0;

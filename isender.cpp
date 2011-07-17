@@ -4,7 +4,9 @@
 #include "isender.hpp"
 #include "extractor.hpp"
 #include "pawn.hpp"
-#include "embeddable_ensemble.hpp"
+
+#include "embeddable_ensemble.cpp"
+#include "utility_ensemble.cpp"
 
 #define        MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -123,7 +125,7 @@ void ISender<ChannelType>::sendout( Packet p )
   /* Send packet in simulation */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
     if ( !prior.get_channel( i ).erased ) {
-      extractor->get_pawn( prior.get_channel( i ).channel ).send( p ); /* Make him do this properly */
+      extractor->get_pawn( prior.get_channel( i ).channel ).send( p );
     }
   }
 
@@ -155,17 +157,21 @@ void ISender<ChannelType>::optimal_action( void )
   assert( prior.size() == 1 );
   assert( container->time() == prior.time() );
 
-  EnsembleContainer< EmbeddableEnsemble<ChannelType> > fans;
+  UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans;
 
-  fans.add_mature( prior );
-  fans.add_mature( prior );
+  EmbeddableEnsemble<ChannelType> prior_mod( prior );
+
+  fans.add_mature( prior_mod );
+  fans.get_channel( 0 ).delay = 0;
+
+  fans.add_mature( prior_mod );
+  fans.get_channel( 1 ).delay = 5;
   
   extractor->get_pawn( fans.get_channel( 1 ).channel.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
   
   printf( "Initial simulated time is %f, count is %d\n",
 	  fans.time(), fans.size() );
-  cout << fans.get_channel( 0 ).channel.identify();
-  cout << fans.get_channel( 1 ).channel.identify();
+  cout << fans.identify();
   printf( "\n\n\n" );
 
   while ( 1 ) {
@@ -179,8 +185,7 @@ void ISender<ChannelType>::optimal_action( void )
 
     printf( "At simulated time %f, count is %d\n",
 	  fans.time(), fans.count_distinct() );
-    cout << fans.get_channel( 0 ).channel.identify();
-    cout << fans.get_channel( 1 ).channel.identify();
+    cout << fans.identify();
     printf( "\n\n\n" );
   }
 }
