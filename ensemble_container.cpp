@@ -28,6 +28,21 @@ void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
   channels[ new_addr ].channel.init();
 }
 
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::add_mature( ChannelType s_channel )
+{
+  channels.push_back( WeightedChannel( 1.0, s_channel ) );
+  int new_addr = channels.size() - 1;
+  channels[ new_addr ].channel.connect( new_addr, this );
+
+  /* duplicate old channel's wakeups */
+  for ( typename ChannelType::wakeup_iterator i = channels[ new_addr ].channel.wakeup_begin();
+	i != channels[ new_addr ].channel.wakeup_end();
+	i++ ) {
+    assert( i->time >= time() );
+    wakeups.push( Event( i->time, new_addr, i->sort_order ) );
+  }
+}
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
@@ -136,6 +151,27 @@ void EnsembleContainer<ChannelType>::assert_normalized( void )
   }
 
   assert( fabs( new_total - 1.0 ) < 1e-10 );
+}
+
+template <class ChannelType>
+int EnsembleContainer<ChannelType>::count_distinct( void )
+{
+  typedef ChannelType * key_t;
+  typedef dense_hash_set< key_t, channel_hash, equal_channels > dhs_t;
+  assert( (int)channels.size() > erased_count );
+  dhs_t set( (int)channels.size() - erased_count );
+  set.set_empty_key( NULL );
+
+  for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
+    if ( channels[ a1 ].erased ) {
+      continue;
+    }
+
+    key_t key( &(channels[ a1 ].channel) );
+    set.insert( key );
+  }
+
+  return set.size();
 }
 
 template <class ChannelType>
@@ -327,10 +363,12 @@ void EnsembleContainer<ChannelType>::prune( double threshold )
 template <class ChannelType>
 size_t EnsembleContainer<ChannelType>::hash( void ) const
 {
+  assert( fork_queue.empty() );
+
   size_t seed = 0;
+  boost::hash_combine( seed, wakeups );
   boost::hash_combine( seed, the_time );
   boost::hash_combine( seed, channels );
-  boost::hash_combine( seed, fork_queue );
   boost::hash_combine( seed, forking );
   return seed;
 }

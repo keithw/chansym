@@ -4,6 +4,7 @@
 #include "isender.hpp"
 #include "extractor.hpp"
 #include "pawn.hpp"
+#include "embeddable_ensemble.hpp"
 
 #define        MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -129,6 +130,7 @@ void ISender<ChannelType>::sendout( Packet p )
   prior.execute_fork();
 }
 
+/*
 static double utility( vector<ScheduledPacket> x )
 {
   double util = 0;
@@ -145,6 +147,7 @@ static double utility( vector<ScheduledPacket> x )
 
   return util;
 }
+*/
 
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
@@ -152,38 +155,32 @@ void ISender<ChannelType>::optimal_action( void )
   assert( prior.size() == 1 );
   assert( container->time() == prior.time() );
 
-  EnsembleContainer<ChannelType> silent = prior, sent = prior;
+  EnsembleContainer< EmbeddableEnsemble<ChannelType> > fans;
 
-  extractor->get_pawn( sent.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
-
-  printf( "Initial simulated time is %f/%f, equality is %d\n",
-	  silent.time(), sent.time(), silent == sent );
-    cout << silent.identify();
-    cout << sent.identify();
-    printf( "\n\n\n" );
-
-    double silentu = 0, sentu = 0;
+  fans.add_mature( prior );
+  fans.add_mature( prior );
+  
+  extractor->get_pawn( fans.get_channel( 1 ).channel.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
+  
+  printf( "Initial simulated time is %f, count is %d\n",
+	  fans.time(), fans.size() );
+  cout << fans.get_channel( 0 ).channel.identify();
+  cout << fans.get_channel( 1 ).channel.identify();
+  printf( "\n\n\n" );
 
   while ( 1 ) {
-    double next_time = MIN( silent.next_time(), silent.next_time() );
-    silent.advance_to( next_time );
-    sent.advance_to( next_time );
+    fans.advance_to( fans.next_time() );
 
-    silentu += utility( extractor->get_collector( silent.get_channel( 0 ).channel ).get_packets() )
-      + 5 * utility( extractor->get_cross_traffic( silent.get_channel( 0 ).channel ).get_packets() );
+    for ( unsigned int i = 0; i < fans.size(); i++ ) {
+      for ( unsigned int j = 0; j < fans.get_channel( 0 ).channel.size(); j++ ) {
+	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
+      }
+    }
 
-    sentu += utility( extractor->get_collector( sent.get_channel( 0 ).channel ).get_packets() )
-      + 5 * utility( extractor->get_cross_traffic( sent.get_channel( 0 ).channel ).get_packets() );
-
-    extractor->reset( silent.get_channel( 0 ).channel );
-    extractor->reset( sent.get_channel( 0 ).channel );
-
-    printf( "At simulated time %f/%f, utility is %f/%f, silent and sent equality is: %d\n",
-	    silent.time(), sent.time(),
-	    silentu, sentu, silent == sent );
-    printf( "SENDING ADVANTAGE = %f\n", sentu - silentu );
-    cout << silent.identify();
-    cout << sent.identify();
+    printf( "At simulated time %f, count is %d\n",
+	  fans.time(), fans.count_distinct() );
+    cout << fans.get_channel( 0 ).channel.identify();
+    cout << fans.get_channel( 1 ).channel.identify();
     printf( "\n\n\n" );
   }
 }

@@ -131,7 +131,7 @@ int main( void )
   EnsembleContainer<typename TwoTerminalNetwork::RealChannel> truth;
   EnsembleContainer<typename TwoTerminalNetwork::SimulatedChannel> prior;
 
-  truth.set_forking( false );
+  truth.set_follow_all_forks( false );
 
   prior.add( series( series( Pawn(),
 			     Pinger( M_PI / 3, -1 ) ),
@@ -150,6 +150,8 @@ int main( void )
 					       Collector() ) ) ) ) );
 
   truth.normalize();
+
+  EnsembleContainer<EmbeddableEnsemble<typename TwoTerminalNetwork::SimulatedChannel>> actionfan( prior );
 
   while ( truth.tick() && (truth.time() < 100) ) {}
 

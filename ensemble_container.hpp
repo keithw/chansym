@@ -51,7 +51,10 @@ private:
     }
   };
 
+protected:
   double the_time;
+
+private:
   vector<WeightedChannel> channels;
   queue<PendingFork> fork_queue;
   int erased_count;
@@ -61,7 +64,7 @@ private:
 
   void compact( void );
   void assert_normalized( void );
-
+  
 public:
   EnsembleContainer();
   EnsembleContainer( ChannelType s_channel );
@@ -71,6 +74,7 @@ public:
   void advance_to( double advance_time );
 
   void combine( void );
+  int count_distinct( void );
 
   void sleep_until( double time, int source_addr, int sort_order=0 ) { wakeups.push( Event( time, source_addr, sort_order ) ); }
   void signal_sendable( int ) {}
@@ -81,8 +85,9 @@ public:
   double probability( int source_addr );
 
   void add( ChannelType s_channel );
+  void add_mature( ChannelType s_channel );
   void set_printing( bool s_printing ) { printing = s_printing; }
-  void set_forking( bool s_forking ) { forking = s_forking; }
+  void set_follow_all_forks( bool s_forking ) { forking = s_forking; }
 
   bool operator==( const EnsembleContainer<ChannelType> &x ) const;
 
