@@ -24,6 +24,15 @@ private:
     {
       return (probability == x.probability) && (channel == x.channel) && (erased == x.erased);
     }
+
+    friend size_t hash_value( const WeightedChannel &x )
+    {
+      size_t seed = 0;
+      boost::hash_combine( seed, x.probability );
+      boost::hash_combine( seed, x.channel );
+      boost::hash_combine( seed, x.erased );
+      return seed;
+    }
   };
 
   class PendingFork {
@@ -75,7 +84,7 @@ public:
   void set_printing( bool s_printing ) { printing = s_printing; }
   void set_forking( bool s_forking ) { forking = s_forking; }
 
-  bool operator==( const EnsembleContainer<ChannelType> &x ) const { return (the_time == x.the_time) && (channels == x.channels) && (fork_queue.empty()) && (x.fork_queue.empty()); }
+  bool operator==( const EnsembleContainer<ChannelType> &x ) const;
 
   unsigned int size( void ) { return channels.size(); }
   WeightedChannel & get_channel( int address );
@@ -103,6 +112,39 @@ public:
 	return false;
       }
 
+      ChannelType *del = (ChannelType *)-1;
+
+      if ( (a == del) && (b == del) ) {
+	return true;
+      }
+
+      if ( (a == del) || (b == del) ) {
+	return false;
+      }
+
+      return ((*a) == (*b));
+    }
+
+    bool operator() ( const WeightedChannel *a, const WeightedChannel *b ) const
+    {
+      if ( (a == NULL) && (b == NULL) ) {
+	return true;
+      }
+
+      if ( (a == NULL) || (b == NULL) ) {
+	return false;
+      }
+
+      WeightedChannel *del = (WeightedChannel *)-1;
+
+      if ( (a == del) && (b == del) ) {
+	return true;
+      }
+
+      if ( (a == del) || (b == del) ) {
+	return false;
+      }
+
       return ((*a) == (*b));
     }
   };
@@ -110,6 +152,11 @@ public:
   class channel_hash {
   public:
     size_t operator() ( const ChannelType *a ) const
+    {
+      return hash_value( *a );
+    }
+
+    size_t operator() ( const WeightedChannel *a ) const
     {
       return hash_value( *a );
     }

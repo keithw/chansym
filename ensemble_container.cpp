@@ -3,12 +3,14 @@
 #include <math.h>
 #include <sstream>
 #include <google/dense_hash_map>
+#include <google/dense_hash_set>
 #include <boost/functional/hash.hpp>
 #include <boost/optional/optional.hpp>
 
 #include "ensemble_container.hpp"
 
 using google::dense_hash_map;
+using google::dense_hash_set;
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer()
@@ -143,7 +145,7 @@ void EnsembleContainer<ChannelType>::combine( void )
   typedef dense_hash_map< key_t, size_t, channel_hash, equal_channels > dhm_t;
   assert( (int)channels.size() > erased_count );
   dhm_t set( (int)channels.size() - erased_count );
-  set.set_empty_key( key_t() );
+  set.set_empty_key( NULL );
 
   for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
     if ( channels[ a1 ].erased ) {
@@ -341,4 +343,48 @@ void EnsembleContainer<ChannelType>::advance_to( double advance_time )
   }
 
   the_time = advance_time;
+}
+
+template <class ChannelType>
+bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<ChannelType> &x ) const
+{
+  if ( the_time != x.the_time )
+    return false;
+  
+  if ( !(fork_queue.empty() && x.fork_queue.empty()) )
+    return false;
+  
+  if ( channels.size() != x.channels.size() )
+    return false;
+  
+  /* Now compare channel sets */
+  typedef const WeightedChannel * key_t;
+  typedef dense_hash_set< key_t, channel_hash, equal_channels > dhs_t;
+  
+  WeightedChannel *deleted = (WeightedChannel *)-1;
+
+  dhs_t other_set( (int)x.channels.size() - x.erased_count );
+  other_set.set_empty_key( NULL );
+  other_set.set_deleted_key( deleted );
+
+  for ( unsigned i = 0; i < x.channels.size(); i++ ) {
+    if ( !x.channels[ i ].erased ) {
+      key_t key( &x.channels[ i ] );
+      other_set.insert( key );
+    }
+  }
+  
+  for ( unsigned i = 0; i < channels.size(); i++ ) {
+    if ( !channels[ i ].erased ) {
+      key_t key( &channels[ i ] );
+      typename dhs_t::const_iterator it = other_set.find( key );
+      if ( it == other_set.end() ) {
+	return false;
+      } else {
+	other_set.erase( it );
+      }
+    }
+  }
+  
+  return other_set.empty();
 }
