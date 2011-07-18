@@ -16,6 +16,7 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
   : prior( s_prior ),
     extractor( s_extractor ),
     latest_time( -1 ),
+    next_send_time( -1 ), counter( 0 ),
     id( 0 ), smallestsize( prior.size() )
 {}
 
@@ -24,6 +25,7 @@ ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
   : Channel( x ),
     prior( x.prior ), extractor( x.extractor ),
     latest_time( x.latest_time ),
+    next_send_time( x.next_send_time ), counter( x.counter ),
     id( x.id ), smallestsize( x.smallestsize )
 {}
 
@@ -36,6 +38,9 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
   extractor = x.extractor;
   latest_time = x.latest_time;
 
+  next_send_time = x.next_send_time;
+  counter = x.counter;
+
   id = x.id;
   smallestsize = x.smallestsize;
 
@@ -45,7 +50,7 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
 template <class ChannelType>
 void ISender<ChannelType>::init( void )
 {
-  container->sleep_until( 0, addr, 99 );
+  container->sleep_until( container->time(), addr, 99 );
 }
 
 template <class ChannelType>
@@ -148,10 +153,11 @@ static double utility( vector<ScheduledPacket> x )
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
 {
-  assert( prior.size() == 1 );
   assert( container->time() == prior.time() );
 
-  UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans;
+  double base_time = prior.time();
+
+  UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans( base_time );
 
   vector<double> delays;
   delays.push_back( -1 );
@@ -168,9 +174,10 @@ void ISender<ChannelType>::optimal_action( void )
   /* add channels to fan */
   for ( unsigned int i = 0; i < delays.size(); i++ ) {
     fans.add_mature( prior );
-    fans.get_channel( i ).delay = delays[ i ];
-    if ( delays[ i ] >= 0 ) {
-      delay_queue.push( Event( delays[ i ], i, 0 ) );
+    double the_delay = base_time + delays[ i ];
+    fans.get_channel( i ).delay = the_delay;
+    if ( the_delay >= base_time ) {
+      delay_queue.push( Event( the_delay, i, 0 ) );
       sent_yet.push_back( false );
     } else {
       sent_yet.push_back( true );
@@ -184,7 +191,7 @@ void ISender<ChannelType>::optimal_action( void )
     }
   }
 
-  while ( 1 ) {
+  while ( (!delay_queue.empty()) || (fans.count_distinct() != 1) ) {
     double next_event_time = fans.next_time();
 
     if ( delay_queue.empty() ) {
@@ -199,7 +206,9 @@ void ISender<ChannelType>::optimal_action( void )
 
 	assert( !sent_yet[ next_send.addr ] );
 	for ( unsigned int i = 0; i < fans.get_channel( next_send.addr ).channel.size(); i++ ) {
-	  extractor->get_pawn( fans.get_channel( next_send.addr ).channel.get_channel( i ).channel ).send( Packet( 12000, 0, 0, fans.time() ) );
+	  if ( fans.get_channel( next_send.addr ).channel.get_channel( i ).delay != -100 ) {
+	    extractor->get_pawn( fans.get_channel( next_send.addr ).channel.get_channel( i ).channel ).send( Packet( 12000, 0, 0, fans.time() ) );
+	  }
 	}
 	sent_yet[ next_send.addr ] = true;
       }
@@ -209,9 +218,7 @@ void ISender<ChannelType>::optimal_action( void )
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
       for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
 	if ( (!sent_yet[ i ]) && (extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets().size() != 0) ) {
-	  fans.get_channel( i ).channel.get_channel( j ).utility = -100; /* early wakeup same as non-sending */
-	} else if ( fans.get_channel( i ).channel.get_channel( j ).utility == -100 ) {
-	  /* do nothing */
+	  fans.get_channel( i ).channel.get_channel( j ).delay = -100; /* early wakeup same as non-sending */
 	} else {
 	  double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
 	    + utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
@@ -221,5 +228,12 @@ void ISender<ChannelType>::optimal_action( void )
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
     }
+
+    printf( "time = %f, distinct = %d\n", fans.time(), fans.count_distinct() );
   }
+
+  /* total up utilities */
+  //  double utility_notsending = sum_utilities( fans.get_channel( 0 ).channel );
+
+  
 }

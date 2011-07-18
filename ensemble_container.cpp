@@ -18,6 +18,11 @@ EnsembleContainer<ChannelType>::EnsembleContainer()
 {}
 
 template <class ChannelType>
+EnsembleContainer<ChannelType>::EnsembleContainer( double s_time )
+  : the_time( s_time ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true )
+{}
+
+template <class ChannelType>
 void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
 {
   assert( time() == 0 );

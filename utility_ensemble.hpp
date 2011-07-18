@@ -9,8 +9,8 @@ class UtilityEnsemble : public EnsembleContainer< ChannelType > {
   typedef EnsembleContainer< ChannelType > Parent;
 
 public:
-  UtilityEnsemble()
-    : Parent()
+  UtilityEnsemble( double s_time )
+    : Parent( s_time )
   {}
 
   string identify( void );

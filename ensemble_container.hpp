@@ -71,6 +71,7 @@ public:
   EnsembleContainer();
   EnsembleContainer( ChannelType s_channel );
   EnsembleContainer( const EnsembleContainer<ChannelType> &x );
+  EnsembleContainer( double s_time );
 
   bool tick( void );
   void advance_to( double advance_time );
