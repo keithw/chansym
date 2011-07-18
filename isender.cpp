@@ -64,7 +64,8 @@ void ISender<ChannelType>::wakeup( void )
 
   /* Do we need to run? */
   if ( (latest_time == current_time)
-       && (true_received.empty()) ) {
+       && (true_received.empty())
+       && (current_time != next_send_time) ) {
     return;
   } else {
     latest_time = current_time;
@@ -72,6 +73,12 @@ void ISender<ChannelType>::wakeup( void )
 
   /* advance prior to actual time */
   prior.advance_to( current_time );
+
+  if ( current_time == next_send_time ) {
+    sendout( Packet( 12000, id, counter++, current_time ) );
+    printf( "SENDING at time %f\n", current_time );
+    next_send_time = -1;
+  }
 
   /* ping if necessary */
   optimal_action();
@@ -144,7 +151,7 @@ static double utility( vector<ScheduledPacket> x )
     assert( delay >= 0 );
     assert( delay < 10 );
 
-    util = 10 - delay;
+    util += 10 - delay;
   }
 
   return util;
@@ -153,6 +160,8 @@ static double utility( vector<ScheduledPacket> x )
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
 {
+  const double EARLY_WAKEUP = -100;
+
   assert( container->time() == prior.time() );
 
   double base_time = prior.time();
@@ -161,11 +170,10 @@ void ISender<ChannelType>::optimal_action( void )
 
   vector<double> delays;
   delays.push_back( -1 );
-  delays.push_back( 0 );
-  delays.push_back( .5 );
-  delays.push_back( 1 );
-  delays.push_back( 5 );
-  delays.push_back( 10 );
+
+  for ( double d = 0; d < 10; d += 0.1 ) {
+    delays.push_back( d );
+  }
 
   vector<bool> sent_yet;
 
@@ -206,7 +214,7 @@ void ISender<ChannelType>::optimal_action( void )
 
 	assert( !sent_yet[ next_send.addr ] );
 	for ( unsigned int i = 0; i < fans.get_channel( next_send.addr ).channel.size(); i++ ) {
-	  if ( fans.get_channel( next_send.addr ).channel.get_channel( i ).delay != -100 ) {
+	  if ( fans.get_channel( next_send.addr ).channel.get_channel( i ).delay != EARLY_WAKEUP ) {
 	    extractor->get_pawn( fans.get_channel( next_send.addr ).channel.get_channel( i ).channel ).send( Packet( 12000, 0, 0, fans.time() ) );
 	  }
 	}
@@ -218,22 +226,56 @@ void ISender<ChannelType>::optimal_action( void )
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
       for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
 	if ( (!sent_yet[ i ]) && (extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets().size() != 0) ) {
-	  fans.get_channel( i ).channel.get_channel( j ).delay = -100; /* early wakeup same as non-sending */
-	} else {
-	  double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
-	    + utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
-	  fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
+	  fans.get_channel( i ).channel.get_channel( j ).delay = EARLY_WAKEUP; /* early wakeup same as non-sending */
 	}
+
+	double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
+	+ 3 * utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
+	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
 
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
     }
 
-    printf( "time = %f, distinct = %d\n", fans.time(), fans.count_distinct() );
+    /*
+    printf( "===\nIterating at time %f, distinct = %d\n", fans.time(), fans.count_distinct() );
+    cout << fans.identify();
+    */
   }
 
   /* total up utilities */
-  //  double utility_notsending = sum_utilities( fans.get_channel( 0 ).channel );
+  priority_queue< pair< double, double > > strategies;
 
-  
+  for ( unsigned int i = 0; i < fans.size(); i++ ) {
+    double total_probability = 0;
+    double utility = 0;
+
+    EmbeddableEnsemble<ChannelType> &ch = fans.get_channel( i ).channel;
+
+    for ( unsigned int j = 0; j < ch.size(); j++ ) {
+      utility += ch.get_channel( j ).utility * ch.get_channel( j ).probability;
+      total_probability += ch.get_channel( j ).probability;
+    }
+
+    assert( fabs( total_probability - 1.0 ) <= 1e-10 );
+    strategies.push( make_pair( utility, -fans.get_channel( i ).delay ) );
+  }
+
+  next_send_time = -strategies.top().second;
+
+  if ( next_send_time >= base_time ) {
+    container->sleep_until( next_send_time, addr, 99 );
+    printf( "SLEEPING for %f secs\n", next_send_time - base_time );
+  }
+
+  /*
+  while ( !strategies.empty() ) {
+    printf( "At time %f, utility (%f/%f) comes from delay of %f\n",
+	    container->time(), strategies.top().first,
+	    fans.time() - base_time,
+	    -strategies.top().second - container->time() );
+    strategies.pop();
+  }
+  */
 }
+

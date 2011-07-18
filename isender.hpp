@@ -3,6 +3,7 @@
 
 #include "channel.hpp"
 #include "ensemble_container.hpp"
+#include "embeddable_ensemble.hpp"
 
 template <class ChannelType>
 class Extractor;

@@ -134,7 +134,7 @@ int main( void )
   truth.set_follow_all_forks( false );
 
   prior.add( series( series( Pawn(),
-			     Pinger( M_PI / 3, -1 ) ),
+			     Pinger( 2, -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( Collector(),
@@ -143,7 +143,7 @@ int main( void )
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( M_PI / 3, -1 ) ),
+			     Pinger( 2, -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( SignallingCollector( &network.waker ),
@@ -151,7 +151,9 @@ int main( void )
 
   truth.normalize();
 
-  while ( truth.tick() && (truth.time() < 100) ) {}
+  truth.set_printing( true );
+
+  while ( truth.tick() && (truth.time() < 1000) ) {}
 
   return 0;
 }
