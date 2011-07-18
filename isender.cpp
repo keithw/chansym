@@ -76,7 +76,6 @@ void ISender<ChannelType>::wakeup( void )
 
   if ( current_time == next_send_time ) {
     sendout( Packet( 12000, id, counter++, current_time ) );
-    printf( "SENDING at time %f\n", current_time );
     next_send_time = -1;
   }
 
@@ -171,7 +170,9 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  for ( double d = 0; d < 10; d += 0.1 ) {
+  const double LIMIT = 3;
+
+  for ( double d = 0; d < LIMIT; d += 0.1 ) {
     delays.push_back( d );
   }
 
@@ -265,7 +266,8 @@ void ISender<ChannelType>::optimal_action( void )
 
   if ( next_send_time >= base_time ) {
     container->sleep_until( next_send_time, addr, 99 );
-    printf( "SLEEPING for %f secs\n", next_send_time - base_time );
+  } else {
+    container->sleep_until( base_time + LIMIT, addr, 99 );
   }
 
   /*
