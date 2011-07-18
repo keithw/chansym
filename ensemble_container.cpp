@@ -376,6 +376,8 @@ size_t EnsembleContainer<ChannelType>::hash( void ) const
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::advance_to( double advance_time )
 {
+  assert( advance_time >= the_time );
+
   while ( next_time() <= advance_time ) {
     tick();
   }

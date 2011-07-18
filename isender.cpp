@@ -16,7 +16,7 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
   : prior( s_prior ),
     extractor( s_extractor ),
     latest_time( -1 ),
-    next_ping_time( -1 ), increment( 1 ), counter( 0 ), id( 0 ), smallestsize( prior.size() )
+    id( 0 ), smallestsize( prior.size() )
 {}
 
 template <class ChannelType>
@@ -24,7 +24,7 @@ ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
   : Channel( x ),
     prior( x.prior ), extractor( x.extractor ),
     latest_time( x.latest_time ),
-    next_ping_time( x.next_ping_time ), increment( x.increment ), counter( x.counter ), id( x.id ), smallestsize( x.smallestsize )
+    id( x.id ), smallestsize( x.smallestsize )
 {}
 
 template <class ChannelType>
@@ -36,9 +36,6 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
   extractor = x.extractor;
   latest_time = x.latest_time;
 
-  next_ping_time = x.next_ping_time;
-  increment = x.increment;
-  counter = x.counter;
   id = x.id;
   smallestsize = x.smallestsize;
 
@@ -48,8 +45,7 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
 template <class ChannelType>
 void ISender<ChannelType>::init( void )
 {
-  next_ping_time = container->time();
-  container->sleep_until( next_ping_time, addr, 99 );
+  container->sleep_until( 0, addr, 99 );
 }
 
 template <class ChannelType>
@@ -132,7 +128,6 @@ void ISender<ChannelType>::sendout( Packet p )
   prior.execute_fork();
 }
 
-/*
 static double utility( vector<ScheduledPacket> x )
 {
   double util = 0;
@@ -149,7 +144,6 @@ static double utility( vector<ScheduledPacket> x )
 
   return util;
 }
-*/
 
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
@@ -159,33 +153,73 @@ void ISender<ChannelType>::optimal_action( void )
 
   UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans;
 
-  EmbeddableEnsemble<ChannelType> prior_mod( prior );
+  vector<double> delays;
+  delays.push_back( -1 );
+  delays.push_back( 0 );
+  delays.push_back( .5 );
+  delays.push_back( 1 );
+  delays.push_back( 5 );
+  delays.push_back( 10 );
 
-  fans.add_mature( prior_mod );
-  fans.get_channel( 0 ).delay = 0;
+  vector<bool> sent_yet;
 
-  fans.add_mature( prior_mod );
-  fans.get_channel( 1 ).delay = 5;
-  
-  extractor->get_pawn( fans.get_channel( 1 ).channel.get_channel( 0 ).channel ).send( Packet( 12000, 0, 0, container->time() ) );
-  
-  printf( "Initial simulated time is %f, count is %d\n",
-	  fans.time(), fans.size() );
-  cout << fans.identify();
-  printf( "\n\n\n" );
+  priority_queue<Event, deque<Event>, Event> delay_queue;
+
+  /* add channels to fan */
+  for ( unsigned int i = 0; i < delays.size(); i++ ) {
+    fans.add_mature( prior );
+    fans.get_channel( i ).delay = delays[ i ];
+    if ( delays[ i ] >= 0 ) {
+      delay_queue.push( Event( delays[ i ], i, 0 ) );
+      sent_yet.push_back( false );
+    } else {
+      sent_yet.push_back( true );
+    }
+  }
+
+  /* initialize utilities */
+  for ( unsigned int i = 0; i < fans.size(); i++ ) {
+    for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
+      fans.get_channel( i ).channel.get_channel( j ).utility = 0;
+    }
+  }
 
   while ( 1 ) {
-    fans.advance_to( fans.next_time() );
+    double next_event_time = fans.next_time();
 
-    for ( unsigned int i = 0; i < fans.size(); i++ ) {
-      for ( unsigned int j = 0; j < fans.get_channel( 0 ).channel.size(); j++ ) {
-	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
+    if ( delay_queue.empty() ) {
+      fans.advance_to( next_event_time );
+    } else {
+      Event next_send = delay_queue.top();
+      fans.advance_to( MIN( next_send.time, next_event_time ) );
+
+      if ( fans.time() == next_send.time ) {
+	/* send */
+	delay_queue.pop();
+
+	assert( !sent_yet[ next_send.addr ] );
+	for ( unsigned int i = 0; i < fans.get_channel( next_send.addr ).channel.size(); i++ ) {
+	  extractor->get_pawn( fans.get_channel( next_send.addr ).channel.get_channel( i ).channel ).send( Packet( 12000, 0, 0, fans.time() ) );
+	}
+	sent_yet[ next_send.addr ] = true;
       }
     }
 
-    printf( "At simulated time %f, count is %d\n",
-	  fans.time(), fans.count_distinct() );
-    cout << fans.identify();
-    printf( "\n\n\n" );
+    /* iterate through channels */
+    for ( unsigned int i = 0; i < fans.size(); i++ ) {
+      for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
+	if ( (!sent_yet[ i ]) && (extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets().size() != 0) ) {
+	  fans.get_channel( i ).channel.get_channel( j ).utility = -100; /* early wakeup same as non-sending */
+	} else if ( fans.get_channel( i ).channel.get_channel( j ).utility == -100 ) {
+	  /* do nothing */
+	} else {
+	  double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
+	    + utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
+	  fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
+	}
+
+	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
+      }
+    }
   }
 }

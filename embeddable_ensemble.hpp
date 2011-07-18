@@ -14,6 +14,8 @@ public:
     : Parent( x )
   {}
 
+  double time( void ) { return container->time(); }
+
   void sleep_until( double time, int source_addr, int sort_order=0 )
   {
     Parent::wakeups.push( Event( time, source_addr, sort_order ) );

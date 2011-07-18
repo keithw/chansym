@@ -13,7 +13,9 @@ string EmbeddableEnsemble<ChannelType>::identify( void )
 
   for ( unsigned int i = 0; i < Parent::channels.size(); i++ ) {
     response << i;
-    response << " (utility=";
+    response << "(p=";
+    response << Parent::channels[ i ].probability;
+    response << ", utility=";
     response << Parent::channels[ i ].utility;
     response << "): " + Parent::channels[ i ].channel.identify();
     response << endl;

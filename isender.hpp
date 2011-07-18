@@ -16,8 +16,7 @@ private:
 
   double latest_time;
 
-  double next_ping_time, increment;
-  int counter, id;
+  int id;
   unsigned int smallestsize;
 
   void optimal_action( void );
