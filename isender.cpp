@@ -206,12 +206,12 @@ void ISender<ChannelType>::optimal_action( void )
   }
 
   int steps = 0;
-  while ( (!delay_queue.empty()) || (fans.count_distinct() != 1) ) {
+  while ( (!delay_queue.empty()) || (!fans.converged()) ) {
     steps++;
 
     if ( steps > 10000 ) {
-      printf( "Error: Iterated %d steps to t=%f but fan has %d distinct realizations\n",
-	      steps, fans.time(), fans.count_distinct() );
+      printf( "Error: Iterated %d steps to t=%f but fan has not converged\n",
+	      steps, fans.time() );
 
       printf( "===" );
       for ( unsigned int i = 0; i < fans.size(); i++ ) {

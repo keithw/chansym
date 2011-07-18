@@ -133,7 +133,7 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double ping_interval = 1.5; ping_interval <= 2.5; ping_interval += 0.1 ) {
+  for ( double ping_interval = 10; ping_interval <= 10; ping_interval += 0.1 ) {
     for ( int bufsize = 48000; bufsize <= 96000; bufsize += 24000 ) {
       for ( double throughput = 12000; throughput <= 24000; throughput += 4000 ) {
 	prior.add( series( series( Pawn(),
@@ -149,7 +149,7 @@ int main( void )
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( 1.5, -1 ) ),
+			     Pinger( 10, -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( SignallingCollector( &network.waker ),

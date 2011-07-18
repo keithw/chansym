@@ -83,7 +83,7 @@ public:
   void advance_to( double advance_time );
 
   void combine( void );
-  int count_distinct( void );
+  bool converged( void );
 
   void sleep_until( double time, int source_addr, int sort_order=0 ) { wakeups.push( Event( time, source_addr, sort_order ) ); }
   void signal_sendable( int ) {}

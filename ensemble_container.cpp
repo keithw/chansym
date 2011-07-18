@@ -159,14 +159,28 @@ void EnsembleContainer<ChannelType>::assert_normalized( void )
 }
 
 template <class ChannelType>
-int EnsembleContainer<ChannelType>::count_distinct( void )
+bool EnsembleContainer<ChannelType>::converged( void )
 {
+  assert( !channels.empty() );
+  if ( channels.size() == 1 ) {
+    return true;
+  }
+
+  for ( unsigned int i = 1; i < channels.size(); i++ ) {
+    if ( !(channels[ 0 ].channel == channels[ i ].channel) ) {
+      return false;
+    }
+  }
+
+  return true;
+
+  /*
   uint distinct = 0;
   for ( unsigned int i = 0; i < channels.size(); i++ ) {
     bool is_distinct = 1;
     for ( unsigned int j = 0; j < i; j++ ) {
       if ( channels[ j ].channel == channels[ i ].channel ) {
-	/* has predicate */
+      // has predicate
 	is_distinct = 0;
 	break;
       }
@@ -175,6 +189,8 @@ int EnsembleContainer<ChannelType>::count_distinct( void )
   }
 
   return distinct;
+
+*/
 
   /*
   typedef ChannelType * key_t;
