@@ -28,7 +28,7 @@ void StochasticLoss::after_fork( bool is_other, ForkState x )
   forking = false;
 }
 
-string StochasticLoss::identify( void )
+string StochasticLoss::identify( void ) const
 {
   ostringstream response;
 

@@ -21,7 +21,7 @@ public:
 
   bool operator==( const Screener &x ) const { return passthrough_src == x.passthrough_src; }
 
-  string identify( void ) { return "Screener"; }
+  string identify( void ) const { return "Screener"; }
 
   friend size_t hash_value( Screener const & ch )
   {

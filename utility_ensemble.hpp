@@ -13,7 +13,7 @@ public:
     : Parent( s_time )
   {}
 
-  string identify( void );
+  string identify( void ) const;
 
   void combine( void ) { assert( false ); }
 };

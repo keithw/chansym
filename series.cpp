@@ -168,7 +168,7 @@ void Series<First, Second>::fork( int source_addr, double my_probability, Channe
 }
 
 template <class First, class Second>
-string Series<First, Second>::identify( void )
+string Series<First, Second>::identify( void ) const
 {
   return "< " + a.identify() + " > => < " + b.identify() + " >";
 }

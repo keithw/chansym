@@ -29,11 +29,15 @@ void Throughput::wakeup( void )
   container->signal_sendable( addr );
 }
 
-string Throughput::identify( void )
+string Throughput::identify( void ) const
 {
   ostringstream response;
   response << "Throughput( ";
   response << throughput;
+  if ( is_busy() ) {
+    response << ", free at ";
+    response << next_free_time;
+  }
   response << " )";
 
   return response.str();

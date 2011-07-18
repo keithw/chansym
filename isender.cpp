@@ -114,6 +114,7 @@ void ISender<ChannelType>::wakeup( void )
   if ( prior.size() <= 32 ) {
     cout << prior.identify();
   }
+  fflush( NULL );
 }
 
 template <class ChannelType>
@@ -200,7 +201,34 @@ void ISender<ChannelType>::optimal_action( void )
     }
   }
 
+  int steps = 0;
   while ( (!delay_queue.empty()) || (fans.count_distinct() != 1) ) {
+    steps++;
+
+    if ( steps > 10000 ) {
+      printf( "Error: Iterated %d steps to t=%f but fan has %d distinct realizations\n",
+	      steps, fans.time(), fans.count_distinct() );
+
+      printf( "===" );
+      for ( unsigned int i = 0; i < fans.size(); i++ ) {
+	printf( "Overall equality between 0 and %d: %d\n", i,
+		fans.get_channel( 0 ).channel == fans.get_channel( i ).channel );
+
+	if ( !(fans.get_channel( 0 ).channel == fans.get_channel( i ).channel) ) {
+	  for ( unsigned int j = 0; i < fans.get_channel( 0 ).channel.size(); j++ ) {
+	    printf( "0[%d] == %d[%d]? prob=%d, erased=%d, channel=%d\n",
+		    j, i, j,
+		    fans.get_channel( 0 ).channel.get_channel( j ).probability == fans.get_channel( i ).channel.get_channel( j ).probability,
+		    fans.get_channel( 0 ).channel.get_channel( j ).erased == fans.get_channel( i ).channel.get_channel( j ).erased,
+		    fans.get_channel( 0 ).channel.get_channel( j ).channel == fans.get_channel( i ).channel.get_channel( j ).channel );
+	  }
+	}
+      }
+
+      cout << fans.identify();
+      exit( 1 );
+    }
+
     double next_event_time = fans.next_time();
 
     if ( delay_queue.empty() ) {
@@ -231,7 +259,7 @@ void ISender<ChannelType>::optimal_action( void )
 	}
 
 	double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
-	+ 3 * utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
+	+ utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
 	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
 
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );

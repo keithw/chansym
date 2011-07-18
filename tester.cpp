@@ -133,12 +133,18 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  prior.add( series( series( Pawn(),
-			     Pinger( 1.5, -1 ) ),
-		     series( Buffer( 96000 ),
-			     series( Throughput( 12000 ),
-				     diverter( Collector(),
-					       Collector() ) ) ) ) );
+  for ( double ping_interval = 1.5; ping_interval <= 2.5; ping_interval += 0.1 ) {
+    for ( int bufsize = 96000; bufsize <= 96000; bufsize += 24000 ) {
+      for ( double throughput = 12000; throughput <= 24000; throughput += 4000 ) {
+	prior.add( series( series( Pawn(),
+				   Pinger( ping_interval, -1 ) ),
+			   series( Buffer( bufsize ),
+				   series( Throughput( throughput ),
+					   diverter( Collector(),
+						     Collector() ) ) ) ) );
+      }
+    }
+  }
 
   prior.normalize();
 
@@ -150,8 +156,6 @@ int main( void )
 					       Collector() ) ) ) ) );
 
   truth.normalize();
-
-  truth.set_printing( true );
 
   while ( truth.tick() && (truth.time() < 100) ) {}
 

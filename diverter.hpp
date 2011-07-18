@@ -49,7 +49,7 @@ public:
 
   bool operator==( const Diverter<First, Second> &x ) const { return (a == x.a) && (b == x.b) && (wakeups == x.wakeups); }
 
-  string identify( void );
+  string identify( void ) const;
 
   size_t hash( void ) const;
 };

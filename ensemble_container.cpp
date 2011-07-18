@@ -161,6 +161,22 @@ void EnsembleContainer<ChannelType>::assert_normalized( void )
 template <class ChannelType>
 int EnsembleContainer<ChannelType>::count_distinct( void )
 {
+  uint distinct = 0;
+  for ( unsigned int i = 0; i < channels.size(); i++ ) {
+    bool is_distinct = 1;
+    for ( unsigned int j = 0; j < i; j++ ) {
+      if ( channels[ j ].channel == channels[ i ].channel ) {
+	/* has predicate */
+	is_distinct = 0;
+	break;
+      }
+    }
+    distinct += is_distinct;
+  }
+
+  return distinct;
+
+  /*
   typedef ChannelType * key_t;
   typedef dense_hash_set< key_t, channel_hash, equal_channels > dhs_t;
   assert( (int)channels.size() > erased_count );
@@ -177,6 +193,7 @@ int EnsembleContainer<ChannelType>::count_distinct( void )
   }
 
   return set.size();
+  */
 }
 
 template <class ChannelType>
@@ -328,7 +345,7 @@ typename EnsembleContainer<ChannelType>::WeightedChannel & EnsembleContainer<Cha
 }
 
 template <class ChannelType>
-string EnsembleContainer<ChannelType>::identify( void )
+string EnsembleContainer<ChannelType>::identify( void ) const
 {
   ostringstream response;
 
@@ -424,6 +441,22 @@ bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<Channel
       key_t key( &channels[ i ] );
       typename dhs_t::const_iterator it = other_set.find( key );
       if ( it == other_set.end() ) {
+	/*
+	printf( "Not found: [%f/%d] {%f/%f} %s\n",
+		key->probability,
+		key->erased,
+		key->delay,
+		key->utility,
+		key->channel.identify().c_str() );
+	for ( typename dhs_t::const_iterator i = other_set.begin();
+	      i != other_set.end();
+	      i++ ) {
+	  printf( "Candidate: [%f/%d] {%f/%f} %s\n",
+		  (*i)->probability, (*i)->erased,
+		  (*i)->delay, (*i)->utility,
+		  (*i)->channel.identify().c_str() );
+	}
+	*/
 	return false;
       } else {
 	other_set.erase( it );

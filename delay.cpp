@@ -23,7 +23,7 @@ void Delay::wakeup( void )
   container->receive( addr, pack.packet );
 }
 
-string Delay::identify( void )
+string Delay::identify( void ) const
 {
   ostringstream response;
   response << "Delay( ";

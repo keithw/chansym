@@ -39,7 +39,7 @@ public:
   Channel( const Channel &x ) : forking( x.forking ), addr( x.addr ), container( x.container ) {}
   Channel & operator=( const Channel &x ) { forking = x.forking; addr = x.addr; container = x.container; return *this; }
 
-  virtual std::string identify( void ) { return "[Unidentified Channel]"; }
+  virtual std::string identify( void ) const { return "[Unidentified Channel]"; }
 
   friend size_t hash_value( Channel const & ) { return 0; }
 

@@ -37,7 +37,7 @@ public:
 
   bool operator==( const ISender<ChannelType> &x ) const { return (prior == x.prior); }
 
-  string identify( void ) { return "ISender"; }
+  string identify( void ) const { return "ISender"; }
 
   size_t hash( void ) const;
 

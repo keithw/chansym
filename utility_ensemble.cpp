@@ -4,7 +4,7 @@
 #include "utility_ensemble.hpp"
 
 template <class ChannelType>
-string UtilityEnsemble<ChannelType>::identify( void )
+string UtilityEnsemble<ChannelType>::identify( void ) const
 {
   ostringstream response;
 

@@ -39,7 +39,7 @@ void Buffer::send( Packet pack )
   uncork();
 }
 
-string Buffer::identify( void )
+string Buffer::identify( void ) const
 {
   ostringstream response;
   response << "Buffer( ";

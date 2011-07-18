@@ -37,7 +37,7 @@ public:
 
   bool operator==( const Collector &x ) const { return packets == x.packets; }
 
-  string identify( void ) { return "Collector"; }
+  string identify( void ) const { return "Collector"; }
 
   friend size_t hash_value( Collector const & ch )
   {

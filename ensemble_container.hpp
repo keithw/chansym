@@ -20,11 +20,17 @@ private:
     double utility;
 
     WeightedChannel( double s_p, ChannelType s_c )
-      : probability( s_p ), channel( s_c ), erased( false ), delay( -1 ), utility( -1 )
+      : probability( s_p ), channel( s_c ), erased( false ), delay( -5 ), utility( -5 )
     {}
 
     bool operator==( const WeightedChannel &x ) const
     {
+      /*
+      printf( "Comparing two WeightedChannels: prob=%d, chan=%d, erased=%d\n",
+	      (probability == x.probability),
+	      (channel == x.channel),
+	      (erased == x.erased) );
+      */
       return (probability == x.probability) && (channel == x.channel) && (erased == x.erased);
     }
 
@@ -94,7 +100,7 @@ public:
 
   bool operator==( const EnsembleContainer<ChannelType> &x ) const;
 
-  unsigned int size( void ) { return channels.size(); }
+  unsigned int size( void ) const { return channels.size(); }
   WeightedChannel & get_channel( int address );
 
   bool live( void ) { return !wakeups.empty(); }
@@ -104,7 +110,7 @@ public:
   void prune( double threshold );
   void execute_fork( void );
 
-  string identify( void );
+  string identify( void ) const;
 
   int get_erased_count( void ) { return erased_count; }
 

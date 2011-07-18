@@ -3,7 +3,7 @@
 #include "embeddable_ensemble.hpp"
 
 template <class ChannelType>
-string EmbeddableEnsemble<ChannelType>::identify( void )
+string EmbeddableEnsemble<ChannelType>::identify( void ) const
 {
   ostringstream response;
 

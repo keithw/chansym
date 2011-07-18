@@ -14,7 +14,7 @@ public:
 
   bool operator==( const Pawn & ) const { return true; }
 
-  string identify( void ) { return "Pawn"; }
+  string identify( void ) const { return "Pawn"; }
 
   friend size_t hash_value( Pawn const & ) { return 0; }
 };

@@ -40,7 +40,7 @@ void Jitter::wakeup( void )
   container->receive( addr, pack.packet );
 }
 
-string Jitter::identify( void )
+string Jitter::identify( void ) const
 {
   ostringstream response;
   response << "Jitter( ";

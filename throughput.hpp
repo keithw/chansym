@@ -8,8 +8,8 @@ private:
   double throughput; /* bits per second */
   double next_free_time;
 
-  bool is_busy( void ) { return busy; }
-  bool is_free( void ) { return !busy; }
+  bool is_busy( void ) const { return busy; }
+  bool is_free( void ) const { return !busy; }
   
   Packet stash;
   bool busy;
@@ -21,7 +21,7 @@ public:
   bool sendable( void ) { return is_free(); }
   void wakeup( void );
 
-  string identify( void );
+  string identify( void ) const;
 
   bool operator==( const Throughput &x ) const
   {

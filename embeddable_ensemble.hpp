@@ -38,7 +38,7 @@ public:
   void send( Packet ) { assert( false ); } 
   bool sendable( void ) { assert( false ); }
 
-  string identify( void );
+  string identify( void ) const;
 
   friend size_t hash_value( EmbeddableEnsemble<ChannelType> const &x )
   {

@@ -144,7 +144,7 @@ void Diverter<First, Second>::fork( int source_addr, double my_probability, Chan
 }
 
 template <class First, class Second>
-string Diverter<First, Second>::identify( void )
+string Diverter<First, Second>::identify( void ) const
 {
   return "< " + a.identify() + " > | < " + b.identify() + " >";
 }

@@ -30,7 +30,7 @@ public:
   bool operator==( const Jitter &x ) const { return (delay == x.delay)
       && (delay_probability == x.delay_probability) && (contents == x.contents); }
 
-  string identify( void );
+  string identify( void ) const;
 
   friend size_t hash_value( Jitter const & ch );
 };

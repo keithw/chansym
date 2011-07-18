@@ -25,7 +25,7 @@ void Pinger::wakeup( void )
   container->sleep_until( next_ping_time, addr );
 }
 
-string Pinger::identify( void )
+string Pinger::identify( void ) const
 {
   ostringstream response;
   response << "Pinger( ";

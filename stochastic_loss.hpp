@@ -23,7 +23,7 @@ public:
 
   void after_fork( bool is_other, ForkState x );
 
-  string identify( void );
+  string identify( void ) const;
 
   bool operator==( const StochasticLoss &x ) const { return (loss_probability == x.loss_probability); }
 

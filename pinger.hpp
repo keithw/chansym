@@ -24,7 +24,7 @@ public:
 
   bool operator==( const Pinger &x ) const { return (next_ping_time == x.next_ping_time) && (increment == x.increment) && (counter == x.counter) && (id == x.id); }
 
-  string identify( void );
+  string identify( void ) const;
 
   friend size_t hash_value( Pinger const & ch );
 };
