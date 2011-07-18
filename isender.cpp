@@ -127,6 +127,10 @@ size_t ISender<ChannelType>::hash( void ) const
 template <class ChannelType>
 void ISender<ChannelType>::sendout( Packet p )
 {
+  assert( container->time() == p.send_time );
+  printf( "SENDING packet %d at time %f\n",
+	  p.id, container->time() );
+
   /* Really send packet */
   container->receive( addr, p );
 

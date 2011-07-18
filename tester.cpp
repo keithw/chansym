@@ -134,7 +134,7 @@ int main( void )
   truth.set_follow_all_forks( false );
 
   for ( double ping_interval = 1.5; ping_interval <= 2.5; ping_interval += 0.1 ) {
-    for ( int bufsize = 96000; bufsize <= 96000; bufsize += 24000 ) {
+    for ( int bufsize = 48000; bufsize <= 96000; bufsize += 24000 ) {
       for ( double throughput = 12000; throughput <= 24000; throughput += 4000 ) {
 	prior.add( series( series( Pawn(),
 				   Pinger( ping_interval, -1 ) ),
@@ -157,7 +157,13 @@ int main( void )
 
   truth.normalize();
 
-  while ( truth.tick() && (truth.time() < 100) ) {}
+  truth.set_printing( true );
+
+  while ( truth.tick() && (truth.time() < 100) ) {
+    cout << "===" << endl;
+    cout << "True channel at time " << truth.time() << ":" << endl;
+    cout << truth.identify();
+  }
 
   return 0;
 }
