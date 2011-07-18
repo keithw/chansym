@@ -275,6 +275,7 @@ void ISender<ChannelType>::optimal_action( void )
     cout << fans.identify();
     */
   }
+  printf( "Sending solution found after %d steps\n", steps );
 
   /* total up utilities */
   priority_queue< pair< double, double > > strategies;

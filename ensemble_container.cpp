@@ -423,13 +423,18 @@ bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<Channel
   typedef const WeightedChannel * key_t;
   typedef dense_hash_set< key_t, channel_hash, equal_channels > dhs_t;
   
-  WeightedChannel *deleted = (WeightedChannel *)-1;
-
+  dhs_t my_set( (int)channels.size() - erased_count );
   dhs_t other_set( (int)x.channels.size() - x.erased_count );
-  other_set.set_empty_key( NULL );
-  other_set.set_deleted_key( deleted );
 
-  for ( unsigned i = 0; i < x.channels.size(); i++ ) {
+  my_set.set_empty_key( NULL );
+  other_set.set_empty_key( NULL );
+
+  for ( unsigned i = 0; i < channels.size(); i++ ) {
+    if ( !channels[ i ].erased ) {
+      key_t key( &channels[ i ] );
+      my_set.insert( key );
+    }
+
     if ( !x.channels[ i ].erased ) {
       key_t key( &x.channels[ i ] );
       other_set.insert( key );
@@ -441,28 +446,18 @@ bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<Channel
       key_t key( &channels[ i ] );
       typename dhs_t::const_iterator it = other_set.find( key );
       if ( it == other_set.end() ) {
-	/*
-	printf( "Not found: [%f/%d] {%f/%f} %s\n",
-		key->probability,
-		key->erased,
-		key->delay,
-		key->utility,
-		key->channel.identify().c_str() );
-	for ( typename dhs_t::const_iterator i = other_set.begin();
-	      i != other_set.end();
-	      i++ ) {
-	  printf( "Candidate: [%f/%d] {%f/%f} %s\n",
-		  (*i)->probability, (*i)->erased,
-		  (*i)->delay, (*i)->utility,
-		  (*i)->channel.identify().c_str() );
-	}
-	*/
 	return false;
-      } else {
-	other_set.erase( it );
+      }
+    }
+
+    if ( !x.channels[ i ].erased ) {
+      key_t key( &x.channels[ i ] );
+      typename dhs_t::const_iterator it = my_set.find( key );
+      if ( it == my_set.end() ) {
+	return false;
       }
     }
   }
   
-  return other_set.empty();
+  return true;
 }
