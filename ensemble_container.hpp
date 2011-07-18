@@ -126,16 +126,6 @@ public:
 	return false;
       }
 
-      ChannelType *del = (ChannelType *)-1;
-
-      if ( (a == del) && (b == del) ) {
-	return true;
-      }
-
-      if ( (a == del) || (b == del) ) {
-	return false;
-      }
-
       return ((*a) == (*b));
     }
 
@@ -146,16 +136,6 @@ public:
       }
 
       if ( (a == NULL) || (b == NULL) ) {
-	return false;
-      }
-
-      WeightedChannel *del = (WeightedChannel *)-1;
-
-      if ( (a == del) && (b == del) ) {
-	return true;
-      }
-
-      if ( (a == del) || (b == del) ) {
 	return false;
       }
 
