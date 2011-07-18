@@ -170,7 +170,7 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  const double LIMIT = 3;
+  const double LIMIT = 1;
 
   for ( double d = 0; d < LIMIT; d += 0.1 ) {
     delays.push_back( d );

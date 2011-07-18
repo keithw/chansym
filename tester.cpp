@@ -153,7 +153,7 @@ int main( void )
 
   truth.set_printing( true );
 
-  while ( truth.tick() && (truth.time() < 1000) ) {}
+  while ( truth.tick() && (truth.time() < 100) ) {}
 
   return 0;
 }
