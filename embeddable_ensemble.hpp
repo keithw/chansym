@@ -16,9 +16,9 @@ public:
 
   double time( void ) const { return container->time(); }
 
-  void sleep_until( double time, int source_addr, int sort_order=0 )
+  void make_wakeup( double time, int source_addr, int sort_order )
   {
-    Parent::wakeups.push( Event( time, source_addr, sort_order ) );
+    Parent::make_wakeup( time, source_addr, sort_order );
     container->sleep_until( time, addr, sort_order );
   }
 
@@ -45,6 +45,14 @@ public:
   {
     return x.hash();
   }
+
+  void clear_wakeups( void )
+  {
+    Parent::wakeups.clear();
+    container->clear_wakeups( addr );
+  }
+
+  void clear_wakeups( int ) { assert( false ); }
 };
 
 #endif

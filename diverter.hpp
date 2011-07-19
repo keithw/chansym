@@ -52,6 +52,8 @@ public:
   string identify( void ) const;
 
   size_t hash( void ) const;
+
+  void clear_wakeups( int ) { assert( false ); }
 };
 
 template <class First, class Second>

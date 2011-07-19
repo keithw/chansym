@@ -309,6 +309,7 @@ using namespace std;
       boost::hash<_Sequence> hasher;
       return hasher( pq.c );
     }
+    void clear( void ) { c.clear(); }
   };
 
   // No equality/comparison operators are provided for peekable_priority_queue.

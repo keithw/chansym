@@ -85,7 +85,14 @@ public:
   void combine( void );
   bool converged( void );
 
-  void sleep_until( double time, int source_addr, int sort_order=0 ) { wakeups.push( Event( time, source_addr, sort_order ) ); }
+  virtual void make_wakeup( double time, int source_addr, int sort_order )
+  {
+    wakeups.push( Event( time, source_addr, sort_order ) );
+  }
+
+  void clear_wakeups( int source_addr );
+
+  void sleep_until( double time, int source_addr, int sort_order=0 ) { make_wakeup( time, source_addr, sort_order ); }
   void signal_sendable( int ) {}
   bool can_send( int ) { return( true ); }
   void receive( int source_addr, Packet pack );

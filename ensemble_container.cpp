@@ -45,7 +45,7 @@ void EnsembleContainer<ChannelType>::add_mature( ChannelType s_channel )
 	i != channels[ new_addr ].channel.wakeup_end();
 	i++ ) {
     assert( i->time >= time() );
-    wakeups.push( Event( i->time, new_addr, i->sort_order ) );
+    make_wakeup( i->time, new_addr, i->sort_order );
   }
 }
 
@@ -88,7 +88,7 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
       for ( typename ChannelType::wakeup_iterator i = channels[ pending.orig_addr ].channel.wakeup_begin();
 	    i != channels[ pending.orig_addr ].channel.wakeup_end();
 	    i++ ) {
-	wakeups.push( Event( i->time, new_addr, i->sort_order ) );
+	make_wakeup( i->time, new_addr, i->sort_order );
       }
 
       channels[ pending.orig_addr ].channel.after_fork( false, pending.fs );
@@ -252,7 +252,6 @@ template <class ChannelType>
 void EnsembleContainer<ChannelType>::compact( void )
 {
   vector<WeightedChannel> new_channels;
-  peekable_priority_queue<Event, deque<Event>, Event> new_wakeups;
 
   vector<size_t> mapping( channels.size() );
 
@@ -267,16 +266,18 @@ void EnsembleContainer<ChannelType>::compact( void )
     }
   }
 
-  for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = wakeups.begin();
-	i != wakeups.end();
+  peekable_priority_queue<Event, deque<Event>, Event> old_wakeups = wakeups;
+  Container::clear_wakeups();
+
+  for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = old_wakeups.begin();
+	i != old_wakeups.end();
 	i++ ) {
     if ( !channels[ i->addr ].erased ) {
-      new_wakeups.push( Event( i->time, mapping[ i->addr ], i->sort_order ) );
+      make_wakeup( i->time, mapping[ i->addr ], i->sort_order );
     }
   }
 
   channels = new_channels;
-  wakeups = new_wakeups;
   erased_count = 0;
 }
 
@@ -479,4 +480,19 @@ bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<Channel
   }
   
   return true;
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::clear_wakeups( int source_addr )
+{
+  peekable_priority_queue<Event, deque<Event>, Event> old_wakeups = wakeups;
+  Container::clear_wakeups();
+  
+  for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = old_wakeups.begin();
+	i != old_wakeups.end();
+	i++ ) {
+    if ( i->addr != source_addr ) {
+      make_wakeup( i->time, i->addr, i->sort_order );
+    }
+  }
 }

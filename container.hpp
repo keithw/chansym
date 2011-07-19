@@ -66,6 +66,9 @@ public:
   typedef typename peekable_priority_queue<Event, deque<Event>, Event>::const_iterator wakeup_iterator;
   wakeup_iterator wakeup_begin( void ) { return wakeups.begin(); }
   wakeup_iterator wakeup_end( void ) { return wakeups.end(); }
+
+  virtual void clear_wakeups( void ) { wakeups.clear(); }
+  virtual void clear_wakeups( int source_addr ) = 0;
 };
 
 #endif
