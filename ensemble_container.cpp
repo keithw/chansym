@@ -8,18 +8,19 @@
 #include <boost/optional/optional.hpp>
 
 #include "ensemble_container.hpp"
+#include "utility.hpp"
 
 using google::dense_hash_map;
 using google::dense_hash_set;
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer()
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 )
 {}
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( double s_time )
-  : the_time( s_time ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true )
+  : the_time( s_time ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 )
 {}
 
 template <class ChannelType>
@@ -51,7 +52,7 @@ void EnsembleContainer<ChannelType>::add_mature( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 )
 {
   channels.push_back( WeightedChannel( 1.0, s_channel ) );
   channels[ 0 ].channel.connect( 0, this );
@@ -60,7 +61,7 @@ EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<ChannelType> &x )
-  : Container( x ), the_time( x.the_time ), channels( x.channels ), fork_queue( x.fork_queue ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking )
+  : Container( x ), the_time( x.the_time ), channels( x.channels ), fork_queue( x.fork_queue ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking ), total_utility( 0 )
 {
   for ( unsigned int i = 0; i < channels.size(); i++ ) {
     channels[ i ].channel.connect( i, this );
@@ -352,10 +353,18 @@ template <class ChannelType>
 void EnsembleContainer<ChannelType>::receive( int source_addr __attribute((unused)), Packet pack __attribute((unused)) )
 {
   if ( printing ) {
-    printf( "[Prob %.7f] At %f received packet id %d (sent %f by src %d) [from channel %d/%d (+%d erased)]\n",
+    vector<ScheduledPacket> real, cross;
+    if ( pack.src == 0 ) {
+      real.push_back( ScheduledPacket( time(), pack ) );
+    } else {
+      cross.push_back( ScheduledPacket( time(), pack ) );
+    }
+    total_utility += UtilityMetric::utility( real, cross );
+
+    printf( "[Prob %.7f] At %f received packet id %d (sent %f by src %d) [from channel %d/%d (+%d erased)] Utility now: %f\n",
 	    probability( source_addr ),
 	    time(), pack.id, pack.send_time, pack.src,
-	    source_addr, (int)channels.size() - erased_count, erased_count );
+	    source_addr, (int)channels.size() - erased_count, erased_count, total_utility );
   }
 }
 

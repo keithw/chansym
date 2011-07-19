@@ -1,6 +1,7 @@
 #ifndef COLLECTOR_HPP
 #define COLLECTOR_HPP
 
+#include <sstream>
 #include <vector>
 #include <boost/functional/hash.hpp>
 
@@ -37,8 +38,30 @@ public:
 
   bool operator==( const Collector &x ) const { return packets == x.packets; }
 
-  string identify( void ) const { return "Collector"; }
+  string identify( void ) const {
+      ostringstream response;
+      response << "Collector( ";
+      response << packets.size();
 
+      for ( vector<ScheduledPacket>::const_iterator i = packets.begin();
+	    i != packets.end();
+	    i++ ) {
+	response << ", < ";
+	response << i->packet.src;
+	response << ", ";
+	response << i->packet.id;
+	response << ", ";
+	response << i->packet.send_time;
+	response << " to ";
+	response << i->delivery_time;
+	response << " >";
+      }
+
+      response << " )";
+      
+      return response.str();
+  }
+  
   friend size_t hash_value( Collector const & ch )
   {
     boost::hash<vector<ScheduledPacket>> hasher;

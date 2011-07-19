@@ -17,6 +17,7 @@
 #include "extractor.hpp"
 #include "isender.hpp"
 #include "pawn.hpp"
+#include "utility.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
@@ -30,9 +31,8 @@ public:
     typedef Series< Series<SenderObject,
 			   Pinger>,
 		    Series< Buffer,
-			    Series< Throughput,
-				    Diverter< Series< StochasticLoss,
-						      ReceiverObject >,
+			    Series< Series< Throughput, StochasticLoss >,
+				    Diverter< ReceiverObject,
 					      Collector > > > > Channel;
   };
 
@@ -46,7 +46,7 @@ public:
   public:
     static ReceiverObject & get_collector( ChannelType *ch )
     {
-      return ch->get_second().get_second().get_second().get_first().get_second();
+      return ch->get_second().get_second().get_second().get_first();
     }
 
     static Collector & get_cross_traffic( ChannelType *ch )
@@ -69,7 +69,7 @@ public:
 
     static ChannelType * get_root( ReceiverObject *ch )
     {
-      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
+      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
       ChannelType *top_rc = dynamic_cast<RealChannel *>( top );
       assert( top_rc );
       return top_rc;
@@ -106,6 +106,10 @@ public:
 
     /* Let him reset all collectors */
     void reset( SimulatedChannel &ch ) { return sim.reset( &ch ); }
+
+    /* Let us find the true collector and cross traffic */
+    Collector & get_collector( RealChannel &ch ) { return real.get_collector( &ch ); }
+    Collector & get_cross_traffic( RealChannel &ch ) { return real.get_cross_traffic( &ch ); }
   };
 
   class TheWaker : public Waker
@@ -134,7 +138,8 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( int bufsize = 96000; bufsize <= 96000; bufsize += 12000 ) {
+  /*
+  for ( int bufsize = 48000; bufsize <= 120000; bufsize += 12000 ) {
     for ( int linkspeed = 10000; linkspeed <= 14000; linkspeed += 2000 ) {
       for ( double lossrate = 0; lossrate <= 0.4; lossrate += 0.2 ) {
 	for ( double other_sender_speed = linkspeed * 0.2; other_sender_speed <= linkspeed * 0.8; other_sender_speed += linkspeed * 0.1 ) {
@@ -149,15 +154,22 @@ int main( void )
       }
     }
   }
+  */
+
+  prior.add( series( series( Pawn(),
+			     Pinger( 2.0, -1 ) ),
+		     series( Buffer( 96000 ),
+			     series( series( Throughput( 12000 ), StochasticLoss( 0.2 ) ),
+				     diverter( Collector(),
+					       Collector() ) ) ) ) );
   
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( 12000.0 / (12000 * 0.3), -1 ) ),
+			     Pinger( 2.0, -1 ) ),
 		     series( Buffer( 96000 ),
-			     series( Throughput( 12000 ),
-				     diverter( series( StochasticLoss( 0.2 ),
-						       SignallingCollector( &network.waker ) ),
+			     series( series( Throughput( 12000 ), StochasticLoss( 0.2 ) ),
+				     diverter( SignallingCollector( &network.waker ),
 					       Collector() ) ) ) ) );
 
   truth.normalize();

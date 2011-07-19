@@ -5,6 +5,7 @@
 #include "extractor.hpp"
 #include "pawn.hpp"
 #include "close.hpp"
+#include "utility.hpp"
 
 #include "embeddable_ensemble.cpp"
 #include "utility_ensemble.cpp"
@@ -98,11 +99,11 @@ void ISender<ChannelType>::wakeup( void )
       prior.erase( i );
     }
 
-    extractor->get_collector( prior.get_channel( i ).channel ).reset();
+    extractor->reset( prior.get_channel( i ).channel );
   }
 
   /* reset real collector */
-  collector->reset();
+  extractor->reset( this );
 
   prior.prune( 1000 );
 
@@ -147,26 +148,6 @@ void ISender<ChannelType>::sendout( Packet p )
   prior.execute_fork();
 }
 
-static double utility( vector<ScheduledPacket> x, bool penalize_delay )
-{
-  double util = 0;
-
-  for ( vector<ScheduledPacket>::const_iterator i = x.begin();
-	i != x.end();
-	i++ ) {
-    util += 20;
-
-    if ( penalize_delay ) {
-      double delay = i->delivery_time - i->packet.send_time;
-      assert( delay >= 0 );
-      assert( delay < 20 );
-      util -= delay;
-    }
-  }
-
-  return util;
-}
-
 class Strategy
 {
 public:
@@ -206,7 +187,11 @@ void ISender<ChannelType>::optimal_action( void )
   const int STEP_LIMIT = 10000;
 
   delays.push_back( 0 );
-  delays.push_back( 0.1 );
+  /*
+  for ( double x = 0.1; x < 0.2; x += 0.1 ) {
+    delays.push_back( x );
+  }
+  */
   delays.push_back( 60 );
 
   double last_delay = 60;
@@ -310,13 +295,15 @@ void ISender<ChannelType>::optimal_action( void )
 	}
       */
 
-	double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(), false )
-	  + utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(), true );
+	double the_utility = UtilityMetric::utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(),
+						     extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
 	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
 
+	/*
 	vector<ScheduledPacket> pks = extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets();
 
 	vector<ScheduledPacket> cpks = extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets();
+	*/
 
 	//	assert( cpks.size() == 0 );
 

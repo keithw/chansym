@@ -71,6 +71,8 @@ private:
   bool printing;
   bool forking;
 
+  double total_utility;
+
   void compact( void );
   void assert_normalized( void );
   
