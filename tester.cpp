@@ -28,7 +28,7 @@ public:
   template <class SenderObject, class ReceiverObject>
   class DemoNet {
     typedef Series< Series<SenderObject,
-			   Delay>,
+			   Pinger>,
 		    Series< Buffer,
 			    Series< Throughput,
 				    Diverter< Series< StochasticLoss,
@@ -134,18 +134,26 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  prior.add( series( series( Pawn(),
-			     Delay( 0 ) ),
-		     series( Buffer( 96000 ),
-			     series( Throughput( 12000 ),
-				     diverter( series( StochasticLoss( 0.2 ),
-						       Collector() ),
-					       Collector() ) ) ) ) );
-
+  for ( int bufsize = 24000; bufsize < 120000; bufsize += 12000 ) {
+    for ( int linkspeed = 10000; linkspeed <= 14000; linkspeed += 2000 ) {
+      for ( double lossrate = 0; lossrate <= 0.4; lossrate += 0.2 ) {
+	for ( double other_sender_speed = linkspeed * 0.2; other_sender_speed <= linkspeed * 0.8; other_sender_speed += linkspeed * 0.1 ) {
+	  prior.add( series( series( Pawn(),
+				     Pinger( 12000.0 / other_sender_speed, -1 ) ),
+			     series( Buffer( bufsize ),
+				     series( Throughput( linkspeed ),
+					     diverter( series( StochasticLoss( lossrate ),
+							       Collector() ),
+						       Collector() ) ) ) ) );
+	}
+      }
+    }
+  }
+  
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Delay( 0 ) ),
+			     Pinger( 12000.0 / (12000 * 0.3), -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( series( StochasticLoss( 0.2 ),
@@ -156,7 +164,7 @@ int main( void )
 
   truth.set_printing( true );
 
-  while ( truth.tick() && (truth.time() < 100) ) {
+  while ( truth.tick() && (truth.time() < 1000) ) {
     /*
     cout << "===" << endl;
     cout << "True channel at time " << truth.time() << ":" << endl;

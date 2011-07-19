@@ -114,9 +114,9 @@ void ISender<ChannelType>::wakeup( void )
   }
 
   printf( "Time: %f (channels: %d)\n", current_time, prior.size() );
-  if ( prior.size() <= 32 ) {
+  //  if ( prior.size() <= 32 ) {
     cout << prior.identify();
-  }
+    //  }
   fflush( NULL );
 }
 
@@ -147,18 +147,21 @@ void ISender<ChannelType>::sendout( Packet p )
   prior.execute_fork();
 }
 
-static double utility( vector<ScheduledPacket> x )
+static double utility( vector<ScheduledPacket> x, bool penalize_delay )
 {
   double util = 0;
 
   for ( vector<ScheduledPacket>::const_iterator i = x.begin();
 	i != x.end();
 	i++ ) {
-    double delay = i->delivery_time - i->packet.send_time;
-    assert( delay >= 0 );
-    assert( delay < 20 );
+    util += 20;
 
-    util += 20 - delay;
+    if ( penalize_delay ) {
+      double delay = i->delivery_time - i->packet.send_time;
+      assert( delay >= 0 );
+      assert( delay < 20 );
+      util -= delay;
+    }
   }
 
   return util;
@@ -307,15 +310,15 @@ void ISender<ChannelType>::optimal_action( void )
 	}
       */
 
-	double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
-	+ utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
+	double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(), false )
+	  + utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(), true );
 	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
 
 	vector<ScheduledPacket> pks = extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets();
 
 	vector<ScheduledPacket> cpks = extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets();
 
-	assert( cpks.size() == 0 );
+	//	assert( cpks.size() == 0 );
 
 	/*
 	for ( unsigned int p = 0; p < pks.size(); p++ ) {
