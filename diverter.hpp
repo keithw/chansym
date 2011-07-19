@@ -53,6 +53,7 @@ public:
 
   size_t hash( void ) const;
 
+  void clear_wakeups( void ) { assert( false ); }
   void clear_wakeups( int ) { assert( false ); }
 };
 

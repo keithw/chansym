@@ -67,7 +67,7 @@ public:
   wakeup_iterator wakeup_begin( void ) { return wakeups.begin(); }
   wakeup_iterator wakeup_end( void ) { return wakeups.end(); }
 
-  virtual void clear_wakeups( void ) { wakeups.clear(); }
+  virtual void clear_wakeups( void ) = 0;
   virtual void clear_wakeups( int source_addr ) = 0;
 };
 

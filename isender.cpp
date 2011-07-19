@@ -177,7 +177,7 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  const double LIMIT = 2;
+  const double LIMIT = 3;
 
   double last_delay = 0;
   for ( double d = last_delay; d <= LIMIT; d += 0.1 ) {
@@ -324,7 +324,7 @@ void ISender<ChannelType>::optimal_action( void )
       break;
     }
   }
-  printf( "Sending solution found after %d steps\n", steps );
+  //  printf( "Sending solution found after %d steps\n", steps );
 
   /* total up utilities */
   priority_queue< pair< double, double > > strategies;

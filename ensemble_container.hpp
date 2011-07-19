@@ -90,6 +90,7 @@ public:
     wakeups.push( Event( time, source_addr, sort_order ) );
   }
 
+  virtual void clear_wakeups( void ) { wakeups.clear(); }
   void clear_wakeups( int source_addr );
 
   void sleep_until( double time, int source_addr, int sort_order=0 ) { make_wakeup( time, source_addr, sort_order ); }
@@ -120,6 +121,8 @@ public:
   string identify( void ) const;
 
   int get_erased_count( void ) { return erased_count; }
+
+  void print_wakeups( void );
 
   class equal_channels {
   public:

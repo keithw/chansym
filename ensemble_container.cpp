@@ -267,7 +267,7 @@ void EnsembleContainer<ChannelType>::compact( void )
   }
 
   peekable_priority_queue<Event, deque<Event>, Event> old_wakeups = wakeups;
-  Container::clear_wakeups();
+  clear_wakeups();
 
   for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = old_wakeups.begin();
 	i != old_wakeups.end();
@@ -374,9 +374,11 @@ string EnsembleContainer<ChannelType>::identify( void ) const
   response << ")\n";
 
   for ( unsigned int i = 0; i < size(); i++ ) {
+    /*
     if ( channels[ i ].probability < 1.0 / (100 * channels.size()) ) {
       continue;
     }
+    */
 
     response << i;
     response << " (p=";
@@ -486,7 +488,7 @@ template <class ChannelType>
 void EnsembleContainer<ChannelType>::clear_wakeups( int source_addr )
 {
   peekable_priority_queue<Event, deque<Event>, Event> old_wakeups = wakeups;
-  Container::clear_wakeups();
+  clear_wakeups();
   
   for ( peekable_priority_queue<Event, deque<Event>, Event>::const_iterator i = old_wakeups.begin();
 	i != old_wakeups.end();
@@ -495,4 +497,18 @@ void EnsembleContainer<ChannelType>::clear_wakeups( int source_addr )
       make_wakeup( i->time, i->addr, i->sort_order );
     }
   }
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::print_wakeups( void )
+{
+  printf( "WAKEUPS (%d channels): ", (unsigned int)channels.size() );
+  peekable_priority_queue<Event, deque<Event>, Event> new_wakeups = wakeups;
+
+  while ( !new_wakeups.empty() ) {
+    printf( "<addr=%d, time=%f> ", new_wakeups.top().addr, new_wakeups.top().time );
+    new_wakeups.pop();
+  }
+
+  printf( "\n" );
 }

@@ -157,9 +157,11 @@ int main( void )
   truth.set_printing( true );
 
   while ( truth.tick() && (truth.time() < 100) ) {
+    /*
     cout << "===" << endl;
     cout << "True channel at time " << truth.time() << ":" << endl;
     cout << truth.identify();
+    */
   }
 
   return 0;
