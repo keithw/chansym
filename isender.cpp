@@ -163,6 +163,27 @@ static double utility( vector<ScheduledPacket> x )
   return util;
 }
 
+class Strategy
+{
+public:
+  double utility;
+  double delay;
+
+  Strategy( double s_utility, double s_delay ) : utility( s_utility ), delay( s_delay ) {}
+  Strategy( void ) : utility( -100 ), delay( -100 ) {}
+
+  bool operator() ( const Strategy &lhs, const Strategy &rhs ) const
+  {
+    if ( lhs.utility < rhs.utility ) {
+      return 1;
+    } else if ( lhs.utility > rhs.utility ) {
+      return 0;
+    } else {
+      return lhs.delay > rhs.delay;
+    }
+  }
+};
+
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
 {
@@ -294,14 +315,14 @@ void ISender<ChannelType>::optimal_action( void )
 
 	assert( cpks.size() == 0 );
 
+	/*
 	for ( unsigned int p = 0; p < pks.size(); p++ ) {
 	  assert ( fabs(pks[ p ].delivery_time - fans.time()) < 1e-10 );
-	  /*
 	  printf( "Simulating at time %f, arriving at time %f, strategy delay=%f received packet < %d, %d, %f > ==> utility +%f\n",
 		  fans.time(), pks[ p ].delivery_time, fans.get_channel( i ).delay - base_time, pks[ p ].packet.src, pks[ p ].packet.id, pks[ p ].packet.send_time,
 		  utility( vector<ScheduledPacket>( 1, pks[ p ] ) ) );
-	  */
 	}
+	*/
 
 	/*
 	if ( the_utility > 0 ) {
@@ -327,7 +348,7 @@ void ISender<ChannelType>::optimal_action( void )
   //  printf( "Sending solution found after %d steps\n", steps );
 
   /* total up utilities */
-  priority_queue< pair< double, double > > strategies;
+  priority_queue< Strategy, deque<Strategy>, Strategy > strategies;
 
   for ( unsigned int i = 0; i < fans.size(); i++ ) {
     double total_probability = 0;
@@ -341,10 +362,10 @@ void ISender<ChannelType>::optimal_action( void )
     }
 
     assert( fabs( total_probability - 1.0 ) <= 1e-10 );
-    strategies.push( make_pair( utility, -fans.get_channel( i ).delay ) );
+    strategies.push( Strategy( nearbyint( utility * 10000 ) / 10000.0, fans.get_channel( i ).delay ) );
   }
 
-  next_send_time = -strategies.top().second;
+  next_send_time = strategies.top().delay;
 
   if ( next_send_time >= base_time ) {
     container->sleep_until( next_send_time, addr, 99 );
@@ -355,9 +376,9 @@ void ISender<ChannelType>::optimal_action( void )
   /*
   while ( !strategies.empty() ) {
     printf( "At time %f, utility (%f/%f) comes from delay of %f\n",
-	    container->time(), strategies.top().first,
+	    container->time(), strategies.top().utility,
 	    fans.time() - base_time,
-	    -strategies.top().second - container->time() );
+	    strategies.top().delay - container->time() );
     strategies.pop();
   }
   */
