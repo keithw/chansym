@@ -156,7 +156,7 @@ void EnsembleContainer<ChannelType>::assert_normalized( void )
     new_total += i->probability;
   }
 
-  assert( fabs( new_total - 1.0 ) < 1e-10 );
+  assert( close( new_total, 1.0 ) );
 }
 
 template <class ChannelType>
@@ -432,7 +432,7 @@ void EnsembleContainer<ChannelType>::advance_to( double advance_time )
 template <class ChannelType>
 bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<ChannelType> &x ) const
 {
-  if ( time() != x.time() )
+  if ( !close( time(), x.time() ) )
     return false;
   
   if ( !(fork_queue.empty() && x.fork_queue.empty()) )

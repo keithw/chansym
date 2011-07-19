@@ -4,6 +4,7 @@
 #include "isender.hpp"
 #include "extractor.hpp"
 #include "pawn.hpp"
+#include "close.hpp"
 
 #include "embeddable_ensemble.cpp"
 #include "utility_ensemble.cpp"
@@ -199,6 +200,7 @@ void ISender<ChannelType>::optimal_action( void )
   delays.push_back( -1 );
 
   const double LIMIT = 3;
+  const int STEP_LIMIT = 10000;
 
   double last_delay = 0;
   for ( double d = last_delay; d <= LIMIT; d += 0.1 ) {
@@ -241,7 +243,7 @@ void ISender<ChannelType>::optimal_action( void )
   while ( 1 ) {
     steps++;
 
-    if ( steps > 10000 ) {
+    if ( steps > STEP_LIMIT ) {
       printf( "Error: Iterated %d steps to t=%f but fan has not converged\n",
 	      steps, fans.time() );
 
@@ -258,7 +260,7 @@ void ISender<ChannelType>::optimal_action( void )
 	  for ( unsigned int j = 0; j < fans.get_channel( 0 ).channel.size(); j++ ) {
 	    printf( "0[%d] == %d[%d]? prob=%d, erased=%d, channel=%d\n",
 		    j, i, j,
-		    fans.get_channel( 0 ).channel.get_channel( j ).probability == fans.get_channel( i ).channel.get_channel( j ).probability,
+		    close( fans.get_channel( 0 ).channel.get_channel( j ).probability, fans.get_channel( i ).channel.get_channel( j ).probability ),
 		    fans.get_channel( 0 ).channel.get_channel( j ).erased == fans.get_channel( i ).channel.get_channel( j ).erased,
 		    fans.get_channel( 0 ).channel.get_channel( j ).channel == fans.get_channel( i ).channel.get_channel( j ).channel );
 	  }
@@ -333,7 +335,9 @@ void ISender<ChannelType>::optimal_action( void )
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
 
-      fans.get_channel( i ).channel.combine();
+      if ( (steps % 5) == 4 ) {
+	fans.get_channel( i ).channel.combine();
+      }
     }
 
     /*
@@ -345,7 +349,7 @@ void ISender<ChannelType>::optimal_action( void )
       break;
     }
   }
-  //  printf( "Sending solution found after %d steps\n", steps );
+  printf( "Sending solution found after %d steps\n", steps );
 
   /* total up utilities */
   priority_queue< Strategy, deque<Strategy>, Strategy > strategies;
@@ -361,7 +365,7 @@ void ISender<ChannelType>::optimal_action( void )
       total_probability += ch.get_channel( j ).probability;
     }
 
-    assert( fabs( total_probability - 1.0 ) <= 1e-10 );
+    assert( close( total_probability, 1.0 ) );
     strategies.push( Strategy( nearbyint( utility * 10000 ) / 10000.0, fans.get_channel( i ).delay ) );
   }
 

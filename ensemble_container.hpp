@@ -3,6 +3,7 @@
 
 #include <queue>
 #include "container.hpp"
+#include "close.hpp"
 
 using namespace std;
 
@@ -31,13 +32,13 @@ private:
 	      (channel == x.channel),
 	      (erased == x.erased) );
       */
-      return (probability == x.probability) && (channel == x.channel) && (erased == x.erased);
+      return ( (float)probability == (float)x.probability ) && (channel == x.channel) && (erased == x.erased);
     }
 
     friend size_t hash_value( const WeightedChannel &x )
     {
       size_t seed = 0;
-      boost::hash_combine( seed, x.probability );
+      boost::hash_combine( seed, (float)x.probability );
       boost::hash_combine( seed, x.channel );
       boost::hash_combine( seed, x.erased );
       return seed;
