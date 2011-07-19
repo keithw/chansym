@@ -78,6 +78,7 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
       channels[ pending.orig_addr ].probability = p * pending.my_probability;
 
       WeightedChannel new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
+      new_member.utility = channels[ pending.orig_addr ].utility;
 
       channels.push_back( new_member );
       int new_addr = channels.size() - 1;
@@ -235,6 +236,8 @@ void EnsembleContainer<ChannelType>::combine( void )
       size_t first_channel = set[ key ];
 
       assert( first_channel != a1 );
+      channels[ first_channel ].utility = (channels[ first_channel ].probability * channels[ first_channel ].utility + channels[ a1 ].probability * channels[ a1 ].utility)
+	/ (channels[ first_channel ].probability + channels[ a1 ].probability );
       channels[ first_channel ].probability += channels[ a1 ].probability;
       erase( a1 );
     }

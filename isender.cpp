@@ -177,7 +177,7 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  const double LIMIT = 1;
+  const double LIMIT = 2;
 
   double last_delay = 0;
   for ( double d = last_delay; d <= LIMIT; d += 0.1 ) {
@@ -302,10 +302,12 @@ void ISender<ChannelType>::optimal_action( void )
 
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
+
+      fans.get_channel( i ).channel.combine();
     }
 
     /*
-    printf( "===\nIterating at time %f, distinct = %d\n", fans.time(), fans.count_distinct() );
+    printf( "===\nIterating at time %f\n", fans.time() );
     cout << fans.identify();
     */
 

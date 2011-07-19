@@ -31,7 +31,8 @@ public:
 			   Delay>,
 		    Series< Buffer,
 			    Series< Throughput,
-				    Diverter< ReceiverObject,
+				    Diverter< Series< StochasticLoss,
+						      ReceiverObject >,
 					      Collector > > > > Channel;
   };
 
@@ -45,7 +46,7 @@ public:
   public:
     static ReceiverObject & get_collector( ChannelType *ch )
     {
-      return ch->get_second().get_second().get_second().get_first();
+      return ch->get_second().get_second().get_second().get_first().get_second();
     }
 
     static Collector & get_cross_traffic( ChannelType *ch )
@@ -68,7 +69,7 @@ public:
 
     static ChannelType * get_root( ReceiverObject *ch )
     {
-      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
+      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
       ChannelType *top_rc = dynamic_cast<RealChannel *>( top );
       assert( top_rc );
       return top_rc;
@@ -137,7 +138,8 @@ int main( void )
 			     Delay( 5 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
-				     diverter( Collector(),
+				     diverter( series( StochasticLoss( 0.2 ),
+						       Collector() ),
 					       Collector() ) ) ) ) );
 
   prior.normalize();
@@ -146,7 +148,8 @@ int main( void )
 			     Delay( 5 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
-				     diverter( SignallingCollector( &network.waker ),
+				     diverter( series( StochasticLoss( 0.2 ),
+						       SignallingCollector( &network.waker ) ),
 					       Collector() ) ) ) ) );
 
   truth.normalize();
