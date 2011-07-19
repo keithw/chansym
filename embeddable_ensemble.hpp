@@ -34,6 +34,7 @@ public:
   }
 
   void advance_to( double ) { assert( false ); }
+  void tick( void ) { assert( false ); }
 
   void send( Packet ) { assert( false ); } 
   bool sendable( void ) { assert( false ); }

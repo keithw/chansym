@@ -135,7 +135,7 @@ int main( void )
   truth.set_follow_all_forks( false );
 
   prior.add( series( series( Pawn(),
-			     Delay( 5 ) ),
+			     Delay( 0 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( series( StochasticLoss( 0.2 ),
@@ -145,7 +145,7 @@ int main( void )
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Delay( 5 ) ),
+			     Delay( 0 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( series( StochasticLoss( 0.2 ),

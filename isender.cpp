@@ -189,9 +189,16 @@ void ISender<ChannelType>::optimal_action( void )
 
   priority_queue<Event, deque<Event>, Event> delay_queue;
 
+  EnsembleContainer<ChannelType> prior_stripped( prior );
+
+  for ( unsigned int i = 0; i < prior_stripped.size(); i++ ) {
+    /* clear pending packets */
+    extractor->reset( prior_stripped.get_channel( i ).channel );
+  }
+
   /* add channels to fan */
   for ( unsigned int i = 0; i < delays.size(); i++ ) {
-    fans.add_mature( prior );
+    fans.add_mature( prior_stripped );
     double the_delay = base_time + delays[ i ];
     fans.get_channel( i ).delay = the_delay;
     if ( the_delay >= base_time ) {
@@ -265,6 +272,8 @@ void ISender<ChannelType>::optimal_action( void )
 	sent_yet[ next_send.addr ] = true;
       }
     }
+
+    //    printf( "==> Iterating at time %f\n", fans.time() );
 
     /* iterate through channels */
     for ( unsigned int i = 0; i < fans.size(); i++ ) {

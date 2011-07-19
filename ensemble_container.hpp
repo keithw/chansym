@@ -89,7 +89,7 @@ public:
   void signal_sendable( int ) {}
   bool can_send( int ) { return( true ); }
   void receive( int source_addr, Packet pack );
-  double time( void ) const { return the_time; }
+  virtual double time( void ) const { return the_time; }
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int source_addr );
 
