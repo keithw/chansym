@@ -134,7 +134,7 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( int bufsize = 24000; bufsize < 120000; bufsize += 12000 ) {
+  for ( int bufsize = 96000; bufsize <= 96000; bufsize += 12000 ) {
     for ( int linkspeed = 10000; linkspeed <= 14000; linkspeed += 2000 ) {
       for ( double lossrate = 0; lossrate <= 0.4; lossrate += 0.2 ) {
 	for ( double other_sender_speed = linkspeed * 0.2; other_sender_speed <= linkspeed * 0.8; other_sender_speed += linkspeed * 0.1 ) {

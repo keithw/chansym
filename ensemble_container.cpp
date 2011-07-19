@@ -216,6 +216,10 @@ bool EnsembleContainer<ChannelType>::converged( void )
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::combine( void )
 {
+  if ( (size() == 1) && (erased_count == 0) ) {
+    return;
+  }
+
   typedef ChannelType * key_t;
   typedef dense_hash_map< key_t, size_t, channel_hash, equal_channels > dhm_t;
   assert( (int)channels.size() > erased_count );

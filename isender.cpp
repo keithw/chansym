@@ -202,7 +202,7 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  const double LIMIT = 3;
+  const double LIMIT = 10;
   const int STEP_LIMIT = 10000;
 
   double last_delay = 0;
