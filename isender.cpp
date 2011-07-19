@@ -179,8 +179,10 @@ void ISender<ChannelType>::optimal_action( void )
 
   const double LIMIT = 1;
 
-  for ( double d = 0; d < LIMIT; d += 0.1 ) {
+  double last_delay = 0.1;
+  for ( double d = 0.1; d <= LIMIT; d += 0.1 ) {
     delays.push_back( d );
+    last_delay = d;
   }
 
   vector<bool> sent_yet;
@@ -208,7 +210,7 @@ void ISender<ChannelType>::optimal_action( void )
   }
 
   int steps = 0;
-  while ( (!delay_queue.empty()) || (!fans.converged()) ) {
+  while ( 1 ) {
     steps++;
 
     if ( steps > 10000 ) {
@@ -254,6 +256,7 @@ void ISender<ChannelType>::optimal_action( void )
 	delay_queue.pop();
 
 	assert( !sent_yet[ next_send.addr ] );
+	assert( fans.get_channel( next_send.addr ).delay == next_send.time );
 	for ( unsigned int i = 0; i < fans.get_channel( next_send.addr ).channel.size(); i++ ) {
 	  if ( fans.get_channel( next_send.addr ).channel.get_channel( i ).delay != EARLY_WAKEUP ) {
 	    extractor->get_pawn( fans.get_channel( next_send.addr ).channel.get_channel( i ).channel ).send( Packet( 12000, 0, 0, fans.time() ) );
@@ -274,6 +277,25 @@ void ISender<ChannelType>::optimal_action( void )
 	+ utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
 	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
 
+	vector<ScheduledPacket> pks = extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets();
+
+	vector<ScheduledPacket> cpks = extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets();
+
+	assert( cpks.size() == 0 );
+
+	for ( unsigned int p = 0; p < pks.size(); p++ ) {
+	  if ( fabs(pks[ p ].delivery_time - fans.time()) >= 1e-10 )
+	  printf( "Simulating at time %f, arriving at time %f, strategy delay=%f received packet < %d, %d, %f > ==> utility +%f\n",
+		  fans.time(), pks[ p ].delivery_time, fans.get_channel( i ).delay - base_time, pks[ p ].packet.src, pks[ p ].packet.id, pks[ p ].packet.send_time,
+		  utility( vector<ScheduledPacket>( 1, pks[ p ] ) ) );
+	}
+
+	/*
+	if ( the_utility > 0 ) {
+	  printf( "UTIL: adding utility %f to delay=%f\n", the_utility, fans.get_channel( i ).delay - base_time );
+	}
+	*/
+
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
     }
@@ -282,6 +304,10 @@ void ISender<ChannelType>::optimal_action( void )
     printf( "===\nIterating at time %f, distinct = %d\n", fans.time(), fans.count_distinct() );
     cout << fans.identify();
     */
+
+    if ( delay_queue.empty() && fans.converged() ) {
+      break;
+    }
   }
   printf( "Sending solution found after %d steps\n", steps );
 
@@ -308,10 +334,9 @@ void ISender<ChannelType>::optimal_action( void )
   if ( next_send_time >= base_time ) {
     container->sleep_until( next_send_time, addr, 99 );
   } else {
-    container->sleep_until( base_time + LIMIT, addr, 99 );
+    container->sleep_until( base_time + last_delay, addr, 99 );
   }
 
-  /*
   while ( !strategies.empty() ) {
     printf( "At time %f, utility (%f/%f) comes from delay of %f\n",
 	    container->time(), strategies.top().first,
@@ -319,6 +344,5 @@ void ISender<ChannelType>::optimal_action( void )
 	    -strategies.top().second - container->time() );
     strategies.pop();
   }
-  */
 }
 

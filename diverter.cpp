@@ -67,7 +67,7 @@ void Diverter<First, Second>::wakeup( void )
 template <class First, class Second>
 void Diverter<First, Second>::send( Packet pack )
 {
-  if ( pack.id == 0 ) {
+  if ( pack.src == 0 ) {
     a.send( pack );
   } else {
     b.send( pack );

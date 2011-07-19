@@ -28,6 +28,19 @@ string Delay::identify( void ) const
   ostringstream response;
   response << "Delay( ";
   response << delay;
+
+  for ( std::list<ScheduledPacket>::const_iterator i = contents.begin();
+	i != contents.end();
+	i++ ) {
+    response << ", < ";
+    response << i->packet.src;
+    response << ", ";
+    response << i->packet.id;
+    response << ", ";
+    response << i->packet.send_time;
+    response << " >";
+  }
+
   response << " )";
 
   return response.str();
