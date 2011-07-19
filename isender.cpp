@@ -166,7 +166,7 @@ static double utility( vector<ScheduledPacket> x )
 template <class ChannelType>
 void ISender<ChannelType>::optimal_action( void )
 {
-  const double EARLY_WAKEUP = -100;
+  //  const double EARLY_WAKEUP = -100;
 
   assert( container->time() == prior.time() );
 
@@ -179,8 +179,8 @@ void ISender<ChannelType>::optimal_action( void )
 
   const double LIMIT = 1;
 
-  double last_delay = 0.1;
-  for ( double d = 0.1; d <= LIMIT; d += 0.1 ) {
+  double last_delay = 0;
+  for ( double d = last_delay; d <= LIMIT; d += 0.1 ) {
     delays.push_back( d );
     last_delay = d;
   }
@@ -258,9 +258,9 @@ void ISender<ChannelType>::optimal_action( void )
 	assert( !sent_yet[ next_send.addr ] );
 	assert( fans.get_channel( next_send.addr ).delay == next_send.time );
 	for ( unsigned int i = 0; i < fans.get_channel( next_send.addr ).channel.size(); i++ ) {
-	  if ( fans.get_channel( next_send.addr ).channel.get_channel( i ).delay != EARLY_WAKEUP ) {
+	  //	  if ( fans.get_channel( next_send.addr ).channel.get_channel( i ).delay != EARLY_WAKEUP ) {
 	    extractor->get_pawn( fans.get_channel( next_send.addr ).channel.get_channel( i ).channel ).send( Packet( 12000, 0, 0, fans.time() ) );
-	  }
+	    //	  }
 	}
 	sent_yet[ next_send.addr ] = true;
       }
@@ -269,9 +269,11 @@ void ISender<ChannelType>::optimal_action( void )
     /* iterate through channels */
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
       for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
+	/*
 	if ( (!sent_yet[ i ]) && (extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets().size() != 0) ) {
-	  fans.get_channel( i ).channel.get_channel( j ).delay = EARLY_WAKEUP; /* early wakeup same as non-sending */
+	  fans.get_channel( i ).channel.get_channel( j ).delay = EARLY_WAKEUP; // early wakeup same as non-sending 
 	}
+      */
 
 	double the_utility = utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() )
 	+ utility( extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
@@ -284,10 +286,12 @@ void ISender<ChannelType>::optimal_action( void )
 	assert( cpks.size() == 0 );
 
 	for ( unsigned int p = 0; p < pks.size(); p++ ) {
-	  if ( fabs(pks[ p ].delivery_time - fans.time()) >= 1e-10 )
+	  assert ( fabs(pks[ p ].delivery_time - fans.time()) < 1e-10 );
+	  /*
 	  printf( "Simulating at time %f, arriving at time %f, strategy delay=%f received packet < %d, %d, %f > ==> utility +%f\n",
 		  fans.time(), pks[ p ].delivery_time, fans.get_channel( i ).delay - base_time, pks[ p ].packet.src, pks[ p ].packet.id, pks[ p ].packet.send_time,
 		  utility( vector<ScheduledPacket>( 1, pks[ p ] ) ) );
+	  */
 	}
 
 	/*
@@ -337,6 +341,7 @@ void ISender<ChannelType>::optimal_action( void )
     container->sleep_until( base_time + last_delay, addr, 99 );
   }
 
+  /*
   while ( !strategies.empty() ) {
     printf( "At time %f, utility (%f/%f) comes from delay of %f\n",
 	    container->time(), strategies.top().first,
@@ -344,5 +349,6 @@ void ISender<ChannelType>::optimal_action( void )
 	    -strategies.top().second - container->time() );
     strategies.pop();
   }
+  */
 }
 
