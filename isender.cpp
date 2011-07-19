@@ -82,7 +82,9 @@ void ISender<ChannelType>::wakeup( void )
   /* ping if necessary */
   optimal_action();
 
-  container->sleep_until( prior.next_time(), addr, 99 );
+  if ( prior.live() ) {
+    container->sleep_until( prior.next_time(), addr, 99 );
+  }
 
   /* find and kill mismatches */
   for ( unsigned int i = 0; i < prior.size(); i++ ) {
@@ -153,9 +155,9 @@ static double utility( vector<ScheduledPacket> x )
 	i++ ) {
     double delay = i->delivery_time - i->packet.send_time;
     assert( delay >= 0 );
-    assert( delay < 10 );
+    assert( delay < 20 );
 
-    util += 10 - delay;
+    util += 20 - delay;
   }
 
   return util;
@@ -213,13 +215,17 @@ void ISender<ChannelType>::optimal_action( void )
       printf( "Error: Iterated %d steps to t=%f but fan has not converged\n",
 	      steps, fans.time() );
 
-      printf( "===" );
+      printf( "===\n" );
       for ( unsigned int i = 0; i < fans.size(); i++ ) {
 	printf( "Overall equality between 0 and %d: %d\n", i,
 		fans.get_channel( 0 ).channel == fans.get_channel( i ).channel );
 
 	if ( !(fans.get_channel( 0 ).channel == fans.get_channel( i ).channel) ) {
-	  for ( unsigned int j = 0; i < fans.get_channel( 0 ).channel.size(); j++ ) {
+	  printf( "time[0] = %f, time[%d] = %f\n",
+		  fans.get_channel( 0 ).channel.time(), i,
+		  fans.get_channel( i ).channel.time() );
+
+	  for ( unsigned int j = 0; j < fans.get_channel( 0 ).channel.size(); j++ ) {
 	    printf( "0[%d] == %d[%d]? prob=%d, erased=%d, channel=%d\n",
 		    j, i, j,
 		    fans.get_channel( 0 ).channel.get_channel( j ).probability == fans.get_channel( i ).channel.get_channel( j ).probability,
@@ -233,13 +239,15 @@ void ISender<ChannelType>::optimal_action( void )
       exit( 1 );
     }
 
-    double next_event_time = fans.next_time();
-
-    if ( delay_queue.empty() ) {
-      fans.advance_to( next_event_time );
-    } else {
+    if ( delay_queue.empty() && fans.live() ) {
+      fans.advance_to( fans.next_time() );
+    } else if ( !delay_queue.empty() ) {
       Event next_send = delay_queue.top();
-      fans.advance_to( MIN( next_send.time, next_event_time ) );
+      if ( fans.live() ) {
+	fans.advance_to( MIN( next_send.time, fans.next_time() ) );
+      } else {
+	fans.advance_to( next_send.time );
+      }
 
       if ( fans.time() == next_send.time ) {
 	/* send */

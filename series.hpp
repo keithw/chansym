@@ -42,7 +42,7 @@ public:
   void signal_sendable( int source_addr );
   bool can_send( int source_addr );
   void receive( int source_addr, Packet p );
-  double time( void ) { return container->time(); }
+  double time( void ) const { return container->time(); }
 
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int ) { return container->probability( addr ); }

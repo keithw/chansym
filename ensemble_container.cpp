@@ -302,7 +302,7 @@ bool EnsembleContainer<ChannelType>::tick( void )
   Event next_event = wakeups.top();
   wakeups.pop();
 
-  assert( next_event.time >= the_time );
+  assert( next_event.time >= time() );
   the_time = next_event.time;
 
   assert( next_event.addr >= 0 );
@@ -405,7 +405,7 @@ size_t EnsembleContainer<ChannelType>::hash( void ) const
 
   size_t seed = 0;
   boost::hash_combine( seed, wakeups );
-  boost::hash_combine( seed, the_time );
+  boost::hash_combine( seed, time() );
   boost::hash_combine( seed, channels );
   boost::hash_combine( seed, forking );
   return seed;
@@ -414,9 +414,9 @@ size_t EnsembleContainer<ChannelType>::hash( void ) const
 template <class ChannelType>
 void EnsembleContainer<ChannelType>::advance_to( double advance_time )
 {
-  assert( advance_time >= the_time );
+  assert( advance_time >= time() );
 
-  while ( next_time() <= advance_time ) {
+  while ( live() && (next_time() <= advance_time) ) {
     tick();
   }
 
@@ -426,7 +426,7 @@ void EnsembleContainer<ChannelType>::advance_to( double advance_time )
 template <class ChannelType>
 bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<ChannelType> &x ) const
 {
-  if ( the_time != x.the_time )
+  if ( time() != x.time() )
     return false;
   
   if ( !(fork_queue.empty() && x.fork_queue.empty()) )

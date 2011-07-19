@@ -28,7 +28,7 @@ public:
   template <class SenderObject, class ReceiverObject>
   class DemoNet {
     typedef Series< Series<SenderObject,
-			   Pinger>,
+			   Delay>,
 		    Series< Buffer,
 			    Series< Throughput,
 				    Diverter< ReceiverObject,
@@ -133,23 +133,17 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double ping_interval = 10; ping_interval <= 10; ping_interval += 0.1 ) {
-    for ( int bufsize = 48000; bufsize <= 96000; bufsize += 24000 ) {
-      for ( double throughput = 12000; throughput <= 24000; throughput += 4000 ) {
-	prior.add( series( series( Pawn(),
-				   Pinger( ping_interval, -1 ) ),
-			   series( Buffer( bufsize ),
-				   series( Throughput( throughput ),
-					   diverter( Collector(),
-						     Collector() ) ) ) ) );
-      }
-    }
-  }
+  prior.add( series( series( Pawn(),
+			     Delay( 5 ) ),
+		     series( Buffer( 96000 ),
+			     series( Throughput( 12000 ),
+				     diverter( Collector(),
+					       Collector() ) ) ) ) );
 
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( 10, -1 ) ),
+			     Delay( 5 ) ),
 		     series( Buffer( 96000 ),
 			     series( Throughput( 12000 ),
 				     diverter( SignallingCollector( &network.waker ),

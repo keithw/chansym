@@ -14,7 +14,7 @@ public:
     : Parent( x )
   {}
 
-  double time( void ) { return container->time(); }
+  double time( void ) const { return container->time(); }
 
   void sleep_until( double time, int source_addr, int sort_order=0 )
   {

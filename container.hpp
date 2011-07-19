@@ -56,7 +56,7 @@ public:
   virtual void signal_sendable( int source_addr ) = 0; /* Channel tells container it is sendable */
   virtual bool can_send( int source_addr ) = 0; /* Channel asks container whether it can send */
   virtual void receive( int source_addr, Packet p ) = 0; /* Channel sends packet to container */
-  virtual double time( void ) = 0; /* Channel asks for current time */
+  virtual double time( void ) const = 0; /* Channel asks for current time */
 
   virtual void fork( int source_addr, double my_probability, Channel::ForkState *fs ) = 0;
   virtual double probability( int source_addr ) = 0;
