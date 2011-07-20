@@ -359,7 +359,7 @@ void EnsembleContainer<ChannelType>::receive( int source_addr __attribute((unuse
     } else {
       cross.push_back( ScheduledPacket( time(), pack ) );
     }
-    total_utility += UtilityMetric::utility( real, cross );
+    total_utility += UtilityMetric::utility( time(), real, cross );
 
     printf( "[Prob %.7f] At %f received packet id %d (sent %f by src %d) [from channel %d/%d (+%d erased)] Utility now: %f\n",
 	    probability( source_addr ),

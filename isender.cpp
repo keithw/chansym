@@ -187,11 +187,9 @@ void ISender<ChannelType>::optimal_action( void )
   const int STEP_LIMIT = 10000;
 
   delays.push_back( 0 );
-  /*
-  for ( double x = 0.1; x < 0.2; x += 0.1 ) {
+  for ( double x = 0.1; x <= 10.0; x += 0.1 ) {
     delays.push_back( x );
   }
-  */
   delays.push_back( 60 );
 
   double last_delay = 60;
@@ -295,7 +293,7 @@ void ISender<ChannelType>::optimal_action( void )
 	}
       */
 
-	double the_utility = UtilityMetric::utility( extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(),
+	double the_utility = UtilityMetric::utility( base_time, extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(),
 						     extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
 	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
 
@@ -339,7 +337,6 @@ void ISender<ChannelType>::optimal_action( void )
       break;
     }
   }
-  printf( "Sending solution found after %d steps\n", steps );
 
   /* total up utilities */
   priority_queue< Strategy, deque<Strategy>, Strategy > strategies;
@@ -362,8 +359,10 @@ void ISender<ChannelType>::optimal_action( void )
   next_send_time = strategies.top().delay;
 
   if ( next_send_time >= base_time ) {
+    printf( "Sending solution found after %d steps: wait %f\n", steps, next_send_time - base_time );
     container->sleep_until( next_send_time, addr, 99 );
   } else {
+    printf( "Sending solution found after %d steps: wait forever\n", steps );
     container->sleep_until( base_time + last_delay, addr, 99 );
   }
 

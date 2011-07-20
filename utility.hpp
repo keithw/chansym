@@ -6,20 +6,21 @@
 class UtilityMetric {
 private:
 
-  static double utility_single( vector<ScheduledPacket> x, bool penalize_delay )
+  static double utility_single( double base_time, vector<ScheduledPacket> x, bool penalize_delay )
   {
     double util = 0;
     
     for ( vector<ScheduledPacket>::const_iterator i = x.begin();
 	  i != x.end();
 	  i++ ) {
-      util += 20;
-      
+      double this_packet = i->packet.length / exp( i->delivery_time - base_time );
+      util += this_packet;
+
       if ( penalize_delay ) {
 	double delay = i->delivery_time - i->packet.send_time;
 	assert( delay >= 0 );
 	assert( delay < 20 );
-	util -= delay;
+	util -= this_packet * (delay / 20.0);
       }
     }
     
@@ -27,10 +28,12 @@ private:
   }
 
 public:
-  static double utility( vector<ScheduledPacket> &real_traffic,
+  static double utility( double base_time,
+			 vector<ScheduledPacket> &real_traffic,
 			 vector<ScheduledPacket> &cross_traffic )
   {
-    return utility_single( real_traffic, false ) + 0.001 * utility_single( cross_traffic, true );
+    return 1 * utility_single( base_time, real_traffic, false )
+      + 1.1 * utility_single( base_time, cross_traffic, false );
   }
 };
 
