@@ -392,6 +392,9 @@ string EnsembleContainer<ChannelType>::identify( void ) const
       continue;
     }
     */
+    if ( channels[ i ].erased ) {
+      continue;
+    }
 
     response << i;
     response << " (p=";

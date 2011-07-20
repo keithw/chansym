@@ -156,19 +156,29 @@ int main( void )
   }
   */
 
-  prior.add( series( series( Pawn(),
-			     Pinger( 2.0, -1 ) ),
-		     series( Buffer( 96000 ),
-			     series( series( Throughput( 12000 ), StochasticLoss( 0.2 ) ),
-				     diverter( Collector(),
-					       Collector() ) ) ) ) );
-  
+  for ( int bufsize = 12000; bufsize <= 120000; bufsize += 12000 ) {
+    for ( int linkspeed = 2000; linkspeed <= 20000; linkspeed += 2000 ) {
+      for ( double lossrate = 0; lossrate <= 0.4; lossrate += 0.1 ) {
+	for ( double other_sender_speed = linkspeed * 0.2; other_sender_speed <= linkspeed * 0.8; other_sender_speed += linkspeed * 0.1 ) {
+	  prior.add( series( series( Pawn(),
+				     Pinger( 12000.0 / other_sender_speed, -1 ) ),
+			     series( Buffer( bufsize ),
+				     series( series( Throughput( linkspeed ),
+						     StochasticLoss( lossrate ) ),
+					     diverter( Collector(),
+						       Collector() ) ) ) ) );
+	}
+      }
+    }
+  }  
+
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( 2.0, -1 ) ),
+			     Pinger( 12000 / (12000 * 0.4), -1 ) ),
 		     series( Buffer( 96000 ),
-			     series( series( Throughput( 12000 ), StochasticLoss( 0.2 ) ),
+			     series( series( Throughput( 12000 ),
+					     StochasticLoss( 0.2 ) ),
 				     diverter( SignallingCollector( &network.waker ),
 					       Collector() ) ) ) ) );
 

@@ -187,12 +187,14 @@ void ISender<ChannelType>::optimal_action( void )
   const int STEP_LIMIT = 10000;
 
   delays.push_back( 0 );
-  for ( double x = 0.1; x <= 10.0; x += 0.1 ) {
+  /*
+  for ( double x = 0.1; x <= 0.1; x += 0.1 ) {
     delays.push_back( x );
   }
-  delays.push_back( 60 );
+  */
+  //  delays.push_back( 60 );
 
-  double last_delay = 60;
+  //  double last_delay = 60;
 
   vector<bool> sent_yet;
 
@@ -363,7 +365,7 @@ void ISender<ChannelType>::optimal_action( void )
     container->sleep_until( next_send_time, addr, 99 );
   } else {
     printf( "Sending solution found after %d steps: wait forever\n", steps );
-    container->sleep_until( base_time + last_delay, addr, 99 );
+    //    container->sleep_until( base_time + last_delay, addr, 99 );
   }
 
   /*
