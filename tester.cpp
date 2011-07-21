@@ -18,6 +18,7 @@
 #include "isender.hpp"
 #include "pawn.hpp"
 #include "utility.hpp"
+#include "intermittent.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
@@ -31,7 +32,7 @@ public:
     typedef Series< Series<SenderObject,
 			   Pinger>,
 		    Series< Buffer,
-			    Series< Series< Throughput, StochasticLoss >,
+			    Series< Series< Throughput, Intermittent >,
 				    Diverter< ReceiverObject,
 					      Collector > > > > Channel;
   };
@@ -138,39 +139,21 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( int bufsize = 96000-24000; bufsize <= 96000+24000; bufsize += 12000 ) {
-    for ( int linkspeed = 2000; linkspeed <= 20000; linkspeed += 1000 ) {
-      for ( double lossrate = 0.2-0.1; lossrate <= 0.2+0.1; lossrate += 0.1 ) {
-	for ( double other_sender_speed = linkspeed * 0.3; other_sender_speed <= linkspeed * 0.5; other_sender_speed += linkspeed * 0.1 ) {
-	  prior.add( series( series( Pawn(),
-				     Pinger( 12000.0 / other_sender_speed, -1 ) ),
-			     series( Buffer( bufsize ),
-				     series( series( Throughput( linkspeed ),
-						     StochasticLoss( lossrate ) ),
-					     diverter( Collector(),
-						       Collector() ) ) ) ) );
-	}
-      }
-    }
-  }  
-
-  /*
   prior.add( series( series( Pawn(),
-			     Pinger( 12000.0 / (12000 * 0.4), -1 ) ),
+			     Pinger( 12000.0 / (12000.0 * 0.5), -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( series( Throughput( 12000 ),
-					     StochasticLoss( 0.2 ) ),
+					     Intermittent( .05, .1 ) ),
 				     diverter( Collector(),
 					       Collector() ) ) ) ) );
-  */
 
   prior.normalize();
 
   truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( 12000 / (12000 * 0.4), -1 ) ),
+			     Pinger( 12000 / (12000 * 0.5), -1 ) ),
 		     series( Buffer( 96000 ),
 			     series( series( Throughput( 12000 ),
-					     StochasticLoss( 0.2 ) ),
+					     Intermittent( .05, .1 ) ),
 				     diverter( SignallingCollector( &network.waker ),
 					       Collector() ) ) ) ) );
 
@@ -179,11 +162,9 @@ int main( void )
   truth.set_printing( true );
 
   while ( truth.tick() && (truth.time() < 1000) ) {
-    /*
     cout << "===" << endl;
     cout << "True channel at time " << truth.time() << ":" << endl;
     cout << truth.identify();
-    */
   }
 
   return 0;
