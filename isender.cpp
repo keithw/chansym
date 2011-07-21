@@ -81,7 +81,7 @@ void ISender<ChannelType>::wakeup( void )
     next_send_time = -1000;
   }
 
-  if ( (!true_received.empty()) || (next_send_time < -2) ) {
+  if ( (!true_received.empty()) || (next_send_time < current_time) ) {
     /* reschedule ping if necessary */
     optimal_action();
   }
@@ -190,7 +190,7 @@ void ISender<ChannelType>::optimal_action( void )
 
   delays.push_back( 0 );
 
-  for ( double x = 0.25; x < 3.0; x += 0.25 ) {
+  for ( double x = 0.25; x <= 6.0; x += 0.25 ) {
     delays.push_back( x );
   }
 

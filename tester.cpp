@@ -19,6 +19,7 @@
 #include "pawn.hpp"
 #include "utility.hpp"
 #include "intermittent.hpp"
+#include "squarewave.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
@@ -27,19 +28,19 @@
 
 class TwoTerminalNetwork {
 public:
-  template <class SenderObject, class ReceiverObject>
+  template <class SenderObject, class ReceiverObject, class BreakageObject>
   class DemoNet {
-    typedef Series< Series<SenderObject,
-			   Pinger>,
+    typedef Series< Series<Series< Pinger, BreakageObject >,
+			   SenderObject>,
 		    Series< Buffer,
-			    Series< Series< Throughput, Intermittent >,
+			    Series< Series< Throughput, StochasticLoss  >,
 				    Diverter< ReceiverObject,
 					      Collector > > > > Channel;
   };
 
-  typedef typename DemoNet<Pawn, Collector>::Channel SimulatedChannel;
+  typedef typename DemoNet<Pawn, Collector, Intermittent>::Channel SimulatedChannel;
   typedef ISender<SimulatedChannel> SmartSender;
-  typedef typename DemoNet<SmartSender, SignallingCollector>::Channel RealChannel;
+  typedef typename DemoNet<SmartSender, SignallingCollector, SquareWave>::Channel RealChannel;
   
   template <class ChannelType, class SenderObject, class ReceiverObject>
   class Navigator
@@ -57,7 +58,7 @@ public:
 
     static SenderObject & get_sender( ChannelType *ch )
     {
-      return ch->get_first().get_first();
+      return ch->get_first().get_second();
     }
 
     static ChannelType * get_root( SenderObject *ch )
@@ -120,7 +121,7 @@ public:
 
   public:
     TheWaker() : real() {}
-    void wakeup_smart_sender( SignallingCollector *ch, double time ) { real.get_root( ch )->get_first().sleep_until( time, 0, 99 ); }
+    void wakeup_smart_sender( SignallingCollector *ch, double time ) { real.get_root( ch )->get_first().sleep_until( time, 1, 99 ); }
   };
 
   TheExtractor extractor;
@@ -139,21 +140,29 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  prior.add( series( series( Pawn(),
-			     Pinger( 12000.0 / (12000.0 * 0.5), -1 ) ),
-		     series( Buffer( 96000 ),
-			     series( series( Throughput( 12000 ),
-					     Intermittent( .05, .1 ) ),
-				     diverter( Collector(),
-					       Collector() ) ) ) ) );
+  for ( double link_portion = 0.3; link_portion < 0.8; link_portion += 0.1 ) {
+    for ( int bufsize = 12000; bufsize < 120000; bufsize += 12000 ) {
+      for ( int linkspeed = 6000; linkspeed <= 14000; linkspeed += 2000 ) {
+	for ( double lossrate = 0; lossrate <= 0.2; lossrate += 0.1 ) {
+	  prior.add( series( series( series( Pinger( 12000.0 / (12000.0 * 0.8), -1 ), Intermittent( .007, 1 ) ),
+				     Pawn() ),
+			     series( Buffer( bufsize ),
+				     series( series( Throughput( linkspeed ),
+						     StochasticLoss( lossrate ) ),
+					     diverter( Collector(),
+						       Collector() ) ) ) ) );
+	}
+      }
+    }
+  }
 
   prior.normalize();
 
-  truth.add( series( series( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			     Pinger( 12000 / (12000 * 0.5), -1 ) ),
+  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.5), -1 ), SquareWave( 200 ) ),
+			     TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
 		     series( Buffer( 96000 ),
 			     series( series( Throughput( 12000 ),
-					     Intermittent( .05, .1 ) ),
+					     StochasticLoss( 0.2 ) ),
 				     diverter( SignallingCollector( &network.waker ),
 					       Collector() ) ) ) ) );
 

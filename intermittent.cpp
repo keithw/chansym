@@ -20,9 +20,9 @@ void Intermittent::send( Packet pack )
   }
 }
 
-void Intermittent::after_fork( bool is_other, ForkState x __attribute((unused)) )
+void Intermittent::after_fork( bool is_other, ForkState x )
 {
-  if ( is_other ) {
+  if ( is_other && x.flip ) {
     working = !working;
   }
 
@@ -32,7 +32,7 @@ void Intermittent::after_fork( bool is_other, ForkState x __attribute((unused)) 
 void Intermittent::wakeup( void )
 {
   assert( !forking );
-  ForkState *x = new ForkState();
+  ForkState *x = new ForkState( true );
   container->sleep_until( container->time() + interval, addr );
   container->fork( addr, 1 - probability, x );
 }

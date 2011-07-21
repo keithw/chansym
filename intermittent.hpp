@@ -14,7 +14,9 @@ private:
 public:
   class ForkState : public Channel::ForkState {
   public:
-    ForkState( void ) {}
+    bool flip;
+    ForkState( bool s_flip ) : flip( s_flip ) {}
+    ForkState( void ) : flip( false ) {}
   };
 
   Intermittent( double s_probability, double s_interval );
