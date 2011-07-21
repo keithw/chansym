@@ -140,12 +140,12 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double link_portion = 0.3; link_portion < 0.8; link_portion += 0.2 ) {
-    for ( int bufsize = 84000; bufsize < 108000; bufsize += 24000 ) {
+  for ( double link_portion = 0.4; link_portion <= 0.7; link_portion += 0.1 ) {
+    for ( int bufsize = 72000; bufsize < 108000; bufsize += 24000 ) {
       for ( int init = 0; init * 12000 <= bufsize; init += 4 ) {
-	for ( int linkspeed = 10000; linkspeed <= 14000; linkspeed += 2000 ) {
+	for ( int linkspeed = 10000; linkspeed <= 16000; linkspeed += 2000 ) {
 	  for ( double lossrate = 0; lossrate <= 0.2; lossrate += 0.1 ) {
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1 ), Intermittent( .007, 1 ) ),
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1 ), Intermittent( .035, 10 ) ),
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
 				       series( series( Throughput( linkspeed ),
@@ -160,11 +160,11 @@ int main( void )
 
   prior.normalize();
 
-  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.5), -1 ), SquareWave( 200 ) ),
+  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.7), -1 ), SquareWave( 200 ) ),
 			     TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
 		     series( Buffer( 96000 ),
 			     series( series( Throughput( 12000 ),
-					     StochasticLoss( 0.1 ) ),
+					     StochasticLoss( 0.2 ) ),
 				     diverter( SignallingCollector( &network.waker ),
 					       Collector() ) ) ) ) );
 
@@ -173,6 +173,7 @@ int main( void )
   truth.set_printing( true );
 
   printf( "Starting with %d channels...\n", prior.size() );
+  cout << prior.identify();
   fflush( NULL );
 
   while ( truth.tick() && (truth.time() < 1000) ) {

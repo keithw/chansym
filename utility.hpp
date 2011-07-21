@@ -22,8 +22,8 @@ private:
       if ( penalize_delay ) {
 	double delay = i->delivery_time - i->packet.send_time;
 	assert( delay >= 0 );
-	assert( delay < 20 );
-	double penalty = this_packet * (delay / 20.0);
+	assert( delay < 12 );
+	double penalty = this_packet * (delay / 12.0);
 	assert( isfinite( penalty ) );
 	this_packet -= penalty;
       }
@@ -46,7 +46,7 @@ public:
 			 vector<ScheduledPacket> &cross_traffic )
   {
     return 1 * utility_single( base_time, real_traffic, false )
-      + 3 * utility_single( base_time, cross_traffic, true );
+      + 2 * utility_single( base_time, cross_traffic, true );
   }
 };
 
