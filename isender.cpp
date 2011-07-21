@@ -190,7 +190,7 @@ void ISender<ChannelType>::optimal_action( void )
 
   delays.push_back( 0 );
 
-  for ( double x = 0.25; x <= 6.0; x += 0.25 ) {
+  for ( double x = 0.5; x <= 6.0; x += 0.5 ) {
     delays.push_back( x );
   }
 
