@@ -166,7 +166,7 @@ public:
     } else if ( lhs.utility > rhs.utility ) {
       return 0;
     } else {
-      return lhs.delay > rhs.delay;
+      return lhs.delay < rhs.delay;
     }
   }
 };
