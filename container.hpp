@@ -67,6 +67,8 @@ public:
   wakeup_iterator wakeup_begin( void ) { return wakeups.begin(); }
   wakeup_iterator wakeup_end( void ) { return wakeups.end(); }
 
+  peekable_priority_queue<Event, deque<Event>, Event> const & get_wakeups( void ) { return wakeups; }
+
   virtual void clear_wakeups( void ) = 0;
   virtual void clear_wakeups( int source_addr ) = 0;
 };

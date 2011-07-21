@@ -18,7 +18,7 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
   : prior( s_prior ),
     extractor( s_extractor ),
     latest_time( -1 ),
-    next_send_time( -1 ), counter( 0 ),
+    next_send_time( -1000 ), counter( 0 ),
     id( 0 ), smallestsize( prior.size() )
 {}
 
@@ -78,11 +78,13 @@ void ISender<ChannelType>::wakeup( void )
 
   if ( current_time == next_send_time ) {
     sendout( Packet( 12000, id, counter++, current_time ) );
-    next_send_time = -1;
+    next_send_time = -1000;
   }
 
-  /* ping if necessary */
-  optimal_action();
+  if ( (!true_received.empty()) || (next_send_time < -2) ) {
+    /* reschedule ping if necessary */
+    optimal_action();
+  }
 
   if ( prior.live() ) {
     container->sleep_until( prior.next_time(), addr, 99 );
@@ -187,11 +189,25 @@ void ISender<ChannelType>::optimal_action( void )
   const int STEP_LIMIT = 10000;
 
   delays.push_back( 0 );
-  /*
-  for ( double x = 0.1; x <= 0.1; x += 0.1 ) {
+
+  for ( double x = 0.25; x < 3.0; x += 0.25 ) {
     delays.push_back( x );
   }
+
+  /*
+  peekable_priority_queue<Event, deque<Event>, Event> wakeups_copy( prior.get_wakeups() );
+
+  double latest = 0;
+  while ( !wakeups_copy.empty() ) {
+    double proposal = wakeups_copy.top().time;
+    if ( proposal > latest ) {
+      delays.push_back( proposal - base_time );
+      latest = proposal;
+    }
+    wakeups_copy.pop();
+  }
   */
+
   //  delays.push_back( 60 );
 
   //  double last_delay = 60;
@@ -368,7 +384,6 @@ void ISender<ChannelType>::optimal_action( void )
     //    container->sleep_until( base_time + last_delay, addr, 99 );
   }
 
-  /*
   while ( !strategies.empty() ) {
     printf( "At time %f, utility (%f/%f) comes from delay of %f\n",
 	    container->time(), strategies.top().utility,
@@ -376,6 +391,5 @@ void ISender<ChannelType>::optimal_action( void )
 	    strategies.top().delay - container->time() );
     strategies.pop();
   }
-  */
 }
 

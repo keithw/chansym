@@ -138,28 +138,10 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  /*
-  for ( int bufsize = 48000; bufsize <= 120000; bufsize += 12000 ) {
-    for ( int linkspeed = 10000; linkspeed <= 14000; linkspeed += 2000 ) {
-      for ( double lossrate = 0; lossrate <= 0.4; lossrate += 0.2 ) {
-	for ( double other_sender_speed = linkspeed * 0.2; other_sender_speed <= linkspeed * 0.8; other_sender_speed += linkspeed * 0.1 ) {
-	  prior.add( series( series( Pawn(),
-				     Pinger( 12000.0 / other_sender_speed, -1 ) ),
-			     series( Buffer( bufsize ),
-				     series( Throughput( linkspeed ),
-					     diverter( series( StochasticLoss( lossrate ),
-							       Collector() ),
-						       Collector() ) ) ) ) );
-	}
-      }
-    }
-  }
-  */
-
-  for ( int bufsize = 12000; bufsize <= 120000; bufsize += 12000 ) {
-    for ( int linkspeed = 2000; linkspeed <= 20000; linkspeed += 2000 ) {
-      for ( double lossrate = 0; lossrate <= 0.4; lossrate += 0.1 ) {
-	for ( double other_sender_speed = linkspeed * 0.2; other_sender_speed <= linkspeed * 0.8; other_sender_speed += linkspeed * 0.1 ) {
+  for ( int bufsize = 96000-24000; bufsize <= 96000+24000; bufsize += 12000 ) {
+    for ( int linkspeed = 2000; linkspeed <= 20000; linkspeed += 1000 ) {
+      for ( double lossrate = 0.2-0.1; lossrate <= 0.2+0.1; lossrate += 0.1 ) {
+	for ( double other_sender_speed = linkspeed * 0.3; other_sender_speed <= linkspeed * 0.5; other_sender_speed += linkspeed * 0.1 ) {
 	  prior.add( series( series( Pawn(),
 				     Pinger( 12000.0 / other_sender_speed, -1 ) ),
 			     series( Buffer( bufsize ),
@@ -171,6 +153,16 @@ int main( void )
       }
     }
   }  
+
+  /*
+  prior.add( series( series( Pawn(),
+			     Pinger( 12000.0 / (12000 * 0.4), -1 ) ),
+		     series( Buffer( 96000 ),
+			     series( series( Throughput( 12000 ),
+					     StochasticLoss( 0.2 ) ),
+				     diverter( Collector(),
+					       Collector() ) ) ) ) );
+  */
 
   prior.normalize();
 
