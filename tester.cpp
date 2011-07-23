@@ -145,7 +145,7 @@ int main( void )
       for ( int init = 0; init * 12000 <= bufsize; init += 4 ) {
 	for ( int linkspeed = 10000; linkspeed <= 16000; linkspeed += 2000 ) {
 	  for ( double lossrate = 0; lossrate <= 0.2; lossrate += 0.1 ) {
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1 ), Intermittent( .035, 10 ) ),
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1 ), Intermittent( .007, 1 ) ),
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
 				       series( series( Throughput( linkspeed ),

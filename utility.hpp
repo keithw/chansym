@@ -46,7 +46,7 @@ public:
 			 vector<ScheduledPacket> &cross_traffic )
   {
     return 1 * utility_single( base_time, real_traffic, false )
-      + 2 * utility_single( base_time, cross_traffic, false );
+      + 7.5 * utility_single( base_time, cross_traffic, false );
   }
 };
 
