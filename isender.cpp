@@ -185,12 +185,12 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  //  const double LIMIT = 60;
-  const int STEP_LIMIT = 10000;
+  const double LIMIT = 10;
+  const int STEP_LIMIT = 1000;
 
   delays.push_back( 0 );
 
-  for ( double x = 0.1; x <= 12.0; x += 0.1 ) {
+  for ( double x = 0.5; x <= LIMIT; x += 0.5 ) {
     delays.push_back( x );
   }
 
@@ -300,10 +300,12 @@ void ISender<ChannelType>::optimal_action( void )
       }
     }
 
-    //    printf( "==> Iterating at time %f\n", fans.time() );
+    //    printf( "==> Iterating at time %f with %d channels\n", fans.time(), fans.size() );
 
     /* iterate through channels */
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
+      //      printf( "==> Strategy %d has %d channels\n", i, fans.get_channel( i ).channel.size() );
+      //      cout << fans.get_channel( i ).channel.identify();
       for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
 	/*
 	if ( (!sent_yet[ i ]) && (extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets().size() != 0) ) {
@@ -341,6 +343,7 @@ void ISender<ChannelType>::optimal_action( void )
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
 
+      
       if ( (steps % 5) == 4 ) {
 	fans.get_channel( i ).channel.combine();
       }
@@ -376,14 +379,16 @@ void ISender<ChannelType>::optimal_action( void )
 
   next_send_time = strategies.top().delay;
 
-  if ( next_send_time >= base_time ) {
+  if ( (next_send_time >= base_time) && (next_send_time - base_time < LIMIT) ) {
     printf( "Sending solution found after %d steps: wait %f\n", steps, next_send_time - base_time );
     container->sleep_until( next_send_time, addr, 99 );
   } else {
     printf( "Sending solution found after %d steps: wait forever\n", steps );
+    next_send_time = -1;
     //    container->sleep_until( base_time + last_delay, addr, 99 );
   }
 
+  /*
   while ( !strategies.empty() ) {
     printf( "At time %f, utility (%f/%f) comes from delay of %f\n",
 	    container->time(), strategies.top().utility,
@@ -391,5 +396,6 @@ void ISender<ChannelType>::optimal_action( void )
 	    strategies.top().delay - container->time() );
     strategies.pop();
   }
+  */
 }
 

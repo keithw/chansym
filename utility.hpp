@@ -13,11 +13,11 @@ private:
     for ( vector<ScheduledPacket>::const_iterator i = x.begin();
 	  i != x.end();
 	  i++ ) {
-      double future = i->delivery_time - base_time;
+      double future = (i->delivery_time - base_time);
       assert( future >= 0 );
       assert( future < 200 );
 
-      double this_packet = i->packet.length / exp( future );
+      double this_packet = i->packet.length / exp2( future );
 
       if ( penalize_delay ) {
 	double delay = i->delivery_time - i->packet.send_time;
@@ -46,7 +46,7 @@ public:
 			 vector<ScheduledPacket> &cross_traffic )
   {
     return 1 * utility_single( base_time, real_traffic, false )
-      + 7.5 * utility_single( base_time, cross_traffic, false );
+      + 1.1 * utility_single( base_time, cross_traffic, false );
   }
 };
 
