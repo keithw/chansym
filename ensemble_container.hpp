@@ -9,8 +9,8 @@ using namespace std;
 
 static double rounder( double x )
 {
-  return (float)x;
-  //  return nearbyint( x * 10000 ) / 10000;
+  //  return (float)x;
+  return nearbyint( x * 1000000 ) / 1000000;
 }
 
 template <class ChannelType>
