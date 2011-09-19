@@ -30,44 +30,12 @@ class TwoTerminalNetwork {
 public:
   template <class SenderObject, class ReceiverObject, class BreakageObject>
   class DemoNet {
-    typedef Series< Diverter< SenderObject,
-			      Diverter<
-				Diverter< Diverter< Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > >,
-						    Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > > >,
-					  Diverter< Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > >,
-						    Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > > > >,
-				Diverter< Diverter< Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > >,
-						    Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > > >,
-					  Diverter< Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > >,
-						    Diverter< Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> >,
-							      Diverter< Series<Pinger, BreakageObject>,
-									Series<Pinger, BreakageObject> > > > > > >,
-		    Series< Series< Buffer,
-				    Throughput >,
-			    Diverter< ReceiverObject,
-				      Collector > > > Channel;
+    typedef Series< Series<Series< Pinger, BreakageObject >,
+			   SenderObject>,
+		    Series< Buffer,
+			    Series< Series< Throughput, StochasticLoss  >,
+				    Diverter< ReceiverObject,
+					      Collector > > > > Channel;
   };
 
   typedef typename DemoNet<Pawn, Collector, Intermittent>::Channel SimulatedChannel;
@@ -80,17 +48,17 @@ public:
   public:
     static ReceiverObject & get_collector( ChannelType *ch )
     {
-      return ch->get_second().get_second().get_first();
+      return ch->get_second().get_second().get_second().get_first();
     }
 
     static Collector & get_cross_traffic( ChannelType *ch )
     {
-      return ch->get_second().get_second().get_second();
+      return ch->get_second().get_second().get_second().get_second();
     }
 
     static SenderObject & get_sender( ChannelType *ch )
     {
-      return ch->get_first().get_first();
+      return ch->get_first().get_second();
     }
 
     static ChannelType * get_root( SenderObject *ch )
@@ -103,7 +71,7 @@ public:
 
     static ChannelType * get_root( ReceiverObject *ch )
     {
-      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel();
+      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
       ChannelType *top_rc = dynamic_cast<RealChannel *>( top );
       assert( top_rc );
       return top_rc;
@@ -153,7 +121,7 @@ public:
 
   public:
     TheWaker() : real() {}
-    void wakeup_smart_sender( SignallingCollector *ch, double time ) { real.get_root( ch )->get_first().sleep_until( time, 0, 99 ); }
+    void wakeup_smart_sender( SignallingCollector *ch, double time ) { real.get_root( ch )->get_first().sleep_until( time, 1, 99 ); }
   };
 
   TheExtractor extractor;
@@ -172,87 +140,37 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  prior.add( series( diverter( Pawn(),
-			       diverter(
-					diverter( diverter( diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ) ),
-						  diverter( diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ) ) ),
-					diverter( diverter( diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ) ),
-						  diverter( diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ),
-										series( Pinger( 1, 1 ), Intermittent( .035, 10 ) ) ) ) ) ) ) ),
-		     series( series( Buffer( 400000 ),
-				     Throughput( 12000*5 ) ),
-			     diverter( Collector(),
-				       Collector() ) ) ) );
+  for ( double link_portion = 0.7; link_portion <= 0.7; link_portion += 0.1 ) {
+    for ( int bufsize = 96000; bufsize <= 96000; bufsize += 24000 ) {
+      for ( int init = 0; init * 12000 <= bufsize; init += 1000 /* XXX */ ) {
+	for ( int linkspeed = 12000; linkspeed <= 12000; linkspeed += 2000 ) {
+	  for ( double lossrate = 0.2; lossrate <= 0.2; lossrate += 0.1 ) {
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1 ), Intermittent( .007, 1 ) ),
+				       Pawn() ),
+			       series( Buffer( bufsize, init, 12000 ),
+				       series( series( Throughput( linkspeed ),
+						       StochasticLoss( lossrate ) ),
+					       diverter( Collector(),
+							 Collector() ) ) ) ) );
+	  }
+	}
+      }
+    }
+  }
 
   prior.normalize();
 
-  truth.add( series( diverter( TwoTerminalNetwork::SmartSender( prior, &network.extractor ),
-			       diverter(
-					diverter( diverter( diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 20 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 20 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 20 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 20 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 40 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 40 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 40 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 40 ) ) ) ) ),
-						  diverter( diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 80 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 80 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 80 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 80 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 80 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 160 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 160 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 160 ) ) ) ) ) ),
-					diverter( diverter( diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 160 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 320 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 320 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 320 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 320 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 640 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 640 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 640 ) ) ) ) ),
-						  diverter( diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 640 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 640 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 640 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 640 ) ) ) ),
-							    diverter( diverter( series( Pinger( 1, 1 ), SquareWave( 640 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 640 ) ) ),
-								      diverter( series( Pinger( 1, 1 ), SquareWave( 640 ) ),
-										series( Pinger( 1, 1 ), SquareWave( 640 ) ) ) ) ) ) ) ),
-		     series( series( Buffer( 400000 ),
-				     Throughput( 12000*5 ) ),
-			     diverter( SignallingCollector( &network.waker ),
-				       Collector() ) ) ) );
+  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.7), -1 ), SquareWave( 200 ) ),
+			     TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
+		     series( Buffer( 96000 ),
+			     series( series( Throughput( 12000 ),
+					     StochasticLoss( 0.2 ) ),
+				     diverter( SignallingCollector( &network.waker ),
+					       Collector() ) ) ) ) );
 
   truth.normalize();
+
+  truth.set_printing( true );
 
   printf( "Starting with %d channels...\n", prior.size() );
   cout << prior.identify();
@@ -260,9 +178,8 @@ int main( void )
 
   while ( truth.tick() && (truth.time() < 1000) ) {
     cout << "===" << endl;
-    cout << "Channel at time " << truth.time() << ":" << endl;
+    cout << "True channel at time " << truth.time() << ":" << endl;
     cout << truth.identify();
-    fflush( NULL );
   }
 
   return 0;

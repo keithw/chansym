@@ -15,12 +15,12 @@ using google::dense_hash_set;
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer()
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 ), smallest_size( 0 )
 {}
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( double s_time )
-  : the_time( s_time ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 )
+  : the_time( s_time ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 ), smallest_size( 0 )
 {}
 
 template <class ChannelType>
@@ -52,7 +52,7 @@ void EnsembleContainer<ChannelType>::add_mature( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
-  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 )
+  : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 ), smallest_size( 0 )
 {
   channels.push_back( WeightedChannel( 1.0, s_channel ) );
   channels[ 0 ].channel.connect( 0, this );
@@ -61,7 +61,7 @@ EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
 
 template <class ChannelType>
 EnsembleContainer<ChannelType>::EnsembleContainer( const EnsembleContainer<ChannelType> &x )
-  : Container( x ), the_time( x.the_time ), channels( x.channels ), fork_queue( x.fork_queue ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking ), total_utility( 0 )
+  : Container( x ), the_time( x.the_time ), channels( x.channels ), fork_queue( x.fork_queue ), erased_count( x.erased_count ), printing( x.printing ), forking( x.forking ), total_utility( x.total_utility ), smallest_size( x.smallest_size )
 {
   for ( unsigned int i = 0; i < channels.size(); i++ ) {
     channels[ i ].channel.connect( i, this );
@@ -212,6 +212,16 @@ bool EnsembleContainer<ChannelType>::converged( void )
 
   return set.size();
   */
+}
+
+template <class ChannelType>
+void EnsembleContainer<ChannelType>::heuristic_opportunistic_combine( void )
+{
+  if ( (size() >= 2 * smallest_size)
+       || (erased_count * 2 >= (int)size()) ) {
+    combine();
+    smallest_size = size();
+  }
 }
 
 template <class ChannelType>

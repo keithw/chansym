@@ -185,12 +185,12 @@ void ISender<ChannelType>::optimal_action( void )
   vector<double> delays;
   delays.push_back( -1 );
 
-  const double LIMIT = 10;
+  const double LIMIT = 5;
   const int STEP_LIMIT = 1000;
 
   delays.push_back( 0 );
 
-  for ( double x = 0.5; x <= LIMIT; x += 0.5 ) {
+  for ( double x = 0.1; x <= LIMIT; x += 0.1 ) {
     delays.push_back( x );
   }
 
@@ -343,8 +343,9 @@ void ISender<ChannelType>::optimal_action( void )
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
 
-      
-      if ( (steps % 5) == 4 ) {
+      fans.get_channel( i ).channel.heuristic_opportunistic_combine();
+
+      if ( (steps % 25) == 24 ) {
 	fans.get_channel( i ).channel.combine();
       }
     }

@@ -81,6 +81,8 @@ private:
 
   void compact( void );
   void assert_normalized( void );
+
+  unsigned int smallest_size;
   
 public:
   EnsembleContainer();
@@ -92,6 +94,7 @@ public:
   void advance_to( double advance_time );
 
   void combine( void );
+  void heuristic_opportunistic_combine( void );
   bool converged( void );
 
   virtual void make_wakeup( double time, int source_addr, int sort_order )
