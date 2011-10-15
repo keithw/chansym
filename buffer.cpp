@@ -14,7 +14,7 @@ Buffer::Buffer( int s_size, int initial_num, int initial_size )
 void Buffer::init( void )
 {
   for ( int i = 0; i < tmp_initial_num; i++ ) {
-    send( Packet( tmp_initial_size, -1, -1, container->time() ) );
+    send( Packet( tmp_initial_size, -1, -1, -1 ) );
   }
 }
 

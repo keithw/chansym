@@ -140,33 +140,33 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double link_portion = 0.6; link_portion <= 0.6; link_portion += 0.1 ) {
-    for ( int bufsize = 96000; bufsize <= 96000; bufsize += 24000 ) {
-      for ( int init = 0; init * 12000 <= bufsize; init += 1000 /* XXX */ ) {
-	for ( int linkspeed = 12000; linkspeed <= 12000; linkspeed += 2000 ) {
-	  for ( double lossrate = 0.2; lossrate <= 0.2; lossrate += 0.1 ) {
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1, true ), Intermittent( .007, 1 ) ),
-				       Pawn() ),
-			       series( Buffer( bufsize, init, 12000 ),
-				       series( series( Throughput( linkspeed ),
-						       StochasticLoss( lossrate ) ),
-					       diverter( Collector(),
-							 Collector() ) ) ) ) );
-	  }
-	}
+  for ( double link_portion = 0.4; link_portion <= 0.7; link_portion += 0.1 ) {
+    for ( int bufsize = 72000; bufsize <= 108000; bufsize += 24000 ) {
+      for ( int init = 0; init * 12000 <= bufsize; init += 4 ) {
+        for ( int linkspeed = 10000; linkspeed <= 16000; linkspeed += 2000 ) {
+          for ( double lossrate = 0; lossrate <= 0.2; lossrate += 0.2 ) {
+            prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1, true ), Intermittent( .067, 1 ) ),
+                                       Pawn() ),
+                               series( Buffer( bufsize, init, 12000 ),
+                                       series( series( Throughput( linkspeed ),
+                                                       StochasticLoss( lossrate ) ),
+                                               diverter( Collector(),
+                                                         Collector() ) ) ) ) );
+          }
+        }
       }
     }
   }
 
   prior.normalize();
 
-  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.6), -1, true ), SquareWave( 200 ) ),
-			     TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
-		     series( Buffer( 96000 ),
-			     series( series( Throughput( 12000 ),
-					     StochasticLoss( 0.2 ) ),
-				     diverter( SignallingCollector( &network.waker ),
-					       Collector() ) ) ) ) );
+  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.5), -1, true ), SquareWave( 200 ) ),
+                             TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
+                     series( Buffer( 96000 ),
+                             series( series( Throughput( 12000 ),
+                                             StochasticLoss( 0.2 ) ),
+                                     diverter( SignallingCollector( &network.waker ),
+                                               Collector() ) ) ) ) );
 
   truth.normalize();
 
