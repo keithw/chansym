@@ -33,7 +33,7 @@ public:
     typedef Series< Series<Series< Pinger, BreakageObject >,
 			   SenderObject>,
 		    Series< Buffer,
-			    Series< Series< Throughput, StochasticLoss  >,
+			    Series< Series< Throughput, Delay >,
 				    Diverter< ReceiverObject,
 					      Collector > > > > Channel;
   };
@@ -140,19 +140,18 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double link_portion = 0.4; link_portion <= 0.7; link_portion += 0.1 ) {
-    for ( int bufsize = 72000; bufsize <= 108000; bufsize += 24000 ) {
-      for ( int init = 0; init * 12000 <= bufsize; init += 4 ) {
-        for ( int linkspeed = 10000; linkspeed <= 16000; linkspeed += 2000 ) {
-          for ( double lossrate = 0; lossrate <= 0.2; lossrate += 0.2 ) {
-            prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), -1, true ), Intermittent( .067, 1 ) ),
-                                       Pawn() ),
-                               series( Buffer( bufsize, init, 12000 ),
-                                       series( series( Throughput( linkspeed ),
-                                                       StochasticLoss( lossrate ) ),
-                                               diverter( Collector(),
-                                                         Collector() ) ) ) ) );
-          }
+  for ( double link_portion = 0.3; link_portion <= 0.5; link_portion += 0.2 ) {
+    for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*20 ) {
+      for ( int init = 0; init * 12000 <= bufsize; init += 20 ) {
+        for ( int linkspeed = 12000*8; linkspeed <= 12000*12; linkspeed += 12000*2 ) {
+	  for ( double delay = 10.0; delay < 50.0; delay += 20.0 ) {
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, false ), Intermittent( .067, 1 ) ),
+				       Pawn() ),
+			       series( Buffer( bufsize, init, 12000 ),
+				       series( series( Throughput( linkspeed ), Delay( delay / 1000.0 ) ),
+					       diverter( Collector(),
+							 Collector() ) ) ) ) );
+	  }
         }
       }
     }
@@ -160,11 +159,13 @@ int main( void )
 
   prior.normalize();
 
-  truth.add( series( series( series( Pinger( 12000 / (12000 * 0.5), -1, true ), SquareWave( 200 ) ),
+  double my_linkspeed = 12000*10;
+  double my_bufsize = 12000*30;
+  double my_delay = 30.0/1000.0;
+  truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * 0.5), 1, false ), SquareWave( 200 ) ),
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
-                     series( Buffer( 96000 ),
-                             series( series( Throughput( 12000 ),
-                                             StochasticLoss( 0.2 ) ),
+                     series( Buffer( my_bufsize ),
+                             series( series( Throughput( my_linkspeed ), Delay( my_delay ) ),
                                      diverter( SignallingCollector( &network.waker ),
                                                Collector() ) ) ) ) );
 
@@ -176,7 +177,7 @@ int main( void )
   cout << prior.identify();
   fflush( NULL );
 
-  while ( truth.tick() && (truth.time() < 1000) ) {
+  while ( truth.tick() && (truth.time() < 350) ) {
     cout << "===" << endl;
     cout << "True channel at time " << truth.time() << ":" << endl;
     cout << truth.identify();

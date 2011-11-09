@@ -69,7 +69,7 @@ void Diverter<First, Second>::send( Packet pack )
 {
   if ( pack.src == 0 ) {
     a.send( pack );
-  } else {
+  } else if ( pack.src == 1 ) {
     b.send( pack );
   }
 }

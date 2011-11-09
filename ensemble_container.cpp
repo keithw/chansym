@@ -397,11 +397,10 @@ string EnsembleContainer<ChannelType>::identify( void ) const
   response << ")\n";
 
   for ( unsigned int i = 0; i < size(); i++ ) {
-    /*
-    if ( channels[ i ].probability < 1.0 / (100 * channels.size()) ) {
+    if ( channels[ i ].probability < .01 ) {
       continue;
     }
-    */
+
     if ( channels[ i ].erased ) {
       continue;
     }

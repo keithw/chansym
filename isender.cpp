@@ -186,13 +186,17 @@ void ISender<ChannelType>::optimal_action( void )
   delays.push_back( -1 );
 
   const double LIMIT = 5;
-  const int STEP_LIMIT = 1000;
+  const int STEP_LIMIT = 10000;
 
   delays.push_back( 0 );
+  delays.push_back( 0.1 );
+  delays.push_back( 10 );
 
+  /*
   for ( double x = 0.1; x <= LIMIT; x += 0.1 ) {
     delays.push_back( x );
   }
+  */
 
   /*
   peekable_priority_queue<Event, deque<Event>, Event> wakeups_copy( prior.get_wakeups() );
@@ -375,7 +379,7 @@ void ISender<ChannelType>::optimal_action( void )
     }
 
     assert( close( total_probability, 1.0 ) );
-    strategies.push( Strategy( nearbyint( utility * 10000 ) / 10000.0, fans.get_channel( i ).delay ) );
+    strategies.push( Strategy( nearbyint( utility * 10 ) / 10.0, fans.get_channel( i ).delay ) );
   }
 
   next_send_time = strategies.top().delay;
