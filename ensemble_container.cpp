@@ -220,7 +220,6 @@ void EnsembleContainer<ChannelType>::heuristic_opportunistic_combine( void )
   if ( (size() >= 2 * smallest_size)
        || (erased_count * 2 >= (int)size()) ) {
     combine();
-    smallest_size = size();
   }
 }
 
@@ -261,6 +260,8 @@ void EnsembleContainer<ChannelType>::combine( void )
   if ( erased_count ) {
     compact();
   }
+
+  smallest_size = size();
 }
 
 template <class ChannelType>

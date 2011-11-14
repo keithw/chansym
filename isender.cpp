@@ -305,11 +305,11 @@ void ISender<ChannelType>::optimal_action( void )
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
 
-      //      fans.get_channel( i ).channel.heuristic_opportunistic_combine();
-
-      //      if ( (steps % 25) == 24 ) {
+      if ( (steps % 25) == 24 ) {
 	fans.get_channel( i ).channel.combine();
-	//      }
+      } else {
+	fans.get_channel( i ).channel.heuristic_opportunistic_combine();
+      }
     }
 
     if ( delay_queue.empty() && fans.converged() ) {
