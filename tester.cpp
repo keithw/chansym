@@ -20,6 +20,7 @@
 #include "utility.hpp"
 #include "intermittent.hpp"
 #include "squarewave.hpp"
+#include "timequantize.hpp"
 
 #include "series.cpp"
 #include "ensemble_container.cpp"
@@ -34,7 +35,7 @@ public:
 			   SenderObject>,
 		    Series< Buffer,
 			    Series< Series< Throughput, StochasticLoss >,
-				    Diverter< ReceiverObject,
+				    Diverter< Series< TimeQuantize, ReceiverObject >,
 					      Collector > > > > Channel;
   };
 
@@ -48,7 +49,7 @@ public:
   public:
     static ReceiverObject & get_collector( ChannelType *ch )
     {
-      return ch->get_second().get_second().get_second().get_first();
+      return ch->get_second().get_second().get_second().get_first().get_second();
     }
 
     static Collector & get_cross_traffic( ChannelType *ch )
@@ -71,7 +72,7 @@ public:
 
     static ChannelType * get_root( ReceiverObject *ch )
     {
-      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
+      Channel *top = ch->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel()->get_container_channel();
       ChannelType *top_rc = dynamic_cast<RealChannel *>( top );
       assert( top_rc );
       return top_rc;
@@ -149,7 +150,7 @@ int main( void )
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
 				       series( series( Throughput( linkspeed ), StochasticLoss( lossrate ) ),
-					       diverter( Collector(),
+					       diverter( series( TimeQuantize( 0.1 ), Collector() ),
 							 Collector() ) ) ) ) );
 	  }
         }
@@ -166,7 +167,7 @@ int main( void )
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
                              series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
-                                     diverter( SignallingCollector( &network.waker ),
+                                     diverter( series( TimeQuantize( 0.1 ), SignallingCollector( &network.waker ) ),
                                                Collector() ) ) ) ) );
 
   truth.normalize();

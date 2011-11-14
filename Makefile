@@ -1,5 +1,5 @@
-source = tester.cpp pinger.cpp printer.cpp simple_container.cpp series.cpp buffer.cpp throughput.cpp delay.cpp ensemble_container.cpp stochastic_loss.cpp jitter.cpp isender.cpp channel.cpp diverter.cpp utility_ensemble.cpp embeddable_ensemble.cpp intermittent.hpp
-objects = pinger.o printer.o simple_container.o series.o buffer.o throughput.o delay.o ensemble_container.o stochastic_loss.o jitter.o isender.o channel.o diverter.o utility_ensemble.o embeddable_ensemble.cpp intermittent.cpp
+source = tester.cpp pinger.cpp printer.cpp simple_container.cpp series.cpp buffer.cpp throughput.cpp delay.cpp ensemble_container.cpp stochastic_loss.cpp jitter.cpp isender.cpp channel.cpp diverter.cpp utility_ensemble.cpp embeddable_ensemble.cpp intermittent.hpp timequantize.hpp
+objects = pinger.o printer.o simple_container.o series.o buffer.o throughput.o delay.o ensemble_container.o stochastic_loss.o jitter.o isender.o channel.o diverter.o utility_ensemble.o embeddable_ensemble.o intermittent.o timequantize.o
 executables = tester
 
 CXX = g++
