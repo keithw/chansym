@@ -190,6 +190,8 @@ void ISender<ChannelType>::optimal_action( void )
 
   delays.push_back( 0 );
   delays.push_back( 0.05 );
+  delays.push_back( 0.1 );
+  delays.push_back( 0.5 );
 
   vector<bool> sent_yet;
 
@@ -333,7 +335,7 @@ void ISender<ChannelType>::optimal_action( void )
     }
 
     assert( close( total_probability, 1.0 ) );
-    strategies.push( Strategy( nearbyint( utility * 10 ) / 10.0, fans.get_channel( i ).delay ) );
+    strategies.push( Strategy( rounder( utility ), fans.get_channel( i ).delay ) );
   }
 
   next_send_time = strategies.top().delay;
