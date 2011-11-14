@@ -180,17 +180,22 @@ void ISender<ChannelType>::optimal_action( void )
 
   double base_time = prior.time();
 
+  //  printf( "Sending solution found after %d steps: wait %f\n", steps, next_send_time - base_time );
+  next_send_time = base_time + 1.0;
+  container->sleep_until( next_send_time, addr, 99 );
+
+  return;
+
   UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans( base_time );
 
   vector<double> delays;
   delays.push_back( -1 );
 
   const double LIMIT = 5;
-  const int STEP_LIMIT = 10000;
+  const int STEP_LIMIT = 1000;
 
   delays.push_back( 0 );
   delays.push_back( 0.1 );
-  delays.push_back( 10 );
 
   /*
   for ( double x = 0.1; x <= LIMIT; x += 0.1 ) {
@@ -250,6 +255,11 @@ void ISender<ChannelType>::optimal_action( void )
   int steps = 0;
   while ( 1 ) {
     steps++;
+
+    for ( unsigned int i = 0; i < fans.size(); i++ ) {
+      fprintf( stderr, "step %d @ time %f, fan %d (delay %f) has size %d\n",
+	       steps, fans.time(), i, fans.get_channel( i ).delay, fans.get_channel( i ).channel.size() );
+    }
 
     if ( steps > STEP_LIMIT ) {
       printf( "Error: Iterated %d steps to t=%f but fan has not converged\n",

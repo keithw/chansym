@@ -33,7 +33,7 @@ public:
     typedef Series< Series<Series< Pinger, BreakageObject >,
 			   SenderObject>,
 		    Series< Buffer,
-			    Series< Series< Throughput, Delay >,
+			    Series< Series< Throughput, StochasticLoss >,
 				    Diverter< ReceiverObject,
 					      Collector > > > > Channel;
   };
@@ -140,15 +140,15 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double link_portion = 0.3; link_portion <= 0.5; link_portion += 0.2 ) {
-    for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*20 ) {
+  for ( double link_portion = 0.1; link_portion <= 0.9; link_portion += 0.1 ) {
+    for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*5 ) {
       for ( int init = 0; init * 12000 <= bufsize; init += 20 ) {
-        for ( int linkspeed = 12000*8; linkspeed <= 12000*12; linkspeed += 12000*2 ) {
-	  for ( double delay = 10.0; delay < 50.0; delay += 20.0 ) {
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, false ), Intermittent( .067, 1 ) ),
+        for ( int linkspeed = 12000*6; linkspeed <= 12000*20; linkspeed += 12000*2 ) {
+	  for ( double lossrate = 0.0; lossrate <= 1.0; lossrate += 0.05 ) {
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, false ), Intermittent( .0034, .5 ) ),
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
-				       series( series( Throughput( linkspeed ), Delay( delay / 1000.0 ) ),
+				       series( series( Throughput( linkspeed ), StochasticLoss( lossrate ) ),
 					       diverter( Collector(),
 							 Collector() ) ) ) ) );
 	  }
@@ -161,11 +161,11 @@ int main( void )
 
   double my_linkspeed = 12000*10;
   double my_bufsize = 12000*30;
-  double my_delay = 30.0/1000.0;
+  double my_lossrate = 0.2;
   truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * 0.5), 1, false ), SquareWave( 200 ) ),
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
-                             series( series( Throughput( my_linkspeed ), Delay( my_delay ) ),
+                             series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
                                      diverter( SignallingCollector( &network.waker ),
                                                Collector() ) ) ) ) );
 
