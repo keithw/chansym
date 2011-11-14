@@ -7,12 +7,6 @@
 
 using namespace std;
 
-static double rounder( double x )
-{
-  //  return (float)x;
-  return nearbyint( x * 1000000 ) / 1000000;
-}
-
 template <class ChannelType>
 class EnsembleContainer : public Container
 {
@@ -38,6 +32,10 @@ private:
 	      (channel == x.channel),
 	      (erased == x.erased) );
       */
+      if ( close( probability, x.probability ) ) {
+	assert( rounder( probability ) == rounder( x.probability ) );
+      }
+
       return ( rounder( probability ) == rounder( x.probability ) ) && (channel == x.channel) && (erased == x.erased);
     }
 
