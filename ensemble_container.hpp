@@ -32,11 +32,11 @@ private:
 	      (channel == x.channel),
 	      (erased == x.erased) );
       */
-      if ( close( probability, x.probability ) ) {
-	assert( rounder( probability ) == rounder( x.probability ) );
+      if ( close( probability, x.probability ) && ( rounder( probability ) != rounder( x.probability ) ) ) {
+	fprintf( stderr, "Warning, hash mismatch.\n" );
       }
 
-      return ( rounder( probability ) == rounder( x.probability ) ) && (channel == x.channel) && (erased == x.erased);
+      return close( probability, x.probability ) && (channel == x.channel) && (erased == x.erased);
     }
 
     friend size_t hash_value( const WeightedChannel &x )

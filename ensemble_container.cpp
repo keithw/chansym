@@ -488,13 +488,20 @@ bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<Channel
       other_set.insert( key );
     }
   }
+
+  double mismatch = 0;
   
+  const static double MISMATCH_LIMIT = 0.01;
+
   for ( unsigned i = 0; i < channels.size(); i++ ) {
     if ( !channels[ i ].erased ) {
       key_t key( &channels[ i ] );
       typename dhs_t::const_iterator it = other_set.find( key );
       if ( it == other_set.end() ) {
-	return false;
+	mismatch += channels[ i ].probability;
+	if ( mismatch > MISMATCH_LIMIT ) {
+	  return false;
+	}
       }
     }
 
@@ -502,7 +509,10 @@ bool EnsembleContainer<ChannelType>::operator==( const EnsembleContainer<Channel
       key_t key( &x.channels[ i ] );
       typename dhs_t::const_iterator it = my_set.find( key );
       if ( it == my_set.end() ) {
-	return false;
+	mismatch += x.channels[ i ].probability;
+	if ( mismatch > MISMATCH_LIMIT ) {
+	  return false;
+	}
       }
     }
   }

@@ -255,9 +255,10 @@ void ISender<ChannelType>::optimal_action( void )
 		    fans.get_channel( 0 ).channel.get_channel( j ).channel == fans.get_channel( i ).channel.get_channel( j ).channel );
 
 	    if ( !(fans.get_channel( 0 ).channel.get_channel( j ).channel == fans.get_channel( i ).channel.get_channel( j ).channel) ) {
-	      cout << "======";
+	      cout << "======" << endl;
 	      cout << "First channel:" << endl;
 	      cout << fans.get_channel( 0 ).channel.get_channel( j ).channel.identify();
+	      cout << "======" << endl;
 	      cout << "Second channel:" << endl;
 	      cout << fans.get_channel( i ).channel.get_channel( j ).channel.identify();
 	      cout << "======";
