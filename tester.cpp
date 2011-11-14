@@ -145,8 +145,8 @@ int main( void )
     for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*5 ) {
       for ( int init = 0; init * 12000 <= bufsize; init += 20 ) {
         for ( int linkspeed = 12000*6; linkspeed <= 12000*20; linkspeed += 12000*2 ) {
-	  for ( double lossrate = 0.0; lossrate <= 0.0; lossrate += 0.05 ) {
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, true ), Intermittent( .5, 100 ) ),
+	  for ( double lossrate = 0.0; lossrate <= 1.0; lossrate += 0.2 ) {
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, true ), Intermittent( .0034, .5 ) ),
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
 				       series( series( Throughput( linkspeed ), StochasticLoss( lossrate ) ),
@@ -162,7 +162,7 @@ int main( void )
 
   double my_linkspeed = 12000*10;
   double my_bufsize = 12000*30;
-  double my_lossrate = 0.0;
+  double my_lossrate = 0.2;
   truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * 0.5), 1, true ), SquareWave( 200 ) ),
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
