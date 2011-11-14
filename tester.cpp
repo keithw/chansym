@@ -141,7 +141,7 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double link_portion = 0.1; link_portion <= 0.9; link_portion += 0.1 ) {
+  for ( double link_portion = 0.5; link_portion <= 0.5; link_portion += 0.1 ) {
     for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*5 ) {
       for ( int init = 0; init * 12000 <= bufsize; init += 20 ) {
         for ( int linkspeed = 12000*6; linkspeed <= 12000*20; linkspeed += 12000*2 ) {

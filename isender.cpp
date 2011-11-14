@@ -186,7 +186,7 @@ void ISender<ChannelType>::optimal_action( void )
   delays.push_back( -1 );
 
   const double LIMIT = 5;
-  const int STEP_LIMIT = 1000;
+  const int STEP_LIMIT = 10000;
 
   delays.push_back( 0 );
   delays.push_back( 0.05 );
@@ -226,10 +226,12 @@ void ISender<ChannelType>::optimal_action( void )
   while ( 1 ) {
     steps++;
 
+    /*
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
       fprintf( stderr, "step %d @ time %f, fan %d (delay %f) has size %d\n",
-	       steps, fans.time(), i, fans.get_channel( i ).delay, fans.get_channel( i ).channel.size() );
+	       steps, fans.time(), i, fans.get_channel( i ).delay - base_time, fans.get_channel( i ).channel.size() );
     }
+    */
 
     if ( steps > STEP_LIMIT ) {
       printf( "Error: Iterated %d steps to t=%f but fan has not converged\n",
@@ -251,6 +253,15 @@ void ISender<ChannelType>::optimal_action( void )
 		    close( fans.get_channel( 0 ).channel.get_channel( j ).probability, fans.get_channel( i ).channel.get_channel( j ).probability ),
 		    fans.get_channel( 0 ).channel.get_channel( j ).erased == fans.get_channel( i ).channel.get_channel( j ).erased,
 		    fans.get_channel( 0 ).channel.get_channel( j ).channel == fans.get_channel( i ).channel.get_channel( j ).channel );
+
+	    if ( !(fans.get_channel( 0 ).channel.get_channel( j ).channel == fans.get_channel( i ).channel.get_channel( j ).channel) ) {
+	      cout << "======";
+	      cout << "First channel:" << endl;
+	      cout << fans.get_channel( 0 ).channel.get_channel( j ).channel.identify();
+	      cout << "Second channel:" << endl;
+	      cout << fans.get_channel( i ).channel.get_channel( j ).channel.identify();
+	      cout << "======";
+	    }
 	  }
 	}
       }

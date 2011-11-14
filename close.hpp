@@ -5,12 +5,12 @@
 
 inline bool close( double x, double y )
 {
-  return fabs( x - y ) < 1e-5;
+  return fabs( x - y ) < 1e-8;
 }
 
 static double rounder( double x )
 {
-  return nearbyint( x * 10000 ) / 10000;
+  return nearbyint( x * 1e8 ) * 1e-8;
 }
 
 #endif
