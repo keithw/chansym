@@ -47,6 +47,7 @@ string Buffer::identify( void ) const
   response << ", ";
   response << occupancy;
 
+  /*
   for ( std::list<Packet>::const_iterator i = contents.begin();
 	i != contents.end();
 	i++ ) {
@@ -58,6 +59,7 @@ string Buffer::identify( void ) const
     response << i->send_time;
     response << " >";
   }
+  */
 
   response << " )";
 

@@ -180,6 +180,11 @@ void ISender<ChannelType>::optimal_action( void )
 
   double base_time = prior.time();
 
+  next_send_time = base_time + 1.0;
+  container->sleep_until( next_send_time, addr, 99 );
+
+  return;
+
   UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans( base_time );
 
   vector<double> delays;
