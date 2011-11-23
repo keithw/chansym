@@ -81,6 +81,8 @@ void EnsembleContainer<ChannelType>::execute_fork( void )
       WeightedChannel new_member( p * (1 - pending.my_probability), channels[ pending.orig_addr ].channel );
       new_member.utility = channels[ pending.orig_addr ].utility;
 
+      assert( isfinite( new_member.utility ) );
+
       channels.push_back( new_member );
       int new_addr = channels.size() - 1;
       channels[ new_addr ].channel.newaddr( new_addr, this );
@@ -252,6 +254,13 @@ void EnsembleContainer<ChannelType>::combine( void )
       assert( first_channel != a1 );
       channels[ first_channel ].utility = (channels[ first_channel ].probability * channels[ first_channel ].utility + channels[ a1 ].probability * channels[ a1 ].utility)
 	/ (channels[ first_channel ].probability + channels[ a1 ].probability );
+
+      if ( !isfinite( channels[ first_channel ].utility ) ) {
+	fprintf( stderr, "UTIL FAILURE: [first=%d a1=%d] [util=%f utila1=%f] [prob=%f proba1=%f]\n",
+		 (int)first_channel, (int)a1, channels[ first_channel ].utility, channels[ a1 ].utility,
+		 channels[ first_channel ].probability, channels[ a1 ].probability );
+      }
+
       channels[ first_channel ].probability += channels[ a1 ].probability;
       erase( a1 );
     }

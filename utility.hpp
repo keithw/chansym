@@ -17,14 +17,14 @@ private:
       assert( future >= 0 );
       assert( future < 200 );
 
-      double this_packet = i->packet.length / exp2( future );
+      double this_packet = i->packet.length / exp2( future * 1e-6 );
 
       if ( penalize_delay ) {
 	assert( i->packet.send_time >= 0 );
 	double delay = i->delivery_time - i->packet.send_time;
 	assert( delay >= 0 );
 	assert( delay < 30 );
-	double penalty = this_packet * (1 - exp2( - delay / 1.0 ));
+	double penalty = this_packet * (1 - exp2( - delay / 100.0 ));
 	assert( penalty < this_packet );
 	assert( isfinite( penalty ) );
 	this_packet -= penalty;
@@ -38,7 +38,7 @@ private:
     }
 
     assert( isfinite( util ) );
-    
+
     return util;
   }
 
@@ -47,8 +47,11 @@ public:
 			 vector<ScheduledPacket> &real_traffic,
 			 vector<ScheduledPacket> &cross_traffic )
   {
-    return 1 * utility_single( base_time, real_traffic, false )
+    double util = utility_single( base_time, real_traffic, false )
       + 1.01 * utility_single( base_time, cross_traffic, false );
+
+    assert( isfinite( util ) );
+    return util;
   }
 };
 

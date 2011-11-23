@@ -180,10 +180,12 @@ void ISender<ChannelType>::optimal_action( void )
 
   double base_time = prior.time();
 
+  /*
   next_send_time = base_time + 1.0;
   container->sleep_until( next_send_time, addr, 99 );
 
   return;
+  */
 
   UtilityEnsemble< EmbeddableEnsemble< ChannelType > > fans( base_time );
 
@@ -232,6 +234,15 @@ void ISender<ChannelType>::optimal_action( void )
   int steps = 0;
   while ( 1 ) {
     steps++;
+
+    for ( unsigned int i = 0; i < fans.size(); i++ ) {
+      for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
+	if ( !isfinite( fans.get_channel( i ).channel.get_channel( j ).utility ) ) {
+	  fprintf( stderr, "step %d fan %d channel %d has utility %f\n",
+		   steps, i, j, fans.get_channel( i ).channel.get_channel( j ).utility );
+	}
+      }
+    }
 
     /*
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
@@ -308,7 +319,14 @@ void ISender<ChannelType>::optimal_action( void )
       for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
 	double the_utility = UtilityMetric::utility( base_time, extractor->get_collector( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets(),
 						     extractor->get_cross_traffic( fans.get_channel( i ).channel.get_channel( j ).channel ).get_packets() );
+
+	assert( isfinite( the_utility ) );
+
+	assert( isfinite( fans.get_channel( i ).channel.get_channel( j ).utility ) );
+
 	fans.get_channel( i ).channel.get_channel( j ).utility += the_utility;
+
+	assert( isfinite( fans.get_channel( i ).channel.get_channel( j ).utility ) );
 
 	extractor->reset( fans.get_channel( i ).channel.get_channel( j ).channel );
       }
@@ -344,6 +362,14 @@ void ISender<ChannelType>::optimal_action( void )
   }
 
   next_send_time = strategies.top().delay;
+
+  while ( !strategies.empty() ) {
+    auto i = strategies.top();
+    strategies.pop();
+    printf( "Utility for delay %f = %f\n",
+	    i.delay - base_time,
+	    i.utility );
+  }
 
   if ( (next_send_time >= base_time) && (next_send_time - base_time < LIMIT) ) {
     printf( "Sending solution found after %d steps: wait %f\n", steps, next_send_time - base_time );
