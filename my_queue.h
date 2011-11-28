@@ -59,11 +59,13 @@
 
 using namespace std;
 
-#include <deque>
-#include <vector>
+#include <bits/concept_check.h>
+#include <debug/debug.h>
+
 #include <bits/stl_heap.h>
-#include <bits/stl_function.h>
-#include <boost/functional/hash.hpp>
+#include <vector>
+
+// _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  A standard container automatically sorting its contents.
@@ -86,24 +88,24 @@ using namespace std;
    *  priority comparisons.  It defaults to @c less<value_type> but
    *  can be anything defining a strict weak ordering.
    *
-   *  Members not found in "normal" containers are @c container_type,
+   *  Members not found in @a normal containers are @c container_type,
    *  which is a typedef for the second Sequence parameter, and @c
    *  push, @c pop, and @c top, which are standard %queue operations.
    *
    *  @note No equality/comparison operators are provided for
-   *  %priority_queue.
+   *  %peekable_priority_queue.
    *
    *  @note Sorting of the elements takes place as they are added to,
-   *  and removed from, the %priority_queue using the
-   *  %priority_queue's member functions.  If you access the elements
+   *  and removed from, the %peekable_priority_queue using the
+   *  %peekable_priority_queue's member functions.  If you access the elements
    *  by other means, and change their data such that the sorting
-   *  order would be different, the %priority_queue will not re-sort
+   *  order would be different, the %peekable_priority_queue will not re-sort
    *  the elements for you.  (How could it know to do so?)
   */
   template<typename _Tp, typename _Sequence = vector<_Tp>,
 	   typename _Compare  = less<typename _Sequence::value_type> >
     class peekable_priority_queue
-  {
+    {
       // concept requirements
       typedef typename _Sequence::value_type _Sequence_value_type;
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
@@ -201,6 +203,9 @@ using namespace std;
       peekable_priority_queue(peekable_priority_queue&& __pq)
       : c(std::move(__pq.c)), comp(std::move(__pq.comp)) { }
 
+      peekable_priority_queue(const peekable_priority_queue& __pq)
+	: c(__pq.c), comp(__pq.comp) { } /* KJW */
+
       peekable_priority_queue&
       operator=(peekable_priority_queue&& __pq)
       {
@@ -208,6 +213,14 @@ using namespace std;
 	comp = std::move(__pq.comp);
 	return *this;
       }
+
+      peekable_priority_queue&
+      operator=(const peekable_priority_queue& __pq)
+      {
+	c = __pq.c;
+	comp = __pq.comp;
+	return *this;
+      } /* KJW */
 #endif
 
       /**
@@ -286,7 +299,7 @@ using namespace std;
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
-      swap(peekable_priority_queue&& __pq)
+      swap(peekable_priority_queue& __pq)
       {
 	using std::swap;
 	c.swap(__pq.c);
@@ -294,22 +307,22 @@ using namespace std;
       }
 #endif
 
-  public:
-    size_type size( void ) { return c.size(); }
+    public:
+      size_type size( void ) { return c.size(); }
 
-    typedef typename container_type::const_iterator const_iterator;
-    const_iterator begin( void ) { return c.begin(); }
-    const_iterator end( void ) { return c.end(); }
-    bool operator==( const peekable_priority_queue<_Tp, _Sequence, _Compare> &x ) const
-    {
-      return (c == x.c);
-    }
-    friend size_t hash_value( peekable_priority_queue<_Tp, _Sequence, _Compare> const & pq )
-    {
-      boost::hash<_Sequence> hasher;
-      return hasher( pq.c );
-    }
-    void clear( void ) { c.clear(); }
+      typedef typename container_type::const_iterator const_iterator;
+      const_iterator begin( void ) { return c.begin(); }
+      const_iterator end( void ) { return c.end(); }
+      bool operator==( const peekable_priority_queue<_Tp, _Sequence, _Compare> &x ) const
+      {
+	return (c == x.c);
+      }
+      friend size_t hash_value( peekable_priority_queue<_Tp, _Sequence, _Compare> const & pq )
+      {
+	boost::hash<_Sequence> hasher;
+	return hasher( pq.c );
+      }
+      void clear( void ) { c.clear(); }
   };
 
   // No equality/comparison operators are provided for peekable_priority_queue.
@@ -320,18 +333,8 @@ using namespace std;
     swap(peekable_priority_queue<_Tp, _Sequence, _Compare>& __x,
 	 peekable_priority_queue<_Tp, _Sequence, _Compare>& __y)
     { __x.swap(__y); }
-
-  template<typename _Tp, typename _Sequence, typename _Compare>
-    inline void
-    swap(peekable_priority_queue<_Tp, _Sequence, _Compare>&& __x,
-	 peekable_priority_queue<_Tp, _Sequence, _Compare>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Sequence, typename _Compare>
-    inline void
-    swap(peekable_priority_queue<_Tp, _Sequence, _Compare>& __x,
-	 peekable_priority_queue<_Tp, _Sequence, _Compare>&& __y)
-    { __x.swap(__y); }
 #endif
 
-#endif /* _STL_QUEUE_H */
+//_GLIBCXX_END_NAMESPACE
+
+#endif /* _MY_QUEUE_H */
