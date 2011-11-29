@@ -252,8 +252,14 @@ void EnsembleContainer<ChannelType>::combine( void )
       size_t first_channel = set[ key ];
 
       assert( first_channel != a1 );
-      channels[ first_channel ].utility = (channels[ first_channel ].probability * channels[ first_channel ].utility + channels[ a1 ].probability * channels[ a1 ].utility)
-	/ (channels[ first_channel ].probability + channels[ a1 ].probability );
+
+      if ( close( channels[ first_channel ].probability + channels[ a1 ].probability, 0 ) ) {
+	channels[ first_channel ].utility = (channels[ first_channel ].probability > channels[ a1 ].probability)
+	  ? channels[ first_channel ].utility : channels[ a1 ].utility;
+      } else {
+	channels[ first_channel ].utility = (channels[ first_channel ].probability * channels[ first_channel ].utility + channels[ a1 ].probability * channels[ a1 ].utility)
+	  / (channels[ first_channel ].probability + channels[ a1 ].probability );
+      }
 
       if ( !isfinite( channels[ first_channel ].utility ) ) {
 	fprintf( stderr, "UTIL FAILURE: [first=%d a1=%d] [util=%f utila1=%f] [prob=%f proba1=%f]\n",
