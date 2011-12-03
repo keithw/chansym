@@ -20,7 +20,6 @@ private:
   double next_send_time;
   int id;
 
-  void optimal_action( void );
   void sendout( Packet p );
 
 public:  
