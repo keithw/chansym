@@ -19,7 +19,7 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
     extractor( s_extractor ),
     latest_time( -1 ),
     next_send_time( -1000 ), counter( 0 ),
-    id( 0 ), smallestsize( prior.size() )
+    id( 0 )
 {}
 
 template <class ChannelType>
@@ -28,7 +28,7 @@ ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
     prior( x.prior ), extractor( x.extractor ),
     latest_time( x.latest_time ),
     next_send_time( x.next_send_time ), counter( x.counter ),
-    id( x.id ), smallestsize( x.smallestsize )
+    id( x.id )
 {}
 
 template <class ChannelType>
@@ -44,7 +44,6 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
   counter = x.counter;
 
   id = x.id;
-  smallestsize = x.smallestsize;
 
   return *this;
 }
@@ -111,10 +110,7 @@ void ISender<ChannelType>::wakeup( void )
 
   prior.normalize();
 
-  if ( (prior.size() >= 2 * smallestsize) || (prior.get_erased_count() * 2 >= (int)prior.size()) ) {
-    prior.combine();
-    smallestsize = prior.size();
-  }
+  prior.heuristic_opportunistic_combine();
 
   printf( "Time: %f (channels: %d)\n", current_time, prior.size() );
   //  if ( prior.size() <= 32 ) {
@@ -197,8 +193,8 @@ void ISender<ChannelType>::optimal_action( void )
 
   delays.push_back( 0 );
   delays.push_back( 0.05 );
-  //  delays.push_back( 0.1 );
-  //  delays.push_back( 0.5 );
+  delays.push_back( 0.1 );
+  delays.push_back( 0.5 );
 
   vector<bool> sent_yet;
 
