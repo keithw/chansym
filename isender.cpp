@@ -197,8 +197,8 @@ void ISender<ChannelType>::optimal_action( void )
 
   delays.push_back( 0 );
   delays.push_back( 0.05 );
-  delays.push_back( 0.1 );
-  delays.push_back( 0.5 );
+  //  delays.push_back( 0.1 );
+  //  delays.push_back( 0.5 );
 
   vector<bool> sent_yet;
 

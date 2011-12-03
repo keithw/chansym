@@ -141,6 +141,7 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
+  /*
   for ( double link_portion = 0.1; link_portion <= 0.5; link_portion += 0.05 ) {
     for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*10 ) {
       for ( int init = 0; init * 12000 <= bufsize; init += 40 ) {
@@ -159,11 +160,22 @@ int main( void )
   }
 
   prior.normalize();
+  */
 
   double my_linkspeed = 12000*10;
   double my_bufsize = 12000*30;
   double my_lossrate = 0.2;
-  truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * 0.5), 1, true ), SquareWave( 200 ) ),
+  double my_linkportion = 0.5;
+
+  prior.add( series( series( series( Pinger( 12000.0 / (my_linkspeed * my_linkportion), 1, true ), Intermittent( .00069, .1 ) ),
+			     Pawn() ),
+		     series( Buffer( my_bufsize ),
+			     series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
+				     diverter( series( TimeQuantize( 0.1 ), Collector() ),
+					       Collector() ) ) ) ) );
+  prior.normalize();
+
+  truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * my_linkportion), 1, true ), SquareWave( 200 ) ),
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
                              series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
