@@ -44,6 +44,8 @@ public:
   friend size_t hash_value( Channel const & ) { return 0; }
 
   Channel * get_container_channel( void );
+
+  virtual void quantize_markovize( void ) = 0;
 };
 
 #endif

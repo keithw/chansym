@@ -28,6 +28,8 @@ public:
   string identify( void ) const;
 
   friend size_t hash_value( Buffer const & ch );
+
+  void quantize_markovize( void );
 };
 
 #endif

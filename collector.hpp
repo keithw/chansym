@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <boost/functional/hash.hpp>
+#include <algorithm>
 
 #include "packet.hpp"
 #include "channel.hpp"
@@ -32,6 +33,15 @@ public:
   }
 
   bool sendable( void ) { return true; }
+
+  void quantize_markovize( void ) {
+    double now = container->time();
+
+    for_each( packets.begin(), packets.end(),
+	      [now]( ScheduledPacket &x ) { x.delivery_time = quantize_time( x.delivery_time - now );
+		x.packet.length = quantize_length( x.packet.length );
+		x.packet.send_time = quantize_time( x.packet.send_time - now ); } );
+  }
 
   vector<ScheduledPacket> & get_packets( void ) { return packets; }
   void reset( void ) { packets.clear(); }

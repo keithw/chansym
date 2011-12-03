@@ -17,6 +17,8 @@ public:
   string identify( void ) const { return "Pawn"; }
 
   friend size_t hash_value( Pawn const & ) { return 0; }
+
+  void quantize_markovize( void ) {}
 };
 
 #endif

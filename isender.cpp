@@ -18,7 +18,7 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
   : prior( s_prior ),
     extractor( s_extractor ),
     latest_time( -1 ),
-    next_send_time( -1000 ), counter( 0 ),
+    next_send_time( -1000 ),
     id( 0 )
 {}
 
@@ -27,7 +27,7 @@ ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
   : Channel( x ),
     prior( x.prior ), extractor( x.extractor ),
     latest_time( x.latest_time ),
-    next_send_time( x.next_send_time ), counter( x.counter ),
+    next_send_time( x.next_send_time ),
     id( x.id )
 {}
 
@@ -41,7 +41,6 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
   latest_time = x.latest_time;
 
   next_send_time = x.next_send_time;
-  counter = x.counter;
 
   id = x.id;
 
@@ -76,7 +75,7 @@ void ISender<ChannelType>::wakeup( void )
   prior.advance_to( current_time );
 
   if ( current_time == next_send_time ) {
-    sendout( Packet( 12000, id, counter++, current_time ) );
+    sendout( Packet( 12000, id, 0, current_time ) );
     next_send_time = -1000;
   }
 

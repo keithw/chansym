@@ -18,7 +18,6 @@ private:
   double latest_time;
 
   double next_send_time;
-  int counter;
   int id;
 
   void optimal_action( void );
@@ -35,6 +34,8 @@ public:
   bool sendable( void ) { return container->can_send( addr ); }
 
   bool operator==( const ISender<ChannelType> &x ) const { return (prior == x.prior); }
+
+  void quantize_markovize( void ) { assert( false ); }
 
   string identify( void ) const { return "ISender"; }
 

@@ -57,3 +57,4 @@ size_t hash_value( Intermittent const & ch )
   boost::hash_combine( seed, ch.interval );
   return seed;
 }
+

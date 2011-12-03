@@ -3,6 +3,7 @@
 
 #include "throughput.hpp"
 #include "container.hpp"
+#include "close.hpp"
 
 Throughput::Throughput( double s_throughput )
   : Channel(), throughput( s_throughput ), next_free_time( -1 ), stash( -1, -1, -1, -1 ), busy( false )
@@ -53,4 +54,16 @@ size_t hash_value( Throughput const & ch )
   boost::hash_combine( seed, ch.busy );  
 
   return seed;
+}
+
+void Throughput::quantize_markovize( void )
+{
+  double time_per_packet = quantize_time( double(PACKET_SIZE) / throughput );
+  throughput = double(PACKET_SIZE) / time_per_packet;
+
+  double now = container->time();
+
+  next_free_time = quantize_time( next_free_time - now );
+  stash.length = quantize_length( stash.length );
+  stash.send_time = quantize_time( stash.send_time - now );
 }

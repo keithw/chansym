@@ -4,6 +4,7 @@
 #include <list>
 
 #include "channel.hpp"
+#include "close.hpp"
 
 class SquareWave : public Channel {
 private:
@@ -29,6 +30,8 @@ public:
   bool operator==( const SquareWave &x ) const { return (period == x.period); }
 
   string identify( void ) const { return "SquareWave"; }
+
+  void quantize_markovize( void ) { period = quantize_time( period ); }
 
   friend size_t hash_value( SquareWave const & ch )
   {

@@ -35,6 +35,8 @@ public:
   string identify( void ) const;
 
   friend size_t hash_value( Intermittent const & ch );
+
+  void quantize_markovize( void ) {} /* XXX cannot infer varying intermittent properties yet */
 };
 
 #endif

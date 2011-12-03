@@ -2,9 +2,11 @@
 #include <assert.h>
 #include <sstream>
 #include <boost/functional/hash.hpp>
+#include <algorithm>
 
 #include "buffer.hpp"
 #include "container.hpp"
+#include "close.hpp"
 
 Buffer::Buffer( int s_size, int initial_num, int initial_size )
   : Channel(), size( s_size ), occupancy( 0 ), contents(),
@@ -75,4 +77,15 @@ size_t hash_value( Buffer const & ch )
   boost::hash_combine( seed, ch.contents );
 
   return seed;
+}
+
+void Buffer::quantize_markovize( void )
+{
+  size = quantize_length( size );
+  assert( occupancy <= size );
+
+  double now = container->time();
+
+  for_each( contents.begin(), contents.end(),
+	    [now]( Packet &x ) { x.length = quantize_length( x.length ); x.send_time = quantize_time( x.send_time - now ); } );
 }

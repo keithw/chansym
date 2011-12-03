@@ -30,6 +30,8 @@ public:
   }
 
   friend size_t hash_value( Throughput const & ch );
+
+  void quantize_markovize( void );
 };
 
 #endif

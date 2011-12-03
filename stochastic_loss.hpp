@@ -3,6 +3,7 @@
 
 #include "channel.hpp"
 #include "packet.hpp"
+#include "close.hpp"
 
 class StochasticLoss : public Channel {
 private:
@@ -28,6 +29,8 @@ public:
   bool operator==( const StochasticLoss &x ) const { return (loss_probability == x.loss_probability); }
 
   friend size_t hash_value( StochasticLoss const & ch );
+
+  void quantize_markovize( void ) { loss_probability = quantize_probability( loss_probability ); }
 };
 
 #endif

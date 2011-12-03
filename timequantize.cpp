@@ -1,9 +1,11 @@
 #include <boost/functional/hash.hpp>
 #include <sstream>
 #include <math.h>
+#include <algorithm>
 
 #include "timequantize.hpp"
 #include "container.hpp"
+#include "close.hpp"
 
 TimeQuantize::TimeQuantize( double s_interval )
   : Channel(), interval( s_interval ), contents()
@@ -59,4 +61,15 @@ size_t hash_value( TimeQuantize const & ch )
   boost::hash_combine( seed, ch.interval );
   boost::hash_combine( seed, ch.contents );
   return seed;
+}
+
+void TimeQuantize::quantize_markovize( void )
+{
+  interval = quantize_time( interval );
+  double now = container->time();
+
+  for_each( contents.begin(), contents.end(),
+	    [now]( ScheduledPacket &x ) { x.delivery_time = quantize_time( x.delivery_time - now );
+	      x.packet.length = quantize_length( x.packet.length );
+	      x.packet.send_time = quantize_time( x.packet.send_time - now ); } );
 }

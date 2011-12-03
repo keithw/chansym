@@ -37,6 +37,8 @@ public:
 
   void after_fork( bool is_other, ForkState x );
 
+  void quantize_markovize( void ) { a.quantize_markovize(); b.quantize_markovize(); }
+
   /* Container methods */
   void sleep_until( double time, int source_addr, int sort_order=0 ) { wakeups.push( Event( time, source_addr, sort_order ) ); container->sleep_until( time, addr, sort_order ); }
   void signal_sendable( int source_addr );
