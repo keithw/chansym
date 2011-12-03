@@ -235,6 +235,7 @@ void ISender<ChannelType>::optimal_action( void )
   while ( 1 ) {
     steps++;
 
+    /*
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
       for ( unsigned int j = 0; j < fans.get_channel( i ).channel.size(); j++ ) {
 	if ( !isfinite( fans.get_channel( i ).channel.get_channel( j ).utility ) ) {
@@ -243,6 +244,7 @@ void ISender<ChannelType>::optimal_action( void )
 	}
       }
     }
+    */
 
     /*
     for ( unsigned int i = 0; i < fans.size(); i++ ) {
