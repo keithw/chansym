@@ -4,6 +4,7 @@
 #include "channel.hpp"
 #include "ensemble_container.hpp"
 #include "embeddable_ensemble.hpp"
+#include "value_iterator.cpp"
 
 template <class ChannelType>
 class Extractor;
@@ -20,7 +21,11 @@ private:
   double next_send_time;
   int id;
 
+  ValueIterator<ChannelType> vi;
+
   void sendout( Packet p );
+
+  void value_experiment( void );
 
 public:  
   ISender( EnsembleContainer<ChannelType> s_prior,

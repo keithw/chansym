@@ -19,7 +19,8 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
     extractor( s_extractor ),
     latest_time( -1 ),
     next_send_time( 0 ),
-    id( 0 )
+    id( 0 ),
+    vi()
 {}
 
 template <class ChannelType>
@@ -28,7 +29,8 @@ ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
     prior( x.prior ), extractor( x.extractor ),
     latest_time( x.latest_time ),
     next_send_time( x.next_send_time ),
-    id( x.id )
+    id( x.id ),
+    vi( x.vi )
 {}
 
 template <class ChannelType>
@@ -43,6 +45,8 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
   next_send_time = x.next_send_time;
 
   id = x.id;
+
+  vi = x.vi;
 
   return *this;
 }
@@ -80,6 +84,8 @@ void ISender<ChannelType>::wakeup( void )
     next_send_time = current_time + 1;
     container->sleep_until( next_send_time, addr, 99 );
   }
+
+  value_experiment();
 
   if ( prior.live() ) {
     container->sleep_until( prior.next_time(), addr, 99 );
@@ -140,4 +146,14 @@ void ISender<ChannelType>::sendout( Packet p )
   }
 
   prior.execute_fork();
+}
+
+template <class ChannelType>
+void ISender<ChannelType>::value_experiment( void )
+{
+  for ( unsigned int i = 0; i < prior.size(); i++ ) {
+    printf( "Valuing channel %d of %d...\n", i, prior.size() );
+    double val = vi.value( prior.get_channel( i ).channel );
+    printf( "value = %f\n", val );
+  }
 }
