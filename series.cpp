@@ -1,5 +1,7 @@
 #include <boost/functional/hash.hpp>
 
+#include <sstream>
+
 #include "series.hpp"
 
 template <class First, class Second>

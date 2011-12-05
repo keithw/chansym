@@ -70,6 +70,5 @@ void TimeQuantize::quantize_markovize( void )
 
   for_each( contents.begin(), contents.end(),
 	    [now]( ScheduledPacket &x ) { x.delivery_time = quantize_time( x.delivery_time - now );
-	      x.packet.length = quantize_length( x.packet.length );
-	      x.packet.send_time = quantize_time( x.packet.send_time - now ); } );
+	      x.packet.quantize_markovize( now ); } );
 }

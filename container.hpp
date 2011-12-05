@@ -71,6 +71,8 @@ public:
 
   virtual void clear_wakeups( void ) = 0;
   virtual void clear_wakeups( int source_addr ) = 0;
+
+  virtual void rationalize_wakeups( void );
 };
 
 #endif

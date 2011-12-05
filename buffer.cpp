@@ -87,5 +87,5 @@ void Buffer::quantize_markovize( void )
   double now = container->time();
 
   for_each( contents.begin(), contents.end(),
-	    [now]( Packet &x ) { x.length = quantize_length( x.length ); x.send_time = quantize_time( x.send_time - now ); } );
+	    [now]( Packet &x ) { x.quantize_markovize( now ); } );
 }

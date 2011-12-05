@@ -3,6 +3,8 @@
 
 #include <boost/functional/hash.hpp>
 
+#include "close.hpp"
+
 class Packet {
 public:
   int length; /* bits */
@@ -29,6 +31,14 @@ public:
     boost::hash_combine( seed, p.send_time );
 
     return seed;
+  }
+
+  void quantize_markovize( double now )
+  {
+    length = quantize_length( length );
+    if ( send_time >= 0 ) {
+      send_time = quantize_time( send_time - now );
+    }
   }
 };
 

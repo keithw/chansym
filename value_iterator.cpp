@@ -45,8 +45,6 @@ void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
   Maybe< ChannelType > chanqm( chan );
   chanqm.object->quantize_markovize();
 
-  printf( "hashval = %lu\n", hash_value( chanqm ) );
-
   typename value_map_t::const_iterator it = state_values.find( chanqm );
   if ( it != state_values.end() ) {
     printf( "Already had state!!!!\n" );

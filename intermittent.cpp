@@ -43,7 +43,7 @@ string Intermittent::identify( void ) const
   response << "Intermittent( ";
   response << (working ? "working" : "blocked");
   response << ", ";
-  response << probability;
+  response << interval;
   response << " )";
   
   return response.str();

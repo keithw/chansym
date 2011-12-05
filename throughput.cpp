@@ -63,7 +63,9 @@ void Throughput::quantize_markovize( void )
 
   double now = container->time();
 
-  next_free_time = quantize_time( next_free_time - now );
-  stash.length = quantize_length( stash.length );
-  stash.send_time = quantize_time( stash.send_time - now );
+  if ( next_free_time != -1 ) {
+    next_free_time = quantize_time( next_free_time - now );
+  }
+
+  stash.quantize_markovize( now );
 }
