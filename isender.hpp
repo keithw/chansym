@@ -4,7 +4,7 @@
 #include "channel.hpp"
 #include "ensemble_container.hpp"
 #include "embeddable_ensemble.hpp"
-#include "value_iterator.cpp"
+#include "value_iterator.hpp"
 
 template <class ChannelType>
 class Extractor;

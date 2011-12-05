@@ -64,8 +64,8 @@ public:
   virtual string identify( void ) const = 0;
 
   typedef typename peekable_priority_queue<Event, deque<Event>, Event>::const_iterator wakeup_iterator;
-  wakeup_iterator wakeup_begin( void ) { return wakeups.begin(); }
-  wakeup_iterator wakeup_end( void ) { return wakeups.end(); }
+  wakeup_iterator wakeup_begin( void ) const { return wakeups.begin(); }
+  wakeup_iterator wakeup_end( void ) const { return wakeups.end(); }
 
   peekable_priority_queue<Event, deque<Event>, Event> const & get_wakeups( void ) { return wakeups; }
 

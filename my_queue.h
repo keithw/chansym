@@ -311,8 +311,8 @@ using namespace std;
       size_type size( void ) { return c.size(); }
 
       typedef typename container_type::const_iterator const_iterator;
-      const_iterator begin( void ) { return c.begin(); }
-      const_iterator end( void ) { return c.end(); }
+      const_iterator begin( void ) const { return c.begin(); }
+      const_iterator end( void ) const { return c.end(); }
       bool operator==( const peekable_priority_queue<_Tp, _Sequence, _Compare> &x ) const
       {
 	return (c == x.c);

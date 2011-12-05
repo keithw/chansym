@@ -26,6 +26,7 @@
 #include "ensemble_container.cpp"
 #include "isender.cpp"
 #include "diverter.cpp"
+#include "value_iterator.cpp"
 
 class TwoTerminalNetwork {
 public:

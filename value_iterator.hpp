@@ -4,20 +4,28 @@
 #include <vector>
 #include "maybe.hpp"
 
-#include <google/dense_hash_map>
+#include <google/sparse_hash_map>
+
+template <class ChannelType>
+class Extractor;
 
 template <class ChannelType>
 class ValueIterator
 {
 private:
-  std::vector<ChannelType> quantized_states;
   std::vector<ChannelType> exemplar_states;
+
+  Extractor<ChannelType> *extractor;
+
+  int id;
 
   class WeightedChannel {
   public:
     double probability;
-    size_t quantized_index;
-  };
+    ChannelType channel;
+  
+    WeightedChannel( double s_prob, const ChannelType &s_chan ) : probability( s_prob ), channel( s_chan ) {}
+};
 
   class VIValue {
   public:
@@ -41,12 +49,15 @@ private:
 
   typedef Maybe<ChannelType> key_t;
 
-  typedef google::dense_hash_map< key_t, VIValue, boost_hasher > value_map_t;
+  typedef google::sparse_hash_map< key_t, VIValue, boost_hasher > value_map_t;
   value_map_t state_values; /* for Value Iteration */
 
 public:
-  ValueIterator();
-  double value( const ChannelType &chan );
+  ValueIterator( Extractor<ChannelType> *s_extractor, int s_id );
+  void add_state( const ChannelType &chan );
+
+  ValueIterator( const ValueIterator &x );
+  ValueIterator & operator=( const ValueIterator &x );
 };
 
 #endif

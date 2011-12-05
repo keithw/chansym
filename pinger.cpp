@@ -35,6 +35,8 @@ string Pinger::identify( void ) const
   ostringstream response;
   response << "Pinger( ";
   response << increment;
+  response << ", next = ";
+  response << next_ping_time;
   response << " )";
 
   return response.str();

@@ -24,7 +24,7 @@ EnsembleContainer<ChannelType>::EnsembleContainer( double s_time )
 {}
 
 template <class ChannelType>
-void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
+void EnsembleContainer<ChannelType>::add( const ChannelType &s_channel )
 {
   assert( time() == 0 );
 
@@ -35,23 +35,24 @@ void EnsembleContainer<ChannelType>::add( ChannelType s_channel )
 }
 
 template <class ChannelType>
-void EnsembleContainer<ChannelType>::add_mature( ChannelType s_channel )
+void EnsembleContainer<ChannelType>::add_mature( const ChannelType &s_channel )
 {
+  assert( s_channel.get_container()->time() == time() );
+
   channels.push_back( WeightedChannel( 1.0, s_channel ) );
   int new_addr = channels.size() - 1;
-  channels[ new_addr ].channel.connect( new_addr, this );
+  channels[ new_addr ].channel.newaddr( new_addr, this );
 
   /* duplicate old channel's wakeups */
-  for ( typename ChannelType::wakeup_iterator i = channels[ new_addr ].channel.wakeup_begin();
-	i != channels[ new_addr ].channel.wakeup_end();
+  for ( typename ChannelType::wakeup_iterator i = s_channel.wakeup_begin();
+	i != s_channel.wakeup_end();
 	i++ ) {
-    assert( i->time >= time() );
     make_wakeup( i->time, new_addr, i->sort_order );
   }
 }
 
 template <class ChannelType>
-EnsembleContainer<ChannelType>::EnsembleContainer( ChannelType s_channel )
+EnsembleContainer<ChannelType>::EnsembleContainer( const ChannelType &s_channel )
   : the_time( 0 ), channels(), fork_queue(), erased_count( 0 ), printing( false ), forking( true ), total_utility( 0 ), smallest_size( 0 )
 {
   channels.push_back( WeightedChannel( 1.0, s_channel ) );
@@ -565,3 +566,4 @@ void EnsembleContainer<ChannelType>::print_wakeups( void )
 
   printf( "\n" );
 }
+

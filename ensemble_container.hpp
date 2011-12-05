@@ -84,7 +84,7 @@ private:
   
 public:
   EnsembleContainer();
-  EnsembleContainer( ChannelType s_channel );
+  EnsembleContainer( const ChannelType &s_channel );
   EnsembleContainer( const EnsembleContainer<ChannelType> &x );
   EnsembleContainer( double s_time );
 
@@ -97,6 +97,7 @@ public:
 
   virtual void make_wakeup( double time, int source_addr, int sort_order )
   {
+    assert( time >= the_time );
     wakeups.push( Event( time, source_addr, sort_order ) );
   }
 
@@ -111,8 +112,8 @@ public:
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int source_addr );
 
-  void add( ChannelType s_channel );
-  void add_mature( ChannelType s_channel );
+  void add( const ChannelType &s_channel );
+  void add_mature( const ChannelType &s_channel );
   void set_printing( bool s_printing ) { printing = s_printing; }
   void set_follow_all_forks( bool s_forking ) { forking = s_forking; }
 
