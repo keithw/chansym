@@ -2,6 +2,8 @@
 #include "ensemble_container.hpp"
 #include "extractor.hpp"
 
+#include "utility.hpp"
+
 template <class ChannelType>
 ValueIterator<ChannelType>::ValueIterator( Extractor<ChannelType> *s_extractor, int s_id )
   : exemplar_states(),
@@ -39,7 +41,9 @@ ValueIterator<ChannelType>::VIValue::VIValue()
     exemplar_state_index( -1 ),
     quantized_send_indices(),
     quantized_nosend_indices(),
-    value( -INT_MAX )
+    send_value( 0 ),
+    nosend_value( 0 ),
+    value( 0 )
 {}
 
 template <class ChannelType>
@@ -49,9 +53,6 @@ void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
 
   Maybe< ChannelType > chanqm( chan );
   chanqm.object->quantize_markovize();
-
-  size_t seed = 0;
-  boost::hash_combine( seed, chanqm );
 
   typename value_map_t::const_iterator it = state_values.find( chanqm );
   if ( it != state_values.end() ) {
@@ -92,7 +93,7 @@ void ValueIterator<ChannelType>::rationalize( void )
 
     assert( !vival.initialized );
 
-    /* Step 2: Enumerate the quantized_nosend_indices */
+    /* Step 2: Enumerate the nosend transitions */
     EnsembleContainer<ChannelType> nosend;
 
     nosend.advance_to( current_time );
@@ -100,10 +101,13 @@ void ValueIterator<ChannelType>::rationalize( void )
     nosend.advance_to( current_time + TIME_STEP );
 
     for ( size_t i = 0; i < nosend.size(); i++ ) {
+      double the_utility = UtilityMetric::utility( nosend.time(),
+						   extractor->get_collector( nosend.get_channel( i ).channel ).get_packets(),
+						   extractor->get_cross_traffic( nosend.get_channel( i ).channel ).get_packets() );
       extractor->reset( nosend.get_channel( i ).channel );
       ChannelType resultqm( nosend.get_channel( i ).channel );
       resultqm.quantize_markovize();
-      WeightedChannel wc( nosend.get_channel( i ).probability, resultqm );
+      WeightedChannel wc( nosend.get_channel( i ).probability, resultqm, the_utility );
       vival.quantized_nosend_indices.push_back( wc );
     }
 
@@ -115,10 +119,13 @@ void ValueIterator<ChannelType>::rationalize( void )
     send.advance_to( current_time + TIME_STEP );
   
     for ( size_t i = 0; i < send.size(); i++ ) {
+      double the_utility = UtilityMetric::utility( nosend.time(),
+						   extractor->get_collector( send.get_channel( i ).channel ).get_packets(),
+						   extractor->get_cross_traffic( send.get_channel( i ).channel ).get_packets() );
       extractor->reset( send.get_channel( i ).channel );
       ChannelType resultqm( send.get_channel( i ).channel );
       resultqm.quantize_markovize();
-      WeightedChannel wc( send.get_channel( i ).probability, resultqm );
+      WeightedChannel wc( send.get_channel( i ).probability, resultqm, the_utility );
       vival.quantized_send_indices.push_back( wc );
     }
 
@@ -133,4 +140,65 @@ void ValueIterator<ChannelType>::rationalize( void )
       add_state( send.get_channel( i ).channel );
     }
   }
+}
+
+template <class ChannelType>
+void ValueIterator<ChannelType>::value_iterate( void )
+{
+  assert( incomplete_states.empty() );
+
+  for_each( exemplar_states.begin(), exemplar_states.end(),
+	    [&state_values]( const EnsembleContainer<ChannelType> &ex )
+	    {
+	      /* Lookup state */
+	      ChannelType chan( ex.get_channel( 0 ).channel );
+	      Maybe< ChannelType > chanqm( chan );
+	      chanqm.object->quantize_markovize();
+	      VIValue &vival( state_values[ chanqm ] );
+
+	      /* Find value if we don't send */
+	      double nosend_value = 0;
+	      for( auto i = vival.quantized_nosend_indices.begin();
+		   i != vival.quantized_nosend_indices.end();
+		   i++ ) {
+		nosend_value += i->probability * ( i->reward + DISCOUNT * state_values[ i->channel ].value );
+	      }
+
+	      /* Find value if we do send */
+	      double send_value = 0;
+	      for( auto i = vival.quantized_send_indices.begin();
+		   i != vival.quantized_send_indices.end();
+		   i++ ) {
+		send_value += i->probability * ( i->reward + DISCOUNT * state_values[ i->channel ].value );
+	      }
+
+	      vival.nosend_value = nosend_value;
+	      vival.send_value = send_value;
+	      vival.value = send_value > nosend_value ? send_value : nosend_value;
+	    } );
+}
+
+template <class ChannelType>
+bool ValueIterator<ChannelType>::should_i_send( const EnsembleContainer<ChannelType> &ensemble )
+{
+  double send_value = 0, nosend_value = 0;
+
+  for ( size_t i = 0; i < ensemble.size(); i++ ) {
+    if ( ensemble.get_channel( i ).erased ) {
+      continue;
+    }
+
+    Maybe< ChannelType > chanqm( ensemble.get_channel( i ).channel );  
+    chanqm.object->quantize_markovize();
+
+    typename value_map_t::const_iterator it = state_values.find( chanqm );
+    assert( it != state_values.end() );
+
+    send_value += ensemble.get_channel( i ).probability * state_values[ chanqm ].send_value;
+    nosend_value += ensemble.get_channel( i ).probability * state_values[ chanqm ].nosend_value;
+  }
+
+  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
+
+  return send_value > nosend_value;
 }

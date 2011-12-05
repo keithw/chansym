@@ -121,6 +121,7 @@ public:
 
   unsigned int size( void ) const { return channels.size(); }
   WeightedChannel & get_channel( int address );
+  const WeightedChannel & get_channel( int address ) const;
 
   bool live( void ) { return !wakeups.empty(); }
   double next_time( void );

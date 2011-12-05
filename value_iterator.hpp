@@ -25,8 +25,9 @@ private:
   public:
     double probability;
     ChannelType channel;
+    double reward;
   
-    WeightedChannel( double s_prob, const ChannelType &s_chan ) : probability( s_prob ), channel( s_chan ) {}
+    WeightedChannel( double s_prob, const ChannelType &s_chan, double s_reward ) : probability( s_prob ), channel( s_chan ), reward( s_reward ) {}
   };
 
   class VIValue {
@@ -38,7 +39,7 @@ private:
     std::vector<WeightedChannel> quantized_send_indices;
     std::vector<WeightedChannel> quantized_nosend_indices;
 
-    double value;
+    double send_value, nosend_value, value;
 
     VIValue();
   };
@@ -56,10 +57,14 @@ public:
 
   void rationalize( void );
 
+  void value_iterate( void );
+
   ValueIterator( const ValueIterator &x );
   ValueIterator & operator=( const ValueIterator &x );
 
   size_t size( void ) const { return state_values.size(); }
+
+  bool should_i_send( const EnsembleContainer<ChannelType> &ensemble );
 };
 
 #endif

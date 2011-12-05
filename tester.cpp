@@ -164,7 +164,7 @@ int main( void )
   */
 
   double my_linkspeed = 12000*10;
-  double my_bufsize = 12000*10;
+  double my_bufsize = 12000*3;
   double my_lossrate = 0.2;
   double my_linkportion = 0.5;
 

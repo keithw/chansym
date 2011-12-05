@@ -405,6 +405,15 @@ typename EnsembleContainer<ChannelType>::WeightedChannel & EnsembleContainer<Cha
 }
 
 template <class ChannelType>
+const typename EnsembleContainer<ChannelType>::WeightedChannel & EnsembleContainer<ChannelType>::get_channel( int address ) const
+{
+  assert( address >= 0 );
+  assert( address < (int)channels.size() );
+
+  return channels[ address ];
+}
+
+template <class ChannelType>
 string EnsembleContainer<ChannelType>::identify( void ) const
 {
   ostringstream response;
