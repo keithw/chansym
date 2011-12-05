@@ -172,6 +172,23 @@ void Series<First, Second>::fork( int source_addr, double my_probability, Channe
 template <class First, class Second>
 string Series<First, Second>::identify( void ) const
 {
+  /*
+  ostringstream response;
+  response << "< (";
+  response << hash();
+  response << "/";
+  response << hash_value( a );
+  response << "/";
+  response << hash_value( b );
+  response << ") ";
+  response << a.identify();
+  response << " => ";
+  response << b.identify();
+  response << " >";
+
+  return response.str();
+  */
+
   return "< " + a.identify() + " > => < " + b.identify() + " >";
 }
 

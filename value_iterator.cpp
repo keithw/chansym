@@ -77,13 +77,14 @@ void ValueIterator<ChannelType>::rationalize( void )
 {
   /* Step 1: Look for vi_values that haven't been initialized */
   while ( !incomplete_states.empty() ) {
-    printf( "Rationalizing (N = %lu)\n", state_values.size() );
+    printf( "Rationalizing (N = %lu INCOMPLETE = %lu)\n", state_values.size(),
+	    incomplete_states.size() );
 
     size_t exemplar_index = incomplete_states.front();
     incomplete_states.pop_front();
 
     EnsembleContainer<ChannelType> &container( exemplar_states[ exemplar_index ] );
-    ChannelType &chan( container.get_channel( 0 ).channel );
+    ChannelType chan( container.get_channel( 0 ).channel );
     double current_time = container.time();
     Maybe< ChannelType > chanqm( chan );
     chanqm.object->quantize_markovize();

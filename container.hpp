@@ -25,8 +25,12 @@ public:
       return 1;
     } else if ( lhs.time < rhs.time ) {
       return 0;
+    } else if ( lhs.sort_order > rhs.sort_order ) {
+      return 1;
+    } else if ( lhs.sort_order < rhs.sort_order ) {
+      return 0;
     } else {
-      return lhs.sort_order > rhs.sort_order;
+      return lhs.addr > rhs.addr;
     }
   }
 
