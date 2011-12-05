@@ -49,7 +49,6 @@ string Buffer::identify( void ) const
   response << ", ";
   response << occupancy;
 
-  /*
   for ( std::list<Packet>::const_iterator i = contents.begin();
 	i != contents.end();
 	i++ ) {
@@ -61,7 +60,6 @@ string Buffer::identify( void ) const
     response << i->send_time;
     response << " >";
   }
-  */
 
   response << " )";
 
@@ -87,5 +85,5 @@ void Buffer::quantize_markovize( void )
   double now = container->time();
 
   for_each( contents.begin(), contents.end(),
-	    [now]( Packet &x ) { x.quantize_markovize( now ); } );
+	    [now]( Packet &x ) { assert( x.send_time == -1 ); x.quantize_markovize( now ); } );
 }

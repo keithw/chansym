@@ -135,6 +135,8 @@ void ISender<ChannelType>::sendout( Packet p )
   printf( "SENDING packet %d at time %f\n",
 	  p.id, container->time() );
 
+  p.send_time = -1; /* XXX */
+
   /* Really send packet */
   container->receive( addr, p );
 
@@ -156,5 +158,6 @@ void ISender<ChannelType>::value_experiment( void )
       continue;
     }
     vi.add_state( prior.get_channel( i ).channel );
+    vi.rationalize();
   }
 }

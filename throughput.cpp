@@ -39,6 +39,15 @@ string Throughput::identify( void ) const
     response << ", free at ";
     response << next_free_time;
   }
+
+  response << ", < ";
+  response << stash.src;
+  response << ", ";
+  response << stash.id;
+  response << ", ";
+  response << stash.send_time;
+  response << " >";
+
   response << " )";
 
   return response.str();
