@@ -6,7 +6,7 @@
 #include "maybe.hpp"
 #include "ensemble_container.hpp"
 
-#include <google/dense_hash_map>
+#include <google/sparse_hash_map>
 
 template <class ChannelType>
 class Extractor;
@@ -45,7 +45,7 @@ private:
 
   typedef Maybe<ChannelType> key_t;
 
-  typedef google::dense_hash_map< key_t, VIValue, boost::hash<key_t> > value_map_t;
+  typedef google::sparse_hash_map< key_t, VIValue, boost::hash<key_t> > value_map_t;
   value_map_t state_values; /* for Value Iteration */
 
   std::list<size_t> incomplete_states;
@@ -58,6 +58,8 @@ public:
 
   ValueIterator( const ValueIterator &x );
   ValueIterator & operator=( const ValueIterator &x );
+
+  size_t size( void ) const { return state_values.size(); }
 };
 
 #endif

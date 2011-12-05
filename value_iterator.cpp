@@ -10,7 +10,7 @@ ValueIterator<ChannelType>::ValueIterator( Extractor<ChannelType> *s_extractor, 
     state_values(),
     incomplete_states()
 {
-  state_values.set_empty_key( Maybe<ChannelType>() );
+  //  state_values.set_empty_key( Maybe<ChannelType>() );
 }
 
 template <class ChannelType>
@@ -58,9 +58,6 @@ void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
     return;
   }
 
-  printf( "Adding QM state %s (hash %lu)\n",
-	  chanqm.object->identify().c_str(), seed );
-
   /* Step 2: If not, insert this quantized state (and its unquantized, unrationalized exemplar) into the lists. */
 
   VIValue new_vi_value;
@@ -82,9 +79,6 @@ void ValueIterator<ChannelType>::rationalize( void )
 {
   /* Step 1: Look for vi_values that haven't been initialized */
   while ( !incomplete_states.empty() ) {
-    printf( "Rationalizing (N = %lu INCOMPLETE = %lu)\n", state_values.size(),
-	    incomplete_states.size() );
-
     size_t exemplar_index = incomplete_states.front();
     incomplete_states.pop_front();
 

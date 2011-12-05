@@ -114,7 +114,7 @@ void ISender<ChannelType>::wakeup( void )
 
   prior.heuristic_opportunistic_combine();
 
-  printf( "Time: %f (channels: %d)\n", current_time, prior.size() );
+  printf( "Time: %f (channels: %d, MQ channels = %lu)\n", current_time, prior.size(), vi.size() );
   //  if ( prior.size() <= 32 ) {
     cout << prior.identify();
     //  }
