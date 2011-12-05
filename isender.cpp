@@ -82,6 +82,7 @@ void ISender<ChannelType>::wakeup( void )
   value_experiment();
 
   if ( current_time == next_send_time ) {
+    vi.value_iterate();
     if ( vi.should_i_send( prior ) ) {
       sendout( Packet( 12000, id, 0, current_time ) );
     }
@@ -161,6 +162,5 @@ void ISender<ChannelType>::value_experiment( void )
     }
     vi.add_state( prior.get_channel( i ).channel );
     vi.rationalize();
-    vi.value_iterate();
   }
 }

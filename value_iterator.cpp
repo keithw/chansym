@@ -198,7 +198,7 @@ bool ValueIterator<ChannelType>::should_i_send( const EnsembleContainer<ChannelT
     nosend_value += ensemble.get_channel( i ).probability * state_values[ chanqm ].nosend_value;
   }
 
-  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
+  //  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
 
   return send_value > nosend_value;
 }
