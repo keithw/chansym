@@ -42,11 +42,14 @@ string TimeQuantize::identify( void ) const
 	i != contents.end();
 	i++ ) {
     response << ", < ";
+    response << i->delivery_time;
+    response << ", ";
     response << i->packet.src;
     response << ", ";
     response << i->packet.id;
     response << ", ";
     response << i->packet.send_time;
+
     response << " >";
   }
 

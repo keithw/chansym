@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-const double TIME_STEP = 1;
+const double TIME_STEP = 0.1;
 const double PROB_STEP = 0.1;
 const int PACKET_SIZE = 12000;
 

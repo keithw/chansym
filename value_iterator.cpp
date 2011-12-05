@@ -9,7 +9,9 @@ ValueIterator<ChannelType>::ValueIterator( Extractor<ChannelType> *s_extractor, 
     id( s_id ),
     state_values(),
     incomplete_states()
-{}
+{
+  state_values.set_empty_key( Maybe<ChannelType>() );
+}
 
 template <class ChannelType>
 ValueIterator<ChannelType>::ValueIterator( const ValueIterator &x )
@@ -48,13 +50,16 @@ void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
   Maybe< ChannelType > chanqm( chan );
   chanqm.object->quantize_markovize();
 
+  size_t seed = 0;
+  boost::hash_combine( seed, chanqm );
+
   typename value_map_t::const_iterator it = state_values.find( chanqm );
   if ( it != state_values.end() ) {
     return;
   }
 
-  printf( "Adding QM state %s\n",
-	  chanqm.object->identify().c_str() );
+  printf( "Adding QM state %s (hash %lu)\n",
+	  chanqm.object->identify().c_str(), seed );
 
   /* Step 2: If not, insert this quantized state (and its unquantized, unrationalized exemplar) into the lists. */
 

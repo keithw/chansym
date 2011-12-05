@@ -315,12 +315,35 @@ using namespace std;
       const_iterator end( void ) const { return c.end(); }
       bool operator==( const peekable_priority_queue<_Tp, _Sequence, _Compare> &x ) const
       {
-	return (c == x.c);
+	peekable_priority_queue<_Tp, _Sequence, _Compare> new_mine( *this );
+	peekable_priority_queue<_Tp, _Sequence, _Compare> new_other( x );
+
+	while ( !new_mine.empty() ) {
+	  if ( new_other.empty() ) {
+	    return false;
+	  }
+	  if ( !(new_mine.top() == new_other.top()) ) {
+	    return false;
+	  }
+	  new_mine.pop();
+	  new_other.pop();
+	}
+	if ( !new_other.empty() ) {
+	  return false;
+	}
+	return true;
       }
+
       friend size_t hash_value( peekable_priority_queue<_Tp, _Sequence, _Compare> const & pq )
       {
-	boost::hash<_Sequence> hasher;
-	return hasher( pq.c );
+	peekable_priority_queue<_Tp, _Sequence, _Compare> new_pq( pq );
+
+	size_t seed = 0;
+	while ( !new_pq.empty() ) {
+	  boost::hash_combine( seed, new_pq.top() );
+	  new_pq.pop();
+	}
+	return seed;
       }
       void clear( void ) { c.clear(); }
   };
