@@ -58,7 +58,7 @@ size_t hash_value( Throughput const & ch )
   size_t seed = 0;
 
   boost::hash_combine( seed, ch.throughput );
-  boost::hash_combine( seed, ch.next_free_time );
+  boost::hash_combine( seed, rounder( ch.next_free_time ) );
   boost::hash_combine( seed, ch.stash );
   boost::hash_combine( seed, ch.busy );  
 

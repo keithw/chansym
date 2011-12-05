@@ -3,20 +3,20 @@
 
 #include <math.h>
 
-const double TIME_STEP = 0.1;
+const double TIME_STEP = 0.05;
 const double PROB_STEP = 0.1;
 const int PACKET_SIZE = 12000;
 
 inline bool close( double x, double y )
 {
-  return x == y;
-  //  return fabs( x - y ) < 1e-12;
+  //  return x == y;
+  return fabs( x - y ) < 1e-9;
 }
 
 inline static double rounder( double x )
 {
-  return x;
-  //  return nearbyint( x * 1e12 ) * 1e-12;
+  //return x;
+  return nearbyint( x * 1e9 ) * 1e-9;
 }
 
 inline static double variable_round( double x, double increment )

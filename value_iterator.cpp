@@ -116,7 +116,7 @@ void ValueIterator<ChannelType>::rationalize( void )
     send.advance_to( current_time );
     send.add_mature( ChannelType( chan ) );
     extractor->get_pawn( send.get_channel( 0 ).channel ).send( Packet( 12000, id, 0, -1 ) );
-    send.advance_to( current_time + TIME_STEP );
+    send.advance_to( current_time ); /* Send doesn't involve advancing! */
   
     for ( size_t i = 0; i < send.size(); i++ ) {
       double the_utility = UtilityMetric::utility( nosend.time(),

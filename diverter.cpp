@@ -156,7 +156,7 @@ size_t Diverter<First, Second>::hash( void ) const
 
   boost::hash_combine( seed, a );
   boost::hash_combine( seed, b );
-  boost::hash_combine( seed, wakeups );
+  boost::hash_combine( seed, round_wakeups( wakeups ) );
 
   return seed;
 }

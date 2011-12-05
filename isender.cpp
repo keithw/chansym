@@ -80,12 +80,17 @@ void ISender<ChannelType>::wakeup( void )
   prior.advance_to( current_time );
 
   value_experiment();
+  vi.value_iterate();
 
   if ( current_time == next_send_time ) {
-    vi.value_iterate();
-    if ( vi.should_i_send( prior ) ) {
+    while ( vi.should_i_send( prior ) ) {
       sendout( Packet( 12000, id, 0, current_time ) );
+      prior.advance_to( current_time );
+      prior.heuristic_opportunistic_combine();
+      value_experiment();
+      vi.value_iterate();
     }
+
     next_send_time = current_time + TIME_STEP;
     container->sleep_until( next_send_time, addr, 99 );
   }
@@ -115,7 +120,8 @@ void ISender<ChannelType>::wakeup( void )
 
   prior.normalize();
 
-  prior.heuristic_opportunistic_combine();
+  prior.combine();
+  //  prior.heuristic_opportunistic_combine();
 
   printf( "Time: %f (channels: %d, MQ channels = %lu)\n", current_time, prior.size(), vi.size() );
   //  if ( prior.size() <= 32 ) {

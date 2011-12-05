@@ -3,7 +3,7 @@
 
 #include "packet.hpp"
 
-const double DISCOUNT = 0.99;
+const double DISCOUNT = 0.9;
 
 class UtilityMetric {
 private:

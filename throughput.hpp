@@ -25,7 +25,7 @@ public:
 
   bool operator==( const Throughput &x ) const
   {
-    return (throughput == x.throughput) && (next_free_time == x.next_free_time)
+    return (throughput == x.throughput) && ( rounder(next_free_time) == rounder(x.next_free_time) )
       && (stash == x.stash) && (busy == x.busy);
   }
 

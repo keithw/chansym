@@ -47,9 +47,12 @@ public:
   }
 };
 
+typedef peekable_priority_queue<Event, deque<Event>, Event> wakeup_queue;
+wakeup_queue round_wakeups( const wakeup_queue &q );
+
 class Container {
 protected:
-  peekable_priority_queue<Event, deque<Event>, Event> wakeups;
+  wakeup_queue wakeups;
 
 public:
   Container() : wakeups() {}

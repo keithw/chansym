@@ -178,43 +178,6 @@ bool EnsembleContainer<ChannelType>::converged( void )
   }
 
   return true;
-
-  /*
-  uint distinct = 0;
-  for ( unsigned int i = 0; i < channels.size(); i++ ) {
-    bool is_distinct = 1;
-    for ( unsigned int j = 0; j < i; j++ ) {
-      if ( channels[ j ].channel == channels[ i ].channel ) {
-      // has predicate
-	is_distinct = 0;
-	break;
-      }
-    }
-    distinct += is_distinct;
-  }
-
-  return distinct;
-
-*/
-
-  /*
-  typedef ChannelType * key_t;
-  typedef dense_hash_set< key_t, channel_hash, equal_channels > dhs_t;
-  assert( (int)channels.size() > erased_count );
-  dhs_t set( (int)channels.size() - erased_count );
-  set.set_empty_key( NULL );
-
-  for ( unsigned int a1 = 0; a1 < channels.size(); a1++ ) {
-    if ( channels[ a1 ].erased ) {
-      continue;
-    }
-
-    key_t key( &(channels[ a1 ].channel) );
-    set.insert( key );
-  }
-
-  return set.size();
-  */
 }
 
 template <class ChannelType>

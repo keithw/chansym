@@ -49,7 +49,7 @@ public:
   void fork( int source_addr, double my_probability, Channel::ForkState *fs );
   double probability( int ) { return container->probability( addr ); }
 
-  bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b) && (wakeups == x.wakeups); }
+  bool operator==( const Series<First, Second> &x ) const { return (a == x.a) && (b == x.b) && (round_wakeups( wakeups ) == round_wakeups( x.wakeups ) ); }
 
   string identify( void ) const;
 

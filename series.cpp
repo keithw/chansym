@@ -182,10 +182,9 @@ string Series<First, Second>::identify( void ) const
     response << "[ "; response << e.time; response << " "; response << e.addr; response << " "; response << e.sort_order; response << " ]";    
     new_wakeups.pop();
   }
-
   
   size_t seed = 0;
-  boost::hash_combine( seed, wakeups );
+  boost::hash_combine( seed, round_wakeups( wakeups ) );
   response << seed;
   response << "/";
   response << hash();
@@ -209,7 +208,7 @@ size_t Series<First, Second>::hash( void ) const
 
   boost::hash_combine( seed, a );
   boost::hash_combine( seed, b );
-  boost::hash_combine( seed, wakeups );
+  boost::hash_combine( seed, round_wakeups( wakeups ) );
 
   return seed;
 }
