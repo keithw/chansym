@@ -16,7 +16,7 @@ Buffer::Buffer( int s_size, int initial_num, int initial_size )
 void Buffer::init( void )
 {
   for ( int i = 0; i < tmp_initial_num; i++ ) {
-    send( Packet( tmp_initial_size, -1, -1, -1 ) );
+    send( Packet( tmp_initial_size, 1, -1, -1 ) );
   }
 }
 
@@ -82,8 +82,26 @@ void Buffer::quantize_markovize( void )
   size = quantize_length( size );
   assert( occupancy <= size );
 
-  double now = container->time();
+  int zero_count = 0, one_count = 0, other_count = 0;
 
-  for_each( contents.begin(), contents.end(),
-	    [now]( Packet &x ) { assert( x.send_time == -1 ); x.quantize_markovize( now ); } );
+  for ( auto i = contents.begin(); i != contents.end(); i++ ) {
+    assert( i->send_time == -1 );
+    assert( i->length == PACKET_SIZE );
+    switch ( i->src ) {
+    case 0:
+      zero_count++;
+      break;
+    case 1:
+      one_count++;
+      break;
+    default:
+      other_count++;
+    }
+  }
+
+  contents.clear();
+
+  contents.push_back( Packet( PACKET_SIZE, 0, zero_count, -1 ) );
+  contents.push_back( Packet( PACKET_SIZE, 1, one_count, -1 ) );
+  contents.push_back( Packet( PACKET_SIZE, -1, other_count, -1 ) );
 }

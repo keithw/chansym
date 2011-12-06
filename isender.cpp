@@ -87,10 +87,9 @@ void ISender<ChannelType>::wakeup( void )
   if ( current_time == next_send_time ) {
     if ( vi.should_i_send( prior ) ) {
       sendout( Packet( 12000, id, counter++, current_time ) );
-    } else {
-      next_send_time = current_time + TIME_STEP;
     }
 
+    next_send_time = current_time + TIME_STEP;
     container->sleep_until( next_send_time, addr, 99 );
   }
 
@@ -155,8 +154,8 @@ void ISender<ChannelType>::sendout( Packet p )
     }
   }
 
-  /*  prior.execute_fork(); */
-  prior.advance_to( container->time() );
+  prior.execute_fork();
+  //  prior.advance_to( container->time() );
 }
 
 template <class ChannelType>

@@ -126,7 +126,7 @@ bool ValueIterator<ChannelType>::rationalize( void )
     send.advance_to( current_time );
     send.add_mature( ChannelType( exemplar_states[ exemplar_index ].exemplar.get_channel( 0 ).channel ) );
     extractor->get_pawn( send.get_channel( 0 ).channel ).send( Packet( 12000, id, 0, -1 ) );
-    send.advance_to( current_time ); /* Send doesn't involve advancing! */
+    send.advance_to( current_time + TIME_STEP );
     send.combine();
   
     for ( size_t i = 0; i < send.size(); i++ ) {
@@ -213,7 +213,8 @@ void ValueIterator<ChannelType>::value_iterate( void )
 		vival.value = new_value;
 	      } );
     printf( "(%d / %f)\n", changed, max_diff );
-  } while ( changed && (max_diff >= 0.01) );
+    fflush( NULL );
+  } while ( changed && (max_diff >= 0.05) );
 
   unfinished_states.clear();
 }

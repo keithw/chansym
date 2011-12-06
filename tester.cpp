@@ -142,13 +142,12 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  /*
-  for ( double link_portion = 0.1; link_portion <= 0.5; link_portion += 0.05 ) {
-    for ( int bufsize = 12000*10; bufsize <= 12000*50; bufsize += 12000*10 ) {
-      for ( int init = 0; init * 12000 <= bufsize; init += 40 ) {
-        for ( int linkspeed = 12000*6; linkspeed <= 12000*20; linkspeed += 12000*2 ) {
-	  for ( double lossrate = 0.0; lossrate <= 0.6; lossrate += 0.05 ) {
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, true ), Intermittent( .0034, .5 ) ),
+  for ( double link_portion = 0.5; link_portion <= 0.5; link_portion += 0.1 ) {
+    for ( int bufsize = 12000*8; bufsize <= 12000*8; bufsize += 12000 ) {
+      for ( int init = 0; init * 12000 <= bufsize; init++ ) {
+        for ( int linkspeed = 12000*10; linkspeed <= 12000*10; linkspeed += 12000*2 ) {
+	  for ( double lossrate = 0.2; lossrate <= 0.2; lossrate += 0.05 ) {
+	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, true ), Intermittent( .00069, .1 ) ),
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
 				       series( series( Throughput( linkspeed ), StochasticLoss( lossrate ) ),
@@ -161,26 +160,17 @@ int main( void )
   }
 
   prior.normalize();
-  */
 
   double my_linkspeed = 12000*10;
-  double my_bufsize = 12000*3;
+  double my_bufsize = 12000*8;
   double my_lossrate = 0.2;
   double my_linkportion = 0.5;
-
-  prior.add( series( series( series( Pinger( 12000.0 / (my_linkspeed * my_linkportion), 1, true ), Intermittent( .00069, .1 ) ),
-			     Pawn() ),
-		     series( Buffer( my_bufsize ),
-			     series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
-				     diverter( series( TimeQuantize( 0.05 ), Collector() ),
-					       Collector() ) ) ) ) );
-  prior.normalize();
 
   truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * my_linkportion), 1, true ), SquareWave( 200 ) ),
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
                              series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
-                                     diverter( series( TimeQuantize( 0.05 ), SignallingCollector( &network.waker ) ),
+                                     diverter( series( TimeQuantize( 0.1 ), SignallingCollector( &network.waker ) ),
                                                Collector() ) ) ) ) );
 
   truth.normalize();
