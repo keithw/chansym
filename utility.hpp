@@ -33,7 +33,7 @@ public:
 			 vector<ScheduledPacket> &cross_traffic )
   {
     double util = utility_single( base_time, real_traffic, false )
-      + 5 * utility_single( base_time, cross_traffic, false );
+      + 10 * utility_single( base_time, cross_traffic, false );
 
     return util;
   }

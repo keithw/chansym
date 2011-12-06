@@ -142,17 +142,18 @@ int main( void )
 
   truth.set_follow_all_forks( false );
 
-  for ( double link_portion = 0.1; link_portion <= 0.9; link_portion += 0.1 ) {
+  for ( double ping_interval = 0.2; ping_interval <= 0.9; ping_interval += 0.1 ) {
     for ( int bufsize = 12000*3; bufsize <= 12000*3; bufsize += 12000 ) {
       for ( int init = 0; init * 12000 <= 0 /* bufsize */; init++ ) {
         for ( int linkspeed = 12000*10; linkspeed <= 12000*10; linkspeed += 12000*2 ) {
 	  for ( double lossrate = 0.2; lossrate <= 0.2; lossrate += 0.05 ) {
-	    link_portion = variable_round( link_portion, 0.1 );
-	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, true ), Intermittent( .00069, .1 ) ),
+	    ping_interval = variable_round( ping_interval, 0.1 );
+	    printf( "PING INTERVAL: %.30f\n", ping_interval );
+	    prior.add( series( series( series( Pinger( ping_interval, 1, true ), Intermittent( .00069, .1 ) ),
 				       Pawn() ),
 			       series( Buffer( bufsize, init, 12000 ),
 				       series( series( Throughput( linkspeed ), StochasticLoss( lossrate ) ),
-					       diverter( series( TimeQuantize( 0.1 ), Collector() ),
+					       diverter( series( TimeQuantize( 0.01 ), Collector() ),
 							 Collector() ) ) ) ) );
 	  }
         }
@@ -165,13 +166,15 @@ int main( void )
   double my_linkspeed = 12000*10;
   double my_bufsize = 12000*3;
   double my_lossrate = 0.2;
-  double my_linkportion = variable_round( 0.8, 0.1 );
+  double my_ping_interval = variable_round( 0.2, 0.1 );
 
-  truth.add( series( series( series( Pinger( 12000 / (my_linkspeed * my_linkportion), 1, true ), SquareWave( 200 ) ),
+  printf( "MY PING INTERVAL: %.30f\n", my_ping_interval );
+
+  truth.add( series( series( series( Pinger( my_ping_interval, 1, true ), SquareWave( 200 ) ),
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
                              series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
-                                     diverter( series( TimeQuantize( 0.1 ), SignallingCollector( &network.waker ) ),
+                                     diverter( series( TimeQuantize( 0.01 ), SignallingCollector( &network.waker ) ),
                                                Collector() ) ) ) ) );
 
   truth.normalize();
