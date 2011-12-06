@@ -36,6 +36,7 @@ public:
   void quantize_markovize( double now )
   {
     length = quantize_length( length );
+    id = -1;
     if ( send_time >= 0 ) {
       send_time = quantize_time( send_time - now );
     }

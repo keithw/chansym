@@ -440,6 +440,7 @@ void EnsembleContainer<ChannelType>::advance_to( double advance_time )
 
   while ( live() && (next_time() <= advance_time) ) {
     tick();
+    heuristic_opportunistic_combine();
   }
 
   the_time = advance_time;

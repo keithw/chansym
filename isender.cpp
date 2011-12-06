@@ -19,6 +19,7 @@ ISender<ChannelType>::ISender( EnsembleContainer<ChannelType> s_prior,
     extractor( s_extractor ),
     latest_time( -1 ),
     next_send_time( 0 ),
+    counter( 0 ),
     id( 0 ),
     vi( extractor, id )
 {}
@@ -29,6 +30,7 @@ ISender<ChannelType>::ISender( const ISender<ChannelType> &x )
     prior( x.prior ), extractor( x.extractor ),
     latest_time( x.latest_time ),
     next_send_time( x.next_send_time ),
+    counter( x.counter ),
     id( x.id ),
     vi( x.vi )
 {}
@@ -43,6 +45,7 @@ ISender<ChannelType> & ISender<ChannelType>::operator=( const ISender<ChannelTyp
   latest_time = x.latest_time;
 
   next_send_time = x.next_send_time;
+  counter = x.counter;
 
   id = x.id;
 
@@ -80,15 +83,13 @@ void ISender<ChannelType>::wakeup( void )
   prior.advance_to( current_time );
 
   value_experiment();
-  vi.value_iterate();
 
   if ( current_time == next_send_time ) {
     while ( vi.should_i_send( prior ) ) {
-      sendout( Packet( 12000, id, 0, current_time ) );
+      sendout( Packet( 12000, id, counter++, current_time ) );
       prior.advance_to( current_time );
       prior.heuristic_opportunistic_combine();
       value_experiment();
-      vi.value_iterate();
     }
 
     next_send_time = current_time + TIME_STEP;
@@ -167,6 +168,8 @@ void ISender<ChannelType>::value_experiment( void )
       continue;
     }
     vi.add_state( prior.get_channel( i ).channel );
-    vi.rationalize();
+    if ( vi.rationalize() ) {
+      vi.value_iterate();
+    }
   }
 }

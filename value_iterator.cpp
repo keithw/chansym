@@ -10,7 +10,8 @@ ValueIterator<ChannelType>::ValueIterator( Extractor<ChannelType> *s_extractor, 
     extractor( s_extractor ),
     id( s_id ),
     state_values(),
-    incomplete_states()
+    incomplete_states(),
+    unfinished_states()
 {
   //  state_values.set_empty_key( Maybe<ChannelType>() );
 }
@@ -21,7 +22,8 @@ ValueIterator<ChannelType>::ValueIterator( const ValueIterator &x )
     extractor( x.extractor ),
     id( x.id ),
     state_values( x.state_values ),
-    incomplete_states( x.incomplete_states )
+    incomplete_states( x.incomplete_states ),
+    unfinished_states( x.unfinished_states )
 {}
 
 template <class ChannelType>
@@ -38,6 +40,7 @@ ValueIterator<ChannelType> & ValueIterator<ChannelType>::operator=( const ValueI
 template <class ChannelType>
 ValueIterator<ChannelType>::VIValue::VIValue()
   : initialized( false ),
+    finished( false ),
     exemplar_state_index( -1 ),
     quantized_send_indices(),
     quantized_nosend_indices(),
@@ -73,11 +76,16 @@ void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
 
   state_values[ chanqm ] = new_vi_value;
   incomplete_states.push_back( new_vi_value.exemplar_state_index );
+  unfinished_states.push_back( new_vi_value.exemplar_state_index );
 }
 
 template <class ChannelType>
-void ValueIterator<ChannelType>::rationalize( void )
+bool ValueIterator<ChannelType>::rationalize( void )
 {
+  if ( incomplete_states.empty() ) {
+    return false;
+  }
+
   /* Step 1: Look for vi_values that haven't been initialized */
   while ( !incomplete_states.empty() ) {
     size_t exemplar_index = incomplete_states.front();
@@ -99,6 +107,7 @@ void ValueIterator<ChannelType>::rationalize( void )
     nosend.advance_to( current_time );
     nosend.add_mature( ChannelType( chan ) );
     nosend.advance_to( current_time + TIME_STEP );
+    nosend.combine();
 
     for ( size_t i = 0; i < nosend.size(); i++ ) {
       double the_utility = UtilityMetric::utility( nosend.time(),
@@ -117,6 +126,7 @@ void ValueIterator<ChannelType>::rationalize( void )
     send.add_mature( ChannelType( chan ) );
     extractor->get_pawn( send.get_channel( 0 ).channel ).send( Packet( 12000, id, 0, -1 ) );
     send.advance_to( current_time ); /* Send doesn't involve advancing! */
+    send.combine();
   
     for ( size_t i = 0; i < send.size(); i++ ) {
       double the_utility = UtilityMetric::utility( nosend.time(),
@@ -140,6 +150,8 @@ void ValueIterator<ChannelType>::rationalize( void )
       add_state( send.get_channel( i ).channel );
     }
   }
+
+  return true;
 }
 
 template <class ChannelType>
@@ -147,35 +159,58 @@ void ValueIterator<ChannelType>::value_iterate( void )
 {
   assert( incomplete_states.empty() );
 
-  for_each( exemplar_states.begin(), exemplar_states.end(),
-	    [&state_values]( const EnsembleContainer<ChannelType> &ex )
-	    {
-	      /* Lookup state */
-	      ChannelType chan( ex.get_channel( 0 ).channel );
-	      Maybe< ChannelType > chanqm( chan );
-	      chanqm.object->quantize_markovize();
-	      VIValue &vival( state_values[ chanqm ] );
+  int changed;
 
-	      /* Find value if we don't send */
-	      double nosend_value = 0;
-	      for( auto i = vival.quantized_nosend_indices.begin();
-		   i != vival.quantized_nosend_indices.end();
-		   i++ ) {
-		nosend_value += i->probability * ( i->reward + DISCOUNT * state_values[ i->channel ].value );
-	      }
+  printf( "VALUE ITERATING on %lu states\n", unfinished_states.size() );
 
-	      /* Find value if we do send */
-	      double send_value = 0;
-	      for( auto i = vival.quantized_send_indices.begin();
-		   i != vival.quantized_send_indices.end();
-		   i++ ) {
-		send_value += i->probability * ( i->reward + DISCOUNT * state_values[ i->channel ].value );
-	      }
+  do {
+    changed = 0;
 
-	      vival.nosend_value = nosend_value;
-	      vival.send_value = send_value;
-	      vival.value = send_value > nosend_value ? send_value : nosend_value;
-	    } );
+    for_each( unfinished_states.begin(), unfinished_states.end(),
+	      [&state_values, &changed, &exemplar_states]( size_t ex_id )
+	      {
+		/* Lookup state */
+		EnsembleContainer<ChannelType> &container( exemplar_states[ ex_id ] );
+		ChannelType chan( container.get_channel( 0 ).channel );
+		Maybe< ChannelType > chanqm( chan );
+		chanqm.object->quantize_markovize();
+
+		VIValue &vival( state_values[ chanqm ] );
+
+		/* Find value if we don't send */
+		double nosend_value = 0;
+		for( auto i = vival.quantized_nosend_indices.begin();
+		     i != vival.quantized_nosend_indices.end();
+		     i++ ) {
+		  nosend_value += i->probability * ( i->reward + DISCOUNT * state_values[ i->channel ].value );
+		}
+
+		/* Find value if we do send */
+		double send_value = 0;
+		for( auto i = vival.quantized_send_indices.begin();
+		     i != vival.quantized_send_indices.end();
+		     i++ ) {
+		  send_value += i->probability * ( i->reward + DISCOUNT * state_values[ i->channel ].value );
+		}
+
+		double new_value = send_value > nosend_value ? send_value : nosend_value;
+
+		if ( (vival.nosend_value != nosend_value)
+		     || (vival.send_value != send_value)
+		     || (vival.value != new_value) ) {
+		  changed++;
+		}
+
+		vival.nosend_value = nosend_value;
+		vival.send_value = send_value;
+		vival.value = new_value;
+	      } );
+
+    printf( ". (%d)\n", changed );
+    
+  } while ( changed );
+
+  unfinished_states.clear();
 }
 
 template <class ChannelType>

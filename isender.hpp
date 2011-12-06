@@ -19,6 +19,7 @@ private:
   double latest_time;
 
   double next_send_time;
+  int counter;
   int id;
 
   ValueIterator<ChannelType> vi;

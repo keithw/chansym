@@ -32,7 +32,7 @@ private:
 
   class VIValue {
   public:
-    bool initialized;
+    bool initialized, finished;
 
     size_t exemplar_state_index;
 
@@ -50,12 +50,13 @@ private:
   value_map_t state_values; /* for Value Iteration */
 
   std::list<size_t> incomplete_states;
+  std::list<size_t> unfinished_states;
 
 public:
   ValueIterator( Extractor<ChannelType> *s_extractor, int s_id );
   void add_state( const ChannelType &chan );
 
-  void rationalize( void );
+  bool rationalize( void );
 
   void value_iterate( void );
 
