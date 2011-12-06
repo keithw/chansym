@@ -145,7 +145,7 @@ int main( void )
   for ( double ping_interval = 0.2; ping_interval <= 0.9; ping_interval += 0.1 ) {
     for ( int bufsize = 12000*3; bufsize <= 12000*3; bufsize += 12000 ) {
       for ( int init = 0; init * 12000 <= 0 /* bufsize */; init++ ) {
-        for ( int linkspeed = 12000*10; linkspeed <= 12000*10; linkspeed += 12000*2 ) {
+        for ( int linkspeed = 12000*8; linkspeed <= 12000*10; linkspeed += 12000*2 ) {
 	  for ( double lossrate = 0.2; lossrate <= 0.2; lossrate += 0.05 ) {
 	    ping_interval = variable_round( ping_interval, 0.1 );
 	    printf( "PING INTERVAL: %.30f\n", ping_interval );
