@@ -172,7 +172,7 @@ int main( void )
 			     Pawn() ),
 		     series( Buffer( my_bufsize ),
 			     series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
-				     diverter( series( TimeQuantize( 0.1 ), Collector() ),
+				     diverter( series( TimeQuantize( 0.05 ), Collector() ),
 					       Collector() ) ) ) ) );
   prior.normalize();
 
@@ -180,7 +180,7 @@ int main( void )
                              TwoTerminalNetwork::SmartSender( prior, &network.extractor ) ),
                      series( Buffer( my_bufsize ),
                              series( series( Throughput( my_linkspeed ), StochasticLoss( my_lossrate ) ),
-                                     diverter( series( TimeQuantize( 0.1 ), SignallingCollector( &network.waker ) ),
+                                     diverter( series( TimeQuantize( 0.05 ), SignallingCollector( &network.waker ) ),
                                                Collector() ) ) ) ) );
 
   truth.normalize();

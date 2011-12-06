@@ -85,14 +85,12 @@ void ISender<ChannelType>::wakeup( void )
   value_experiment();
 
   if ( current_time == next_send_time ) {
-    while ( vi.should_i_send( prior ) ) {
+    if ( vi.should_i_send( prior ) ) {
       sendout( Packet( 12000, id, counter++, current_time ) );
-      prior.advance_to( current_time );
-      prior.heuristic_opportunistic_combine();
-      value_experiment();
+    } else {
+      next_send_time = current_time + TIME_STEP;
     }
 
-    next_send_time = current_time + TIME_STEP;
     container->sleep_until( next_send_time, addr, 99 );
   }
 

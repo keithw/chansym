@@ -27,6 +27,15 @@ ValueIterator<ChannelType>::ValueIterator( const ValueIterator &x )
 {}
 
 template <class ChannelType>
+ValueIterator<ChannelType>::Exemplar::Exemplar( const ChannelType &e )
+  : exemplar(), qm_cache( ChannelType( e ) )
+{
+  exemplar.advance_to( e.get_container()->time() );
+  exemplar.add_mature( ChannelType( e ) );
+  qm_cache.object->quantize_markovize();
+}
+
+template <class ChannelType>
 ValueIterator<ChannelType> & ValueIterator<ChannelType>::operator=( const ValueIterator &x )
 {
   exemplar_states = x.exemplar_states;
@@ -50,7 +59,7 @@ ValueIterator<ChannelType>::VIValue::VIValue()
 {}
 
 template <class ChannelType>
-void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
+void ValueIterator<ChannelType>::add_state( const ChannelType &chan)
 {
   /* Step 1: See if we already know the value. */
 
@@ -66,10 +75,7 @@ void ValueIterator<ChannelType>::add_state( const ChannelType &chan )
 
   VIValue new_vi_value;
 
-  EnsembleContainer<ChannelType> exemplar;
-
-  exemplar.advance_to( chan.get_container()->time() );
-  exemplar.add_mature( ChannelType( chan ) );
+  Exemplar exemplar( chan );
 
   exemplar_states.push_back( exemplar );
   new_vi_value.exemplar_state_index = exemplar_states.size() - 1;
@@ -91,13 +97,8 @@ bool ValueIterator<ChannelType>::rationalize( void )
     size_t exemplar_index = incomplete_states.front();
     incomplete_states.pop_front();
 
-    EnsembleContainer<ChannelType> &container( exemplar_states[ exemplar_index ] );
-    ChannelType chan( container.get_channel( 0 ).channel );
-    double current_time = container.time();
-    Maybe< ChannelType > chanqm( chan );
-    chanqm.object->quantize_markovize();
-
-    VIValue &vival( state_values[ chanqm ] );
+    VIValue &vival( state_values[ exemplar_states[ exemplar_index ].qm_cache ] );
+    double current_time = exemplar_states[ exemplar_index ].exemplar.time();
 
     assert( !vival.initialized );
 
@@ -105,7 +106,7 @@ bool ValueIterator<ChannelType>::rationalize( void )
     EnsembleContainer<ChannelType> nosend;
 
     nosend.advance_to( current_time );
-    nosend.add_mature( ChannelType( chan ) );
+    nosend.add_mature( ChannelType( exemplar_states[ exemplar_index ].exemplar.get_channel( 0 ).channel ) );
     nosend.advance_to( current_time + TIME_STEP );
     nosend.combine();
 
@@ -123,7 +124,7 @@ bool ValueIterator<ChannelType>::rationalize( void )
     /* Step 3: Enumerate the quantized_send_indices */
     EnsembleContainer<ChannelType> send;
     send.advance_to( current_time );
-    send.add_mature( ChannelType( chan ) );
+    send.add_mature( ChannelType( exemplar_states[ exemplar_index ].exemplar.get_channel( 0 ).channel ) );
     extractor->get_pawn( send.get_channel( 0 ).channel ).send( Packet( 12000, id, 0, -1 ) );
     send.advance_to( current_time ); /* Send doesn't involve advancing! */
     send.combine();
@@ -170,12 +171,7 @@ void ValueIterator<ChannelType>::value_iterate( void )
 	      [&state_values, &changed, &exemplar_states]( size_t ex_id )
 	      {
 		/* Lookup state */
-		EnsembleContainer<ChannelType> &container( exemplar_states[ ex_id ] );
-		ChannelType chan( container.get_channel( 0 ).channel );
-		Maybe< ChannelType > chanqm( chan );
-		chanqm.object->quantize_markovize();
-
-		VIValue &vival( state_values[ chanqm ] );
+		VIValue &vival( state_values[ exemplar_states[ ex_id ].qm_cache ] );
 
 		/* Find value if we don't send */
 		double nosend_value = 0;
@@ -233,7 +229,7 @@ bool ValueIterator<ChannelType>::should_i_send( const EnsembleContainer<ChannelT
     nosend_value += ensemble.get_channel( i ).probability * state_values[ chanqm ].nosend_value;
   }
 
-  //  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
+  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
 
   return send_value > nosend_value;
 }

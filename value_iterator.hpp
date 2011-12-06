@@ -15,7 +15,15 @@ template <class ChannelType>
 class ValueIterator
 {
 private:
-  std::vector< EnsembleContainer<ChannelType> > exemplar_states;
+  class Exemplar {
+  public:
+    EnsembleContainer<ChannelType> exemplar;
+    Maybe< ChannelType > qm_cache;
+
+    Exemplar( const ChannelType &e );
+  };
+
+  std::vector< Exemplar > exemplar_states;
 
   Extractor<ChannelType> *extractor;
 
