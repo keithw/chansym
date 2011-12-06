@@ -143,9 +143,9 @@ int main( void )
   truth.set_follow_all_forks( false );
 
   for ( double link_portion = 0.5; link_portion <= 0.5; link_portion += 0.1 ) {
-    for ( int bufsize = 12000*8; bufsize <= 12000*8; bufsize += 12000 ) {
+    for ( int bufsize = 12000*8; bufsize <= 12000*10; bufsize += 12000 ) {
       for ( int init = 0; init * 12000 <= bufsize; init++ ) {
-        for ( int linkspeed = 12000*10; linkspeed <= 12000*10; linkspeed += 12000*2 ) {
+        for ( int linkspeed = 12000*8; linkspeed <= 12000*12; linkspeed += 12000*2 ) {
 	  for ( double lossrate = 0.2; lossrate <= 0.2; lossrate += 0.05 ) {
 	    prior.add( series( series( series( Pinger( 12000.0 / (linkspeed * link_portion), 1, true ), Intermittent( .00069, .1 ) ),
 				       Pawn() ),
