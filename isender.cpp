@@ -115,12 +115,12 @@ void ISender<ChannelType>::wakeup( void )
   /* reset real collector */
   extractor->reset( this );
 
-  //  prior.prune( 1000 );
+  prior.prune( 1000 );
 
   prior.normalize();
 
-  prior.combine();
-  //  prior.heuristic_opportunistic_combine();
+  // prior.combine();
+  prior.heuristic_opportunistic_combine();
 
   printf( "Time: %f (channels: %d, MQ channels = %lu)\n", current_time, prior.size(), vi.size() );
   //  if ( prior.size() <= 32 ) {

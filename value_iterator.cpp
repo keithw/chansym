@@ -161,14 +161,16 @@ void ValueIterator<ChannelType>::value_iterate( void )
   assert( incomplete_states.empty() );
 
   int changed;
+  double max_diff;
 
   printf( "VALUE ITERATING on %lu states\n", unfinished_states.size() );
 
   do {
     changed = 0;
+    max_diff = 0;
 
     for_each( unfinished_states.begin(), unfinished_states.end(),
-	      [&state_values, &changed, &exemplar_states]( size_t ex_id )
+	      [&state_values, &changed, &exemplar_states, &max_diff]( size_t ex_id )
 	      {
 		/* Lookup state */
 		VIValue &vival( state_values[ exemplar_states[ ex_id ].qm_cache ] );
@@ -197,14 +199,21 @@ void ValueIterator<ChannelType>::value_iterate( void )
 		  changed++;
 		}
 
+		if ( nosend_value / vival.nosend_value - 1 > max_diff )
+		  max_diff = nosend_value / vival.nosend_value - 1;
+		if ( vival.nosend_value / nosend_value - 1 > max_diff )
+		  max_diff = vival.nosend_value / nosend_value - 1;
+		if ( send_value / vival.send_value - 1 > max_diff )
+		  max_diff = send_value / vival.send_value - 1;
+		if ( send_value / vival.send_value - 1 > max_diff )
+		  max_diff = send_value / vival.send_value - 1;
+
 		vival.nosend_value = nosend_value;
 		vival.send_value = send_value;
 		vival.value = new_value;
 	      } );
-
-    printf( ". (%d)\n", changed );
-    
-  } while ( changed );
+    printf( "(%d / %f)\n", changed, max_diff );
+  } while ( changed && (max_diff >= 0.01) );
 
   unfinished_states.clear();
 }
@@ -229,7 +238,7 @@ bool ValueIterator<ChannelType>::should_i_send( const EnsembleContainer<ChannelT
     nosend_value += ensemble.get_channel( i ).probability * state_values[ chanqm ].nosend_value;
   }
 
-  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
+  //  printf( "SEND value = %f, NOSEND value = %f\n", send_value, nosend_value );
 
   return send_value > nosend_value;
 }
