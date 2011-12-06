@@ -155,7 +155,8 @@ void ISender<ChannelType>::sendout( Packet p )
     }
   }
 
-  prior.execute_fork();
+  /*  prior.execute_fork(); */
+  prior.advance_to( container->time() );
 }
 
 template <class ChannelType>

@@ -9,14 +9,14 @@ const int PACKET_SIZE = 12000;
 
 inline bool close( double x, double y )
 {
-  //  return x == y;
-  return fabs( x - y ) < 1e-9;
+  return x == y;
+  //return fabs( x - y ) < 1e-9;
 }
 
 inline static double rounder( double x )
 {
-  //return x;
-  return nearbyint( x * 1e9 ) * 1e-9;
+  return x;
+  //return nearbyint( x * 1e9 ) * 1e-9;
 }
 
 inline static double variable_round( double x, double increment )
