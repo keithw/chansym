@@ -130,7 +130,7 @@ bool ValueIterator<ChannelType>::rationalize( void )
     send.combine();
   
     for ( size_t i = 0; i < send.size(); i++ ) {
-      double the_utility = UtilityMetric::utility( nosend.time(),
+      double the_utility = UtilityMetric::utility( send.time(),
 						   extractor->get_collector( send.get_channel( i ).channel ).get_packets(),
 						   extractor->get_cross_traffic( send.get_channel( i ).channel ).get_packets() );
       extractor->reset( send.get_channel( i ).channel );

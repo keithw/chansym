@@ -70,6 +70,8 @@ void ISender<ChannelType>::wakeup( void )
   Collector *collector = &extractor->get_collector( this );
   vector<ScheduledPacket> true_received = collector->get_packets();
 
+  assert( true_received.size() <= 1 );
+
   /* Do we need to run? */
   if ( (latest_time == current_time)
        && (true_received.empty())
